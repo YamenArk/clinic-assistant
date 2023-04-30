@@ -1,47 +1,56 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { log } from 'console';
+import { validate } from 'class-validator';
 import { Admin } from 'src/typeorm/entities/admin';
-import { Doctor } from 'src/typeorm/entities/doctors';
-import { Specialty } from 'src/typeorm/entities/specialty';
-import { AddDocrotSpecialtyParams, CreateAdminParams } from 'src/utils/types';
+import { CreateAdminParams } from 'src/utils/types';
+import { AuthLoginDto } from 'src/admins/dtos/auth-login.dto';
 
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AdminsService {
     constructor (
+        private jwtService : JwtService,
         @InjectRepository(Admin) 
         private adminRepository : Repository<Admin>
-        // @InjectRepository(Doctor) 
-        // private doctorRepository : Repository<Doctor>,
-        // @InjectRepository(Specialty) 
-        // private specialtyRepository : Repository<Specialty>,
         ){}
 
 
 
     findAdmins(){
-        return this.adminRepository.find({ where:{ type : Not(1)}});
+        return this.adminRepository.find({ where:{ isAdmin : false}});
     }
-    createAdmin(adminDetails : CreateAdminParams){
+    async createAdmin(adminDetails : CreateAdminParams){
+        const duplicates = await this.adminRepository.findOne({where : {email : adminDetails.email}})
+        if (duplicates) {
+            throw new BadRequestException(`admin with name "${adminDetails.email}" already exists"`);
+          }
         const newAdmin = this.adminRepository.create({
             ...adminDetails,
-            type : 2,
             createdAt : new Date()
         });
+    
+        // Validate the updatedDoctor object using class-validator
+        const errors = await validate(newAdmin);
+        if (errors.length > 0) {
+            throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
+        }
         return this.adminRepository.save(newAdmin);
     }
-    // async addSpecialtyToDoctor(docrotSpecialtyIds : AddDocrotSpecialtyParams)
-    // {
-    //     const doctor = await this.doctorRepository.findOne({where: {id: docrotSpecialtyIds.doctorId}});
-    //     if(!doctor){
-    //     throw new NotFoundException()
-    //     }
-    //     const specialty = await this.specialtyRepository.findOne({where: {id: docrotSpecialtyIds.specialtyId}});
-    //     if(!specialty){
-    //     throw new NotFoundException()
-    //     }
-    //     await this.doctorSpecialtyRepository.save(docrotSpecialtyIds )
-    // }
+  
+    
+    async login(AuthLoginDto : AuthLoginDto){
+        const {email,password} = AuthLoginDto
+        const admin = await this.adminRepository.findOne({where :{email : email}})
+        console.log(admin)
+        //check the password ..
+        const payload = {
+            adminId : admin.adminId
+        }
+        return  {
+            access_token : this.jwtService.sign(payload)
+        };
+    }
+
 }

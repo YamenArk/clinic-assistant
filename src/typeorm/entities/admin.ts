@@ -1,10 +1,7 @@
-import { SrvRecord } from 'dns';
+import { IsNotEmpty, IsString } from 'class-validator';
 import {
     Column,
     Entity,
-    JoinColumn,
-    OneToMany,
-    OneToOne,
     PrimaryGeneratedColumn,
   } from 'typeorm';
 
@@ -13,16 +10,21 @@ export class Admin {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     adminId: number;
 
-    @Column()
-    type: number;
+    @Column({default : false})
+    isAdmin: boolean;
 
-    @Column()
-    username: string;
+    @Column({unique : true})
+    @IsString()
+    @IsNotEmpty()
+    email: string;
 
+   
     @Column()
+    @IsString()
+    @IsNotEmpty()
     password: string;
 
-    @Column()
+    @Column({ nullable: true })
     phonenumber: string;
 
     @Column()

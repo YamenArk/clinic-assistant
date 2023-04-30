@@ -1,26 +1,25 @@
 
 export type CreateAdminParams = {
-    username: string;
+    email: string;
     password: string;
     phonenumber: string;
   };
   
 export type CreateDoctorParams = {
-  username: string;
-  password: string;
-  phonenumber: string;
-  gender: boolean
+  email: string;
+  phonenumberForAdmin: string;
+  gender: string
   firstname : string;
   lastname : string;
 };
 
 export type UpdateDoctorParams = {
-  Descreption: string;
+  description: string;
   password : string;
   profilePicture : string;
   appointmentDuring : number;
   checkupPrice : number;
-  phonenumber : string;
+  phoneNumber : string;
 }
  export type AddDocrotSpecialtyParams= {
   doctorId : number;
@@ -48,5 +47,5 @@ export type InsuranceParams = {
 export type filterDocrotsParams = {
   insuranceId:number;
   subSpecialtyId:number;
-  gender : boolean
+  gender : string
 };

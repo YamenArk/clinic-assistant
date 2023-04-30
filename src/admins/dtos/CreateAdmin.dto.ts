@@ -1,5 +1,5 @@
 export type CreateAdminDto = {
-    username: string;
+    email: string;
     password: string;
     phonenumber: string;
   };

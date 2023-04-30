@@ -1,9 +1,8 @@
-export type CreateDoctorDto = {
-    username: string;
-    password: string;
-    phonenumber: string;
-    gender: boolean
-    firstname : string;
-    lastname : string;
+export interface  CreateDoctorDto {
+  email: string;
+  phonenumberForAdmin: string;
+  gender: string
+  firstname : string;
+  lastname : string;
   };
   

@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { validate } from 'class-validator';
 import { doc } from 'prettier';
 import { Clinic } from 'src/typeorm/entities/clinic';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
@@ -19,20 +20,37 @@ export class ClinicsService {
     
 
       findClinics():Promise<Clinic[]>{
-          return this.clinicRepository.find();
+        const select: Array<keyof Clinic> =['clinicId', 'clinicName', 'location', 'locationId', 'createdAt', 'numDoctors'];
+        
+          return this.clinicRepository.find({select});
       }
-      createClinic(clinicDetails: ClinicParams):Promise<Clinic>{
+      async createClinic(clinicDetails: ClinicParams):Promise<Clinic>{
           const newClinic = this.clinicRepository.create({
               ...clinicDetails,
               createdAt : new Date()
           })
+           // Validate the updatedDoctor object using class-validator
+           const errors = await validate(newClinic);
+           if (errors.length > 0) {
+             throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
+           }
           return this.clinicRepository.save(newClinic);
       }
       async updateClinic(clinicId:number,clinicDetails: ClinicParams): Promise<void>{
           const clinic  = await this.clinicRepository.findOne({where : {clinicId : clinicId}});
           if (!clinic ) {
               throw new HttpException(`clinic with id ${clinicId} not found`, HttpStatus.NOT_FOUND);
-            }
+                    }
+                    
+          // Create a new Doctor object with the updated properties
+          const updatedClinic = this.clinicRepository.create({ ...clinic, ...clinicDetails });
+
+          // Validate the updatedDoctor object using class-validator
+          const errors = await validate(updatedClinic);
+          if (errors.length > 0) {
+            throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
+          }
+
           await this.clinicRepository.update({clinicId},{...clinicDetails});
       }
       async deleteClinic(clinicId: number): Promise<void> {
@@ -57,7 +75,11 @@ export class ClinicsService {
         const newDoctorClinic = new DoctorClinic();
         newDoctorClinic.doctor = doctor;
         newDoctorClinic.clinic = clinic;
-    
+        
+        clinic.numDoctors = clinic.numDoctors + 1;
+        await this.clinicRepository.save(clinic);
+
+        
         await this.doctorClinicRepository.save(newDoctorClinic);
       }
 
@@ -74,6 +96,8 @@ export class ClinicsService {
           throw new HttpException('Doctor is not associated with clinic', HttpStatus.NOT_FOUND);
         }
     
+        clinic.numDoctors = clinic.numDoctors - 1;
+        await this.clinicRepository.save(clinic);
         await this.doctorClinicRepository.remove(doctorClinic);
       }
 
@@ -82,7 +106,6 @@ export class ClinicsService {
         if (!clinic) {
           throw new HttpException('Clinic not found', HttpStatus.NOT_FOUND);
         }
-        
         const doctorClinics = await this.doctorClinicRepository.find({
           where: { clinic: { clinicId: clinic.clinicId } },
           relations: ['doctor'],

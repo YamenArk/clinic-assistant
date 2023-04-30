@@ -1,39 +1,49 @@
-import { SrvRecord } from 'dns';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import {
     Column,
     Entity,
-    JoinColumn,
-    JoinTable,
-    ManyToMany,
     OneToMany,
-    OneToOne,
     PrimaryGeneratedColumn,
   } from 'typeorm';
-import { Specialty } from './specialty';
+import { Appointment } from './appointment';
 
 @Entity({ name: 'patients' })
 export class Patient {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     patientId: number;
 
-    @Column()
-    phoneNumber: string;
+    //accepte null
+    @Column({ nullable: true })
+    phoneNumber: string | null;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
     password: string;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
     firstname: string;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
     lastname: string;
 
-    @Column()
+    //accepte null
+    @Column({ nullable: true })
+    @IsNumber()
     age: number;
 
-    @Column()
+    //accepte null
+    @Column({ nullable: true })
+    @IsString()
     profilePicture: string;
 
     @Column({default : 0})
     numberOfMissAppointment: number;
+
+    @OneToMany(() => Appointment, appointment => appointment.patient)
+    public appointment: Appointment[];
 }

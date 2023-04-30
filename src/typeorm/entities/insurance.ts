@@ -1,20 +1,21 @@
-import { SrvRecord } from 'dns';
 import {
     Column,
     Entity,
     ManyToMany,
-    OneToMany,
     PrimaryGeneratedColumn,
   } from 'typeorm';
-import { Specialty } from './specialty';
 import { Doctor } from './doctors';
+import { IsDefined, IsNotEmpty, IsString } from 'class-validator';
 
 @Entity({ name: 'insurances' })
 export class Insurance {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     insuranceId: number;
-
+    
     @Column({ unique: true })
+    @IsString()
+    @IsDefined() // Add IsDefined constraint
+    @IsNotEmpty()
     companyName: string;
 
 

@@ -5,10 +5,10 @@ import {
   } from 'typeorm';
 import { Doctor } from './doctors';
 import { Clinic } from './clinic';
-import { Secreatry } from './secretary';
+import { Patient } from './patient';
 
-@Entity({ name: 'doctorClinics' })
-export class DoctorClinic {
+@Entity({ name: 'appointments' })
+export class Appointment {
   @PrimaryGeneratedColumn({ type: 'bigint' })
     id: number;
 
@@ -18,7 +18,7 @@ export class DoctorClinic {
     @ManyToOne(() => Clinic, (clinic) => clinic.doctorClinic)
     public clinic: Clinic
 
-    @ManyToOne(() => Secreatry, (secreatry) => secreatry.doctorClinic)
-    public secreatry: Secreatry
+    @ManyToOne(() => Patient, (patient) => patient.appointment)
+    public patient: Patient
 
 }

@@ -5,6 +5,7 @@ import {
     PrimaryGeneratedColumn,
   } from 'typeorm';
 import { DoctorClinic } from './doctor-clinic';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 @Entity({ name: 'clinics' })
 export class Clinic {
@@ -12,6 +13,8 @@ export class Clinic {
     clinicId: number;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
     clinicName: string;
 
     @Column()
@@ -23,8 +26,11 @@ export class Clinic {
     @Column()
     createdAt: Date;
   
-    @Column()
+    @Column({ nullable: true })
     phonenumber: string;
+
+    @Column({ default: 0 })
+    numDoctors: number;
 
     @OneToMany(() => DoctorClinic, doctorClinic => doctorClinic.clinic)
     public doctorClinic: DoctorClinic[];

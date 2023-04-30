@@ -1,64 +1,100 @@
-import { SrvRecord } from 'dns';
 import {
     Column,
     Entity,
-    JoinColumn,
     JoinTable,
     ManyToMany,
     OneToMany,
-    OneToOne,
     PrimaryGeneratedColumn,
   } from 'typeorm';
-import { Specialty } from './specialty';
 import { Insurance } from './insurance';
 import { SubSpecialty } from './sub-specialty';
 import { DoctorClinic } from './doctor-clinic';
+import { IsEmail, IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Commission } from './commission';
 
 @Entity({ name: 'doctors' })
 export class Doctor {
+    static find(arg0: { relations: string[]; }) {
+      throw new Error('Method not implemented.');
+    }
     @PrimaryGeneratedColumn({ type: 'bigint' })
     doctorId: number;
 
-    @Column()
-    Descreption: string;
+    @Column({ nullable: true })
+    @IsOptional()
+    @IsString()
+    description : string;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
+    @IsEmail()
+    email : string;
+
+    //accepte null
+    @Column()
+    @IsString()
+    @IsNotEmpty()
+    phonenumberForAdmin: string ;
+
+
+    @Column({default : true})
     active: boolean;
 
-    @Column()
-    username: string;
-
-    @Column()
+   
+    @Column({ nullable: true })
+    @IsString()
+    @IsOptional()
     password: string;
 
     
-    // 1 for male 0 for femal
     @Column()
-    gender: boolean; 
-
-    @Column()
+    @IsEnum(['male', 'female'])
+    gender: string;
+    
+    @Column({ nullable: true })
+    @IsString()
+    @IsOptional()
     profilePicture: string;
 
+    
     @Column()
+    @IsString()
+    @IsNotEmpty()
     firstname: string;
 
+   
     @Column()
+    @IsString()
+    @IsNotEmpty()
     lastname: string;
 
-    @Column()
+   
+    @Column({default : 20})
+    @IsNumber()
+    @IsNotEmpty()
     appointmentDuring: number;
 
     @Column({default : "3"})
     evaluate: number;
 
-    @Column()
+    @Column({default : 0})
+    @IsNumber()
+    @IsNotEmpty()
     numberOfPeopleWhoVoted: number;
 
-    @Column()
+    @Column({default : 0,nullable: true})
+    @IsOptional()
+    @IsNumber()
     checkupPrice: number;
 
-    @Column({ type: 'bigint' })
-    phonenumber: string;
+    //accepte null
+    @Column({ nullable: true })
+    @IsString()
+    @IsOptional()
+    phonenumber: string | null;
+
+
 
     @Column()
     createdAt: Date;
@@ -74,4 +110,8 @@ export class Doctor {
     
     @OneToMany(() => DoctorClinic, doctorClinic => doctorClinic.doctor)
     public doctorClinic: DoctorClinic[];
+
+    @OneToMany(() => Commission, (commission) => commission.doctor)
+    commission: Commission[]    
+    length: number;
 }

@@ -1,9 +1,9 @@
 export type UpdateDoctorDto = {
-    Descreption: string;
+  description: string;
     password : string;
     profilePicture : string;
     appointmentDuring : number;
     checkupPrice : number;
-    phonenumber : string;
+    phoneNumber : string;
   }
   

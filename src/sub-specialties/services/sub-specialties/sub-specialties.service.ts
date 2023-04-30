@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateSubSpecialtyDto } from 'src/sub-specialties/dtos/CreateSubSpecialty.dto';
+import { validate } from 'class-validator';
 import { Specialty } from 'src/typeorm/entities/specialty';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
 import { CreateSubSpecialtyParams } from 'src/utils/types';
@@ -18,12 +18,10 @@ export class SubSpecialtiesService {
         ){}        
 
         async createSubSpecialty(specialtyId: number,subSpecialtyDetails : CreateSubSpecialtyParams): Promise<SubSpecialty>{
-            const subSpecialtyName = subSpecialtyDetails.subSpecialtyName;
             const specialty  = await this.specialtyRepository.findOne({where : {specialtyId : specialtyId}});
             if (!specialty ) {
                 throw new HttpException(`specialty with id ${specialtyId} not found`, HttpStatus.NOT_FOUND);
               }
-    
 
             const duplicates = await this.subSpecialtyRepository.findOne({
               where: {
@@ -40,31 +38,43 @@ export class SubSpecialtiesService {
             const newSubSpecialty = this.subSpecialtyRepository.create({
                 ...subSpecialtyDetails,
             });
+
+
+               // Validate the updatedDoctor object using class-validator
+               const errors = await validate(newSubSpecialty);
+               if (errors.length > 0) {
+                 throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
+               }
+
             newSubSpecialty.specialty = specialty;
             return this.subSpecialtyRepository.save(newSubSpecialty);
         }
 
-        async updatespecialty(subSpecialtyId: number, newData: CreateSubSpecialtyParams): Promise<void> {
+        async updateSubSpecialty(subSpecialtyId: number, newData: CreateSubSpecialtyParams): Promise<void> {
 
             const subSpecialty = await this.subSpecialtyRepository.findOne({
                 where: { subSpecialtyId: subSpecialtyId },
                 relations: ['specialty'],
               });
-        
-        
             if (!subSpecialty) {
                 throw new NotFoundException(`subSpecialty with id "${subSpecialtyId}" not found`);
             }
 
-            const specialty = subSpecialty.specialty;
+              // Create a new Doctor object with the updated properties
+              const updatedsubSpecialty = this.subSpecialtyRepository.create({ ...subSpecialty, ...newData });
 
+              // Validate the updatedDoctor object using class-validator
+              const errors = await validate(updatedsubSpecialty);
+              if (errors.length > 0) {
+                throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
+              }
 
             const duplicates = await this.subSpecialtyRepository.findOne({
               where: {
                 subSpecialtyName: newData.subSpecialtyName,
                 subSpecialtyId: Not(subSpecialtyId), 
                 specialty: {
-                  specialtyId: specialty.specialtyId,
+                  specialtyId: subSpecialty.specialty.specialtyId,
                 },
               },
             })
@@ -73,9 +83,7 @@ export class SubSpecialtiesService {
             throw new BadRequestException(`subSpecialty with name "${newData.subSpecialtyName}" already exists in this specialty"`);
           }
 
-          subSpecialty.subSpecialtyName = newData.subSpecialtyName;
-
-        await this.subSpecialtyRepository.save(subSpecialty);
+          await this.subSpecialtyRepository.update({subSpecialtyId},{...newData});
   }
      
         async deleteSubSpecialty(subSpecialtyId: number): Promise<void> {

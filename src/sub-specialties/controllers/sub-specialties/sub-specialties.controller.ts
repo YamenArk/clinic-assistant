@@ -30,7 +30,7 @@ export class SubSpecialtiesController {
       @Body() newData: CreateSubSpecialtyDto,
       @Res() res: Response
     ) {
-      await this.subSpecialtySrevice.updatespecialty(subSpecialtyId, newData);
+      await this.subSpecialtySrevice.updateSubSpecialty(subSpecialtyId, newData);
       return res.status(200).json({message :'subSpecialty updated  successfully'});
     }
 }

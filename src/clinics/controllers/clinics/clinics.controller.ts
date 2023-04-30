@@ -6,6 +6,7 @@ import { Response } from 'express';
 @Controller('clinics')
 export class ClinicsController {
     constructor(private clinicSrevice : ClinicsService){}
+    //admin
     @Get()
     async getClinics(){
         const clinics =  await this.clinicSrevice.findClinics()

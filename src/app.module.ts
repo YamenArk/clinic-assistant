@@ -16,6 +16,13 @@ import { ClinicsModule } from './clinics/clinics.module';
 import { Clinic } from './typeorm/entities/clinic';
 import { InsurancesModule } from './insurances/insurances.module';
 import { DoctorClinic } from './typeorm/entities/doctor-clinic';
+import { Commission } from './typeorm/entities/commission';
+import { Secreatry } from './typeorm/entities/secretary';
+import { WorkTime } from './typeorm/entities/work-time';
+import { Appointment } from './typeorm/entities/appointment';
+import { BlackList } from './typeorm/entities/black-list';
+import { MailService } from './middleware/mail/mail.service';
+import { AuthModule } from './middleware/auth/auth.module';
 // clinicassistant
 @Module({
   imports: [
@@ -26,8 +33,8 @@ import { DoctorClinic } from './typeorm/entities/doctor-clinic';
       username: 'root',
       password: '',
       database: 'clinicassistant',
-      entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic],
-      synchronize: false  ,
+      entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Commission,Secreatry,WorkTime,Appointment,BlackList],
+      synchronize:  true ,
       migrationsRun: false,
       // dropSchema: true
     }),
@@ -37,7 +44,9 @@ import { DoctorClinic } from './typeorm/entities/doctor-clinic';
     SubSpecialtiesModule,
     ClinicsModule,
     InsurancesModule,
+    AuthModule,
     
-      ]
+      ],
+  providers: [MailService]
 })
 export class AppModule {}

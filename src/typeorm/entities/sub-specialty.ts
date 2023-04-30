@@ -1,21 +1,22 @@
-import { SrvRecord } from 'dns';
 import {
     Column,
     Entity,
     ManyToMany,
     ManyToOne,
-    OneToMany,
     PrimaryGeneratedColumn,
   } from 'typeorm';
 import { Doctor } from './doctors';
 import { Specialty } from './specialty';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 @Entity({ name: 'subSpecialties' })
 export class SubSpecialty {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     subSpecialtyId: number;
 
-    @Column()
+    @Column({ nullable: false })
+    @IsString()
+    @IsNotEmpty()
     subSpecialtyName: string;
 
     @ManyToOne(() => Specialty, (specialty) => specialty.subSpecialties)

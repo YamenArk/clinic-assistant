@@ -1,5 +1,6 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { validate } from 'class-validator';
 import { doc } from 'prettier';
 import { Doctor } from 'src/typeorm/entities/doctors';
 import { Insurance } from 'src/typeorm/entities/insurance';
@@ -28,6 +29,13 @@ export class InsurancesService {
         const newInsurance = this.insuranceRepository.create({
             ...insuranceDetails,
         })
+
+        // Validate the newInsurance object using class-validator
+        const errors = await validate(newInsurance);
+        if (errors.length > 0) {
+          const errorMessages = errors.map((error) => Object.values(error.constraints).join(', ')).join(', ');
+          throw new HttpException(`Validation error: ${errorMessages}`, HttpStatus.BAD_REQUEST);
+        }
         return this.insuranceRepository.save(newInsurance);
     }
     async updateInsurance(insuranceId:number,insuranceDetails: InsuranceParams): Promise<void>{
@@ -35,6 +43,16 @@ export class InsurancesService {
         if (!insurance ) {
             throw new HttpException(`insurance with id ${insuranceId} not found`, HttpStatus.NOT_FOUND);
           }
+
+            // Create a new Doctor object with the updated properties
+            const updatedClinic = this.insuranceRepository.create({ ...insurance, ...insuranceDetails });
+
+            // Validate the updatedDoctor object using class-validator
+            const errors = await validate(updatedClinic);
+            if (errors.length > 0) {
+              throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
+            }
+
         const duplicates = await this.insuranceRepository.findOne({
             where: {
                 companyName: insuranceDetails.companyName,
