@@ -1,18 +1,60 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Res } from '@nestjs/common';
+import {UseGuards, Body, Controller, Delete, Get, Param, Post, Put, Res, ValidationPipe } from '@nestjs/common';
 import { SpecialtyDto } from 'src/specialties/dtos/Specialty.dto';
 import { SpecialtiesService } from 'src/specialties/services/specialties/specialties.service';
 import { Specialty } from 'src/typeorm/entities/specialty';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
 import { Response } from 'express';
+import { JWTAuthGuardAdmin } from 'src/middleware/auth/jwt-auth.guard';
 
 @Controller('specialties')
 export class SpecialtiesController {
     constructor(private specialtySrevice : SpecialtiesService){}
 
+
+    //////////////////////////////////admin
+
+    @Post()
+    @UseGuards(JWTAuthGuardAdmin)
+    async createSpecialty(@Body(new ValidationPipe({ whitelist: true })) createSpecialtyDto: SpecialtyDto) {
+        return  await this.specialtySrevice.createspecialty(createSpecialtyDto);
+    }
+    @Delete(':specialtyId')
+    @UseGuards(JWTAuthGuardAdmin)
+    async  deletespecialty(
+      @Param('specialtyId') specialtyId: number
+      ) {
+        await  this.specialtySrevice.deletespecialty(specialtyId);
+         return {message : 'specialty deleted successfully'}
+      } 
+
+    @Put(':specialtyId')
+    @UseGuards(JWTAuthGuardAdmin)
+    async updatespecialty(
+      @Param('specialtyId') specialtyId: number,
+      @Body(new ValidationPipe({ whitelist: true })) newData: SpecialtyDto,
+    ) {
+      await this.specialtySrevice.updatespecialty(+specialtyId, newData);
+      return {message : 'specialty updated successfully'}
+    }
+
     @Get()
+    @UseGuards(JWTAuthGuardAdmin)
     getSpecialties(){
         return this.specialtySrevice.findspecialties()
     }
+
+
+    @Get(':specialtyId/subSpecialties')
+    @UseGuards(JWTAuthGuardAdmin)
+    async findAllSubsByspecialty(@Param('specialtyId') specialtyId: number) {
+      const subSpecialties = await this.specialtySrevice.findAllSubsByspecialty(specialtyId);
+      return {subSpecialties : subSpecialties}
+    }
+    //////////////////////////////////////////////////
+
+
+
+
 
     @Get('subspecialties')
     async getSpecialtiesWithSubSpecialties(){
@@ -20,31 +62,7 @@ export class SpecialtiesController {
         return {specialties : specialties};
     }
 
-    @Get(':specialtyId/subSpecialties')
-    async findAllSubsByspecialty(@Param('specialtyId') specialtyId: number) {
-      const subSpecialties = await this.specialtySrevice.findAllSubsByspecialty(specialtyId);
-      return {subSpecialties : subSpecialties}
-    }
+  
     
-    @Post()
-    async createSpecialty(@Body() createSpecialtyDto: SpecialtyDto) {
-        return  await this.specialtySrevice.createspecialty(createSpecialtyDto);
-    }
-    @Delete(':specialtyId')
-    async  deletespecialty(
-      @Param('specialtyId') specialtyId: number,
-      @Res() res: Response) {
-        await  this.specialtySrevice.deletespecialty(specialtyId);
-        return res.status(200).json({message :'specialty deleted successfully'});
-      } 
-
-    @Put(':specialtyId')
-    async updatespecialty(
-      @Param('specialtyId') specialtyId: number,
-      @Body() newData: SpecialtyDto,
-      @Res() res: Response
-    ) {
-      await this.specialtySrevice.updatespecialty(+specialtyId, newData);
-      return res.status(200).json({message :'specialty updated successfully'});
-    }
+   
   }

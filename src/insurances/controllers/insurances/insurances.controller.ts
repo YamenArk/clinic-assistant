@@ -1,38 +1,42 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Res } from '@nestjs/common';
+import { UseGuards,Body, Controller, Delete, Get, Param, Post, Put, Res, ValidationPipe } from '@nestjs/common';
 import { InsuranceDto } from 'src/insurances/dtos/InsuranceDetails.dto';
 import { InsurancesService } from 'src/insurances/services/insurances/insurances.service';
 import { Response } from 'express';
+import { JWTAuthGuardAdmin } from 'src/middleware/auth/jwt-auth.guard';
 
 @Controller('insurances')
 export class InsurancesController {
     constructor(private InsuranceSrevice : InsurancesService){}
     @Get()
+    @UseGuards(JWTAuthGuardAdmin)
     async getClinics(){
         const clinics =  await this.InsuranceSrevice.findInsurances()
         return {clinics : clinics};
     }
     
     @Post()
-    async createClinic(@Body() createSpecialtyDto: InsuranceDto){
+    @UseGuards(JWTAuthGuardAdmin)
+    async createClinic(@Body(new ValidationPipe({ whitelist: true })) createSpecialtyDto: InsuranceDto){
         const clinic = await this.InsuranceSrevice.createInsurance(createSpecialtyDto);
         return {clinic : clinic};
     }
 
     @Delete(':insuranceId')
+    @UseGuards(JWTAuthGuardAdmin)
     async  deleteClinic(
       @Param('insuranceId') 
       insuranceId: number,
-      @Res() res: Response){
+     ){
         await  this.InsuranceSrevice.deleteInsurance(insuranceId);
-        return res.status(200).json({message : 'specialty deleted successfully'});
+        return {message : 'insurance deleted successfully'}
     }
     @Put(':insuranceId')
+    @UseGuards(JWTAuthGuardAdmin)
     async updateClinic(
       @Param('insuranceId') insuranceId: number,
-      @Body() newData: InsuranceDto,
-      @Res() res: Response
+      @Body(new ValidationPipe({ whitelist: true })) newData: InsuranceDto
     ) {
       await this.InsuranceSrevice.updateInsurance(insuranceId, newData);
-      return res.status(200).json({message :'specialty updated successfully'});
+      return {message : 'insurance updated successfully'}
     }
 }

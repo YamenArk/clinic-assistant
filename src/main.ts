@@ -34,10 +34,10 @@ async function bootstrap() {
     password: "",
     database: "clinicassistant",
   });
-
+  
   connection.query(
     `INSERT INTO admins (isAdmin, email, password, createdAt)
-    SELECT * FROM (SELECT TRUE, 'admin@gmail.com', '123', NOW()) AS tmp
+    SELECT * FROM (SELECT TRUE, 'admin@gmail.com', '$2a$10$hHmY6rPXtzFRoBsWoseoae8XpcJF4rn/j.Sdw4P8/aJCKi./j2iGW', NOW()) AS tmp
     WHERE NOT EXISTS (
         SELECT * FROM admins WHERE isAdmin = TRUE AND email = 'admin@gmail.com'
     ) LIMIT 1;`,

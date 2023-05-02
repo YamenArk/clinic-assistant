@@ -9,7 +9,7 @@ import {
 import { Insurance } from './insurance';
 import { SubSpecialty } from './sub-specialty';
 import { DoctorClinic } from './doctor-clinic';
-import { IsEmail, IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Commission } from './commission';
 
 @Entity({ name: 'doctors' })
@@ -25,7 +25,7 @@ export class Doctor {
     @IsString()
     description : string;
 
-    @Column()
+    @Column({unique : true})
     @IsString()
     @IsNotEmpty()
     @IsEmail()
@@ -39,6 +39,7 @@ export class Doctor {
 
 
     @Column({default : true})
+    @IsBoolean()
     active: boolean;
 
    

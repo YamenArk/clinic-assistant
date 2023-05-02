@@ -34,9 +34,9 @@ import { AuthModule } from './middleware/auth/auth.module';
       password: '',
       database: 'clinicassistant',
       entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Commission,Secreatry,WorkTime,Appointment,BlackList],
-      synchronize:  true ,
+      synchronize:  false ,
       migrationsRun: false,
-      // dropSchema: true
+      dropSchema: false
     }),
     AdminsModule,
     DoctorsModule,

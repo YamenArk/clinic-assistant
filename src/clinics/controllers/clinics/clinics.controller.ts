@@ -1,64 +1,70 @@
-import { Controller, Get, Post, Put,Delete, Param, Body, Res } from '@nestjs/common';
+import {UseGuards, Controller, Get, Post, Put,Delete, Param, Body, Res, ValidationPipe } from '@nestjs/common';
 import { ClinicDto } from 'src/clinics/dtos/ClinicDetails.dto';
 import { ClinicsService } from 'src/clinics/services/clinics/clinics.service';
 import { Response } from 'express';
+import { UpdateClinicDto } from 'src/clinics/dtos/updateClinic.dto';
+import { JWTAuthGuardAdmin } from 'src/middleware/auth/jwt-auth.guard';
 
 @Controller('clinics')
 export class ClinicsController {
     constructor(private clinicSrevice : ClinicsService){}
-    //admin
+    ///////////////////////////admin
     @Get()
+    @UseGuards(JWTAuthGuardAdmin)
     async getClinics(){
         const clinics =  await this.clinicSrevice.findClinics()
-        return {clinics : clinics};
+        return {clinics : clinics}; 
     }
     
-    @Post()
-    async createClinic(@Body() createSpecialtyDto: ClinicDto){
-        const clinic = await this.clinicSrevice.createClinic(createSpecialtyDto);
-        return {clinic : clinic};
+    @Post() 
+    @UseGuards(JWTAuthGuardAdmin)
+    async createClinic(@Body(new ValidationPipe({ whitelist: true })) createSpecialtyDto: ClinicDto){
+        await this.clinicSrevice.createClinic(createSpecialtyDto);
+        return {message : 'clinic created successfully'}
     }
 
     @Delete(':clinicId')
+    @UseGuards(JWTAuthGuardAdmin)
     async  deleteClinic(
       @Param('clinicId') 
       clinicId: number,
-       @Res() res: Response){
+      ){
         await  this.clinicSrevice.deleteClinic(clinicId);
-        return res.status(200).json({message :'clinic deleted successfully'});
+        return {message : 'clinic deleted successfully'}
     }
     @Put(':clinicId')
+    @UseGuards(JWTAuthGuardAdmin)
     async updateClinic(
       @Param('clinicId') clinicId: number,
-      @Body() newData: ClinicDto,
-      @Res() res: Response
+      @Body(new ValidationPipe({ whitelist: true })) newData: UpdateClinicDto
     ){
       await this.clinicSrevice.updateClinic(clinicId, newData);
-      return res.status(200).json({message : 'clinic updated successfully'});
+      return {message : 'clinic updated successfully'}
     }
 
       //doctor clinic
       @Post(':clinicId/doctors/:doctorId')
+      @UseGuards(JWTAuthGuardAdmin)
       async addDoctorToClinic(
         @Param('clinicId') clinicId: number,
-        @Param('doctorId') doctorId: number,
-        @Res() res: Response
-      ) {
+        @Param('doctorId') doctorId: number
+              ) {
         await this.clinicSrevice.addDoctorToClinic(doctorId,clinicId);
-        return res.status(200).json({message : 'doctor added to clinic successfully'});
+        return {message : 'doctor added to clinic successfully'}
       }
   
       @Delete(':clinicId/doctors/:doctorId')
+      @UseGuards(JWTAuthGuardAdmin)
       async deleteDoctorfromInsurance(
         @Param('clinicId') clinicId: number,
         @Param('doctorId') doctorId: number,
-        @Res() res: Response
       ){
         await this.clinicSrevice.removeDoctorFromClinic(doctorId,clinicId);
-        return res.status(200).json({message : 'doctor deleted from clinic successfully'});
+        return {message : 'doctor added to clinic successfully'}
       }
   
       @Get(':clinicId/doctors')
+      @UseGuards(JWTAuthGuardAdmin)
       async getDoctorsForClinic( 
         @Param('clinicId') clinicId: number,
         ){

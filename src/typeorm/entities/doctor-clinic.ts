@@ -16,7 +16,7 @@ export class DoctorClinic {
     public doctor: Doctor
 
     @ManyToOne(() => Clinic, (clinic) => clinic.doctorClinic)
-    public clinic: Clinic
+    public clinic: Clinic; // Ensure that the type of this property is Clinic
 
     @ManyToOne(() => Secreatry, (secreatry) => secreatry.doctorClinic)
     public secreatry: Secreatry

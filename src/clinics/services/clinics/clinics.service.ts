@@ -5,7 +5,7 @@ import { doc } from 'prettier';
 import { Clinic } from 'src/typeorm/entities/clinic';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Doctor } from 'src/typeorm/entities/doctors';
-import { ClinicParams } from 'src/utils/types';
+import { ClinicParams, UpdateClinicParams } from 'src/utils/types';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class ClinicsService {
         
           return this.clinicRepository.find({select});
       }
-      async createClinic(clinicDetails: ClinicParams):Promise<Clinic>{
+      async createClinic(clinicDetails: ClinicParams):Promise<void>{
           const newClinic = this.clinicRepository.create({
               ...clinicDetails,
               createdAt : new Date()
@@ -34,9 +34,9 @@ export class ClinicsService {
            if (errors.length > 0) {
              throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
            }
-          return this.clinicRepository.save(newClinic);
+          await this.clinicRepository.save(newClinic);
       }
-      async updateClinic(clinicId:number,clinicDetails: ClinicParams): Promise<void>{
+      async updateClinic(clinicId:number,clinicDetails: UpdateClinicParams): Promise<void>{
           const clinic  = await this.clinicRepository.findOne({where : {clinicId : clinicId}});
           if (!clinic ) {
               throw new HttpException(`clinic with id ${clinicId} not found`, HttpStatus.NOT_FOUND);

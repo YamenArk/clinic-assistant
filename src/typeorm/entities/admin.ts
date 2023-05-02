@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import {
     Column,
     Entity,
@@ -16,12 +16,13 @@ export class Admin {
     @Column({unique : true})
     @IsString()
     @IsNotEmpty()
+    @IsEmail()
     email: string;
 
-   
-    @Column()
+    
+    @Column({ nullable: true })
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     password: string;
 
     @Column({ nullable: true })

@@ -18,9 +18,13 @@ export class Clinic {
     clinicName: string;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
     location: string;
 
     @Column()
+    @IsString()
+    @IsNotEmpty()
     locationId: string;
 
     @Column()

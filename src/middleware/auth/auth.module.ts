@@ -5,7 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule,ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Doctor } from 'src/typeorm/entities/doctors';
-import { AdminJwtStrategy, DoctorJwtStrategy } from './jwt.strategy';
+import { AdminIsAdminJwtStrategy, AdminJwtStrategy, DoctorJwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -23,6 +23,6 @@ import { AdminJwtStrategy, DoctorJwtStrategy } from './jwt.strategy';
   })
   ],
   controllers: [],
-  providers: [AdminJwtStrategy,DoctorJwtStrategy]
+  providers: [AdminJwtStrategy,DoctorJwtStrategy,AdminIsAdminJwtStrategy]
 })
 export class AuthModule {}

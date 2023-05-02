@@ -9,7 +9,7 @@ import { Repository } from "typeorm";
 
 
 @Injectable()
-export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
+export class AdminIsAdminJwtStrategy extends PassportStrategy(Strategy, 'admin-is-admin-jwt') {
   constructor(
     @InjectRepository(Admin) 
     private adminRepository : Repository<Admin>
@@ -30,6 +30,33 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
     return { admin };
   }
 }
+
+
+@Injectable()
+export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
+  constructor(
+    @InjectRepository(Admin) 
+    private adminRepository : Repository<Admin>
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.JWT_SECRET,
+    });
+  }
+
+  async validate(payload: { adminId: number }) {
+    const admin = await this.adminRepository.findOne({where : {adminId : payload.adminId}});
+
+    if (!admin) {
+      throw new UnauthorizedException('Access denied');
+    }
+
+    return { admin };
+  }
+}
+
+
+
 
 @Injectable()
 export class DoctorJwtStrategy extends PassportStrategy(Strategy, 'doctor-jwt') {

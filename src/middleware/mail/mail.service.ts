@@ -20,7 +20,6 @@ export class MailService {
   }
 
   async sendMail(to: string, subject: string, message: string): Promise<void> {
-    console.log(to)
     const info = await this.transporter.sendMail({
       from:  process.env.MAIL_USERNAME,
       to,
@@ -28,6 +27,5 @@ export class MailService {
       text: message,
     });
     
-    console.log(`Message sent: ${info.messageId}`);
   }
 }
