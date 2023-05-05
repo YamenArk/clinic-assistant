@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as express from 'express';
 import { join } from 'path';
+import * as cors from 'cors';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -25,8 +26,16 @@ connection.end();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'OPTIONS, GET, POST, PUT, PATCH, DELETE'
+    );
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+  });
   app.use(express.static(join(__dirname, '..', 'public')));
-
   const mysql = require("mysql2");
   const connection = mysql.createConnection({
     host: "localhost",
