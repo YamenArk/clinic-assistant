@@ -6,14 +6,14 @@ export class UpdateClinicDto {
     @IsOptional()
     clinicName:string;
 
-    @IsString()
     @IsNotEmpty()
+    @IsString()
     @IsOptional()
-    location:string;
+    Latitude:string;
 
-    @IsString()
     @IsNotEmpty()
+    @IsString()
     @IsOptional()
-    locationId:string;
+    Longitude:string;
   };
   

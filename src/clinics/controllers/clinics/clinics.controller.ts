@@ -15,11 +15,21 @@ export class ClinicsController {
         const clinics =  await this.clinicSrevice.findClinics()
         return {clinics : clinics}; 
     }
-    
-    @Post() 
+
+    @Get('/location/:clinicId')
+    async getLocation(
+      @Param('clinicId') clinicId: number,
+    ){
+        return  this.clinicSrevice.getLocation(clinicId)
+    }
+
+    @Post(':areaId') 
     @UseGuards(JWTAuthGuardAdmin)
-    async createClinic(@Body(new ValidationPipe({ whitelist: true })) createSpecialtyDto: ClinicDto){
-        await this.clinicSrevice.createClinic(createSpecialtyDto);
+    async createClinic(
+      @Param('areaId') areaId: number,
+      @Body(new ValidationPipe({ whitelist: true })) createSpecialtyDto: ClinicDto)
+      {
+        await this.clinicSrevice.createClinic(createSpecialtyDto,areaId);
         return {message : 'clinic created successfully'}
     }
 
@@ -32,6 +42,7 @@ export class ClinicsController {
         await  this.clinicSrevice.deleteClinic(clinicId);
         return {message : 'clinic deleted successfully'}
     }
+
     @Put(':clinicId')
     @UseGuards(JWTAuthGuardAdmin)
     async updateClinic(
@@ -40,6 +51,17 @@ export class ClinicsController {
     ){
       await this.clinicSrevice.updateClinic(clinicId, newData);
       return {message : 'clinic updated successfully'}
+    }
+
+    //update area
+    @Put(':clinicId/:areaId')
+    @UseGuards(JWTAuthGuardAdmin)
+    async updateClinicArea(
+      @Param('clinicId') clinicId: number,
+      @Param('areaId') areaId: number
+    ){
+      await this.clinicSrevice.updateClinicArea(clinicId, areaId);
+      return {message : 'clinic area updated successfully'}
     }
 
       //doctor clinic

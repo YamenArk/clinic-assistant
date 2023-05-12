@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable, Req, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ExtractJwt } from "passport-jwt";
@@ -6,7 +6,7 @@ import { Strategy } from "passport-jwt";
 import { Admin } from "src/typeorm/entities/admin";
 import { Doctor } from "src/typeorm/entities/doctors";
 import { Repository } from "typeorm";
-
+import { ExecutionContext } from '@nestjs/common';
 
 @Injectable()
 export class AdminIsAdminJwtStrategy extends PassportStrategy(Strategy, 'admin-is-admin-jwt') {
@@ -46,7 +46,7 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
 
   async validate(payload: { adminId: number }) {
     const admin = await this.adminRepository.findOne({where : {adminId : payload.adminId}});
-
+    console.log("=123123")
     if (!admin) {
       throw new UnauthorizedException('Access denied');
     }
@@ -60,9 +60,10 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
 
 @Injectable()
 export class DoctorJwtStrategy extends PassportStrategy(Strategy, 'doctor-jwt') {
-  constructor( 
-    @InjectRepository(Doctor) 
-  private doctorRepository : Repository<Doctor>) {
+  constructor(
+    @InjectRepository(Doctor)
+    private doctorRepository: Repository<Doctor>,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: process.env.JWT_SECRET,
@@ -71,15 +72,12 @@ export class DoctorJwtStrategy extends PassportStrategy(Strategy, 'doctor-jwt') 
 
   async validate(payload: { doctorId: number }) {
     const doctor = await this.doctorRepository.findOne({where : {doctorId : payload.doctorId}});
-
     if (!doctor) {
       throw new UnauthorizedException('Access denied');
     }
-
-    return { doctor };
+    return { user: { doctor } };
   }
 }
-
 
 
 

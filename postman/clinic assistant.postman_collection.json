@@ -59,7 +59,37 @@
 				},
 				{
 					"name": "doctors",
-					"item": []
+					"item": [
+						{
+							"name": "filterDocrots",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"subSpecialtyId\":\"1\",\r\n    \"gender\":\"1\",\r\n    \"insuranceId\" : \"1\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/doctors/filterDocrots",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"doctors",
+										"filterDocrots"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},
@@ -70,7 +100,220 @@
 					"name": "doctor",
 					"item": [
 						{
-							"name": "login",
+							"name": "work time",
+							"item": [
+								{
+									"name": "add work time",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODM4OTk2NjUsImV4cCI6MTY4Mzk4NjA2NX0.AVSffRZW5u6xGE91b2vwoAwfp6fAHKDKJqXwCwysfio",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"startingTime\":\"03:00\",\r\n    \"finishingTime\":\"05:00\",\r\n    \"days\":[\"الخميس\",\"الجمعة\",\"السبت\",\"الأحد\",\"الإثنين\",\"الثلاثاء\",\"الأربعاء\"],\r\n    \"startDate\":\"2023-05-15\",\r\n    \"endDate\": \"2023-05-22\"\r\n    \r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://localhost:3000/doctors/set-work-time/:clinicId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"set-work-time",
+												":clinicId"
+											],
+											"variable": [
+												{
+													"key": "clinicId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get work time",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODM4OTkzODcsImV4cCI6MTY4Mzk4NTc4N30.LWwn7Z7wxnPCrGKYhfL0BT6ShnMu0NGVPYM62LnVQZI",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/work-time/:clinicId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"work-time",
+												":clinicId"
+											],
+											"variable": [
+												{
+													"key": "clinicId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get appoitment",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODM4OTkzODcsImV4cCI6MTY4Mzk4NTc4N30.LWwn7Z7wxnPCrGKYhfL0BT6ShnMu0NGVPYM62LnVQZI",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/appoitment/:workTimeId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"appoitment",
+												":workTimeId"
+											],
+											"variable": [
+												{
+													"key": "workTimeId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "doctor clinic",
+							"item": [
+								{
+									"name": "update Doctoe Clinic Details",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODM4OTk2NjUsImV4cCI6MTY4Mzk4NjA2NX0.AVSffRZW5u6xGE91b2vwoAwfp6fAHKDKJqXwCwysfio",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"appointmentDuring\":30,\r\n    \"daysToSeeLastAppointment\":60,\r\n    \"checkupPrice\":10000\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://localhost:3000/doctors/updateDoctoeClinicDetails/:clinicId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"updateDoctoeClinicDetails",
+												":clinicId"
+											],
+											"variable": [
+												{
+													"key": "clinicId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get Doctoe Clinic Details",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODM4OTk2NjUsImV4cCI6MTY4Mzk4NjA2NX0.AVSffRZW5u6xGE91b2vwoAwfp6fAHKDKJqXwCwysfio",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/getDoctoeClinicDetails/:clinicId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"getDoctoeClinicDetails",
+												":clinicId"
+											],
+											"variable": [
+												{
+													"key": "clinicId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "auth",
 							"item": [
 								{
 									"name": "send-email",
@@ -129,6 +372,35 @@
 										}
 									},
 									"response": []
+								},
+								{
+									"name": "login",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"email\":\"yamen@gmail.com\",\r\n    \"password\":\"123\"\r\n    }",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://localhost:3000/doctors/login",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"login"
+											]
+										}
+									},
+									"response": []
 								}
 							]
 						},
@@ -174,37 +446,18 @@
 							"response": []
 						},
 						{
-							"name": "filterDocrots",
-							"request": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"subSpecialtyId\":\"1\",\r\n    \"gender\":\"1\",\r\n    \"insuranceId\" : \"1\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "http://localhost:3000/doctors/filterDocrots",
-									"protocol": "http",
-									"host": [
-										"localhost"
-									],
-									"port": "3000",
-									"path": [
-										"doctors",
-										"filterDocrots"
-									]
-								}
-							},
-							"response": []
-						},
-						{
 							"name": "getDoctorsWithAllTheirInformation",
 							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzgwMzc1MCwiZXhwIjoxNjgzODkwMTUwfQ.R8AD8beYy7utCTMAtf82idMs5LUbEcqHTZm3Ynf76qc",
+											"type": "string"
+										}
+									]
+								},
 								"method": "GET",
 								"header": [],
 								"url": {
@@ -238,7 +491,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzAzNDI1MywiZXhwIjoxNjgzMTIwNjUzfQ.NG0oG2ENc5w5fYFaXnb6BVdUZA6gfCzja763Rck8D1c",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzMwNTI4MiwiZXhwIjoxNjgzMzkxNjgyfQ.UUVgxFZzdxyzVI7VM4_FuXHFo7HwLmcr2sOpqh5iI98",
 													"type": "string"
 												}
 											]
@@ -310,7 +563,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzAzNDI1MywiZXhwIjoxNjgzMTIwNjUzfQ.NG0oG2ENc5w5fYFaXnb6BVdUZA6gfCzja763Rck8D1c",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4Mzc5Mjc1OCwiZXhwIjoxNjgzODc5MTU4fQ.h2rQIDvOp8vmBu2xup8q-N0Sq2dsCkkYNlE5nFPyCxc",
 													"type": "string"
 												}
 											]
@@ -319,7 +572,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"email\" : \"12312323323@gmail.com\",\r\n    \"phonenumberForAdmin\" : \"093269163212\",\r\n    \"gender\" : \"male\",\r\n    \"firstname\" :\"yamen\",\r\n    \"lastname\" : \"arksose\",\r\n    \"clinics\": [ \r\n    {\"clinicId\":\"1\"}, {\"clinicId\":\"2\"} \r\n    ],\r\n    \"subSpecialties\": [ \r\n        {\"subSpecialtyId\":\"1\"}, {\"subSpecialtyId\":\"2\"} \r\n    ],\r\n    \"insurances\": [ \r\n        {\"insuranceId\":\"1\"}, {\"insuranceId\":\"2\"} \r\n    ]\r\n}",
+											"raw": "{\r\n    \"email\" : \"yamen@gmail.com\",\r\n    \"phonenumberForAdmin\" : \"093269163212\",\r\n    \"gender\" : \"male\",\r\n    \"firstname\" :\"yamen\",\r\n    \"lastname\" : \"arksose\",\r\n    \"clinics\": [ \r\n    {\"clinicId\":\"1\"}, {\"clinicId\":\"2\"} \r\n    ],\r\n    \"subSpecialties\": [ \r\n        {\"subSpecialtyId\":\"1\"}, {\"subSpecialtyId\":\"2\"} \r\n    ],\r\n    \"insurances\": [ \r\n        {\"insuranceId\":\"1\"}, {\"insuranceId\":\"2\"} \r\n    ]\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -687,7 +940,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzAzNDI1MywiZXhwIjoxNjgzMTIwNjUzfQ.NG0oG2ENc5w5fYFaXnb6BVdUZA6gfCzja763Rck8D1c",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4Mzc5Mjc1OCwiZXhwIjoxNjgzODc5MTU4fQ.h2rQIDvOp8vmBu2xup8q-N0Sq2dsCkkYNlE5nFPyCxc",
 													"type": "string"
 												}
 											]
@@ -877,7 +1130,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzAzNDI1MywiZXhwIjoxNjgzMTIwNjUzfQ.NG0oG2ENc5w5fYFaXnb6BVdUZA6gfCzja763Rck8D1c",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4Mzc5Mjc1OCwiZXhwIjoxNjgzODc5MTU4fQ.h2rQIDvOp8vmBu2xup8q-N0Sq2dsCkkYNlE5nFPyCxc",
 													"type": "string"
 												}
 											]
@@ -886,7 +1139,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"subSpecialtyName\":\"1333232\"\r\n}",
+											"raw": "{\r\n    \"subSpecialtyName\":\"311\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1008,7 +1261,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzAzNDI1MywiZXhwIjoxNjgzMTIwNjUzfQ.NG0oG2ENc5w5fYFaXnb6BVdUZA6gfCzja763Rck8D1c",
+													"value": "",
 													"type": "string"
 												}
 											]
@@ -1017,7 +1270,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"clinicName\":\"yamen clinic12\",\r\n    \"location\":\"damascus\",\r\n    \"locationId\":\"123\"\r\n}",
+											"raw": "{\r\n    \"clinicName\":\"yamen 3clinic12\",\r\n    \"Latitude\":\"damascus\",\r\n    \"Longitude\":\"123\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1025,14 +1278,21 @@
 											}
 										},
 										"url": {
-											"raw": "http://localhost:3000/clinics",
+											"raw": "http://localhost:3000/clinics/:areaId",
 											"protocol": "http",
 											"host": [
 												"localhost"
 											],
 											"port": "3000",
 											"path": [
-												"clinics"
+												"clinics",
+												":areaId"
+											],
+											"variable": [
+												{
+													"key": "areaId",
+													"value": "1"
+												}
 											]
 										}
 									},
@@ -1046,7 +1306,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzAzNDI1MywiZXhwIjoxNjgzMTIwNjUzfQ.NG0oG2ENc5w5fYFaXnb6BVdUZA6gfCzja763Rck8D1c",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzgxNTIxNCwiZXhwIjoxNjgzOTAxNjE0fQ.uqiPmBNzbLPJDseQa44AGqsVPqzvhbyL-_4lzbt2hYg",
 													"type": "string"
 												}
 											]
@@ -1055,7 +1315,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"clinicName\":\"32133221\",\r\n    \"location\":\"damasc3232us\",\r\n    \"locationId\":\"121233\"\r\n}",
+											"raw": "{\r\n    \"clinicName\":\"32133221\",\r\n    \"Latitude\":\"damasc3232us\",\r\n    \"Longitude\":\"121233\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1127,7 +1387,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzAzNDI1MywiZXhwIjoxNjgzMTIwNjUzfQ.NG0oG2ENc5w5fYFaXnb6BVdUZA6gfCzja763Rck8D1c",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzgxNTIxNCwiZXhwIjoxNjgzOTAxNjE0fQ.uqiPmBNzbLPJDseQa44AGqsVPqzvhbyL-_4lzbt2hYg",
 													"type": "string"
 												}
 											]
@@ -1184,6 +1444,74 @@
 										}
 									},
 									"response": []
+								},
+								{
+									"name": "get Latitude Longitude",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/clinics/location/:clinicId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"clinics",
+												"location",
+												":clinicId"
+											],
+											"variable": [
+												{
+													"key": "clinicId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "update area",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzgxNjMzNSwiZXhwIjoxNjgzOTAyNzM1fQ.sFsK47zhQ_D_gP_7UARWPXkMPCA6H99Uuy6QBqEBisc",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/clinics/:clinicId/:areaId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"clinics",
+												":clinicId",
+												":areaId"
+											],
+											"variable": [
+												{
+													"key": "clinicId",
+													"value": "1"
+												},
+												{
+													"key": "areaId",
+													"value": "2"
+												}
+											]
+										}
+									},
+									"response": []
 								}
 							]
 						},
@@ -1198,7 +1526,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzAzNDI1MywiZXhwIjoxNjgzMTIwNjUzfQ.NG0oG2ENc5w5fYFaXnb6BVdUZA6gfCzja763Rck8D1c",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4Mzc5Mjc1OCwiZXhwIjoxNjgzODc5MTU4fQ.h2rQIDvOp8vmBu2xup8q-N0Sq2dsCkkYNlE5nFPyCxc",
 													"type": "string"
 												}
 											]
@@ -1207,7 +1535,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"companyName\":\"Nabel32C3o322mpa1ny\"\r\n}",
+											"raw": "{\r\n    \"companyName\":\"Nabel2C13ompany\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1425,6 +1753,57 @@
 											"path": [
 												"admins",
 												"reset-password"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "governorate Areas",
+							"item": [
+								{
+									"name": "get governorate",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/governorates",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"governorates"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "ger areas",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/governorates/:governorateId/areas",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"governorates",
+												":governorateId",
+												"areas"
+											],
+											"variable": [
+												{
+													"key": "governorateId",
+													"value": "3"
+												}
 											]
 										}
 									},

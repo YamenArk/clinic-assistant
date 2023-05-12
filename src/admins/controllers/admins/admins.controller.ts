@@ -24,13 +24,14 @@ export class AdminsController {
     
     @Post('login')
     async login(@Body(new ValidationPipe({ whitelist: true })) authLoginDto: AuthLoginDto) {
-      return this.adminSrevice.login(authLoginDto);
+      const loginDetails = await this.adminSrevice.login(authLoginDto);
+      return {loginDetails : loginDetails}
     }
 
     @Post('send-email')
     async sendResetEmail(@Body('email') email: string) {
-        await this.adminSrevice.sendResetEmail(email);
-        return {message : 'message has been sent to your Email'}
+        const adminId = await this.adminSrevice.sendResetEmail(email);
+        return {message : 'message has been sent to your Email',adminId : adminId}
     }
   
     @Post('reset-password')

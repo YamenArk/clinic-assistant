@@ -1,11 +1,13 @@
 import {
     Column,
     Entity,
+    ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
   } from 'typeorm';
 import { DoctorClinic } from './doctor-clinic';
 import { IsNotEmpty, IsString } from 'class-validator';
+import { Area } from './Area';
 
 @Entity({ name: 'clinics' })
 export class Clinic {
@@ -20,12 +22,12 @@ export class Clinic {
     @Column()
     @IsString()
     @IsNotEmpty()
-    location: string;
+    Latitude: string;
 
     @Column()
     @IsString()
     @IsNotEmpty()
-    locationId: string;
+    Longitude: string;
 
     @Column()
     createdAt: Date;
@@ -35,6 +37,9 @@ export class Clinic {
 
     @Column({ default: 0 })
     numDoctors: number;
+
+    @ManyToOne(() => Area, (area) => area.clinic)
+    area: Area;
 
     @OneToMany(() => DoctorClinic, doctorClinic => doctorClinic.clinic)
     public doctorClinic: DoctorClinic[];

@@ -11,10 +11,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule,ConfigService } from '@nestjs/config';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Clinic } from 'src/typeorm/entities/clinic';
+import { WorkTime } from 'src/typeorm/entities/work-time';
+import { Appointment } from 'src/typeorm/entities/appointment';
+import { DoctorJwtStrategy } from 'src/middleware/auth/jwt.strategy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Doctor, Insurance, SubSpecialty,DoctorClinic,Clinic]),
+    TypeOrmModule.forFeature([Doctor, Insurance, SubSpecialty,DoctorClinic,Clinic,WorkTime,Appointment]),
     CacheModule.register(), // add CacheModule here
     PassportModule,
     JwtModule.registerAsync({
@@ -27,7 +30,7 @@ import { Clinic } from 'src/typeorm/entities/clinic';
       inject : [ConfigService]
     })
   ],
-  providers: [DoctorsService, MailService],
+  providers: [DoctorsService, MailService,DoctorJwtStrategy],
   controllers: [DoctorsController],
 })
 export class DoctorsModule {}

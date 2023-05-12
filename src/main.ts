@@ -5,62 +5,56 @@ import { join } from 'path';
 import { CorsOptions } from 'cors';
 import * as cors from 'cors';
 import * as dotenv from 'dotenv';
+import { QueryService } from './middleware/sql/query/query.service';
 dotenv.config();
 
-
-const mysql = require("mysql2");
-
-const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-});
-
-connection.query(
-  `CREATE DATABASE IF NOT EXISTS clinicassistant`,
-  function (err, results) {
-  }
-);
-
-connection.end();
-
+const mysql = require("mysql2/promise"); // use the promise-based version of mysql2
 
 async function bootstrap() {
+  // Create the database connection
+  const connection = await mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password: "",
+    // database: "clinicassistant",
+  });
+
+  // Create the database if it doesn't exist
+  try {
+    await connection.execute(
+      `CREATE DATABASE IF NOT EXISTS clinicassistant CHARACTER SET utf8 COLLATE utf8_general_ci`
+    );
+
+  } catch (err) {
+    console.log('Error creating database:', err);
+  }
+
+  // Create the NestJS app
   const app = await NestFactory.create(AppModule);
+
+  // Configure the CORS options
   const corsOptions: CorsOptions = {
     origin: process.env.CORS_ORIGIN || '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   };
-  
   app.use(cors(corsOptions));
 
-
+  // Serve static files from the "public" directory
   app.use(express.static(join(__dirname, '..', 'public')));
-  const mysql = require("mysql2");
-  const connection = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "clinicassistant",
-  });
-  
-  connection.query(
-    `INSERT INTO admins (isAdmin, email, password, createdAt)
-    SELECT * FROM (SELECT TRUE, 'admin@gmail.com', '$2a$10$hHmY6rPXtzFRoBsWoseoae8XpcJF4rn/j.Sdw4P8/aJCKi./j2iGW', NOW()) AS tmp
-    WHERE NOT EXISTS (
-        SELECT * FROM admins WHERE isAdmin = TRUE AND email = 'admin@gmail.com'
-    ) LIMIT 1;`,
-    function (err, results) {
-      if (err) {
-        console.log('Error creating admin:', err);
-      } else {
-      }
-      connection.end();
-    }
-  );
 
-  await app.listen(3000);
+  // Start the server
+  const server = await app.listen(3000, async () => {
+    const queryService = app.get(QueryService); // get an instance of the QueryService
+    await queryService.addingAdminGovernorateArea(); // call the addingAdminGovernorateArea method
+    console.log('Server started on port 3000');
+    
+  });
+
+  // Close the database connection when the server is shut down
+  server.on('close', () => {
+    connection.end();
+  });
 }
 
 bootstrap();

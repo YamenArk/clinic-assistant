@@ -1,10 +1,18 @@
-
+enum Day {
+  الأحد = 'الأحد',
+  الإثنين = 'الإثنين',
+  الثلاثاء = 'الثلاثاء',
+  الأربعاء = 'الأربعاء',
+  الخميس = 'الخميس',
+  الجمعة = 'الجمعة',
+  السبت = 'السبت',
+}
 export interface CreateAdminParams {
     email: string;
     phonenumber: string;
   };
   
-  export interface CreateDoctorParams {
+  export interface  CreateDoctorParams {
     email: string;
     phonenumberForAdmin: string;
     gender: 'male' | 'female';
@@ -14,6 +22,23 @@ export interface CreateAdminParams {
     subSpecialties: { subSpecialtyId: number }[];
     insurances?: { insuranceId: number }[];
   }
+
+
+  export interface CreateWorkTimeParams {
+    startingTime: string;
+    finishingTime: string;
+    days: Day[];
+    startDate: string;
+    endDate: string;
+  }
+
+  export interface UpdateDoctoeClinicParams {
+    appointmentDuring ?: number;
+    daysToSeeLastAppointment ?: number;
+    checkupPrice ?: number;
+  }
+
+
 
 export type UpdateDoctorParams = {
   description: string;
@@ -47,14 +72,14 @@ export type CreateSubSpecialtyParams = {
 };
 export interface ClinicParams  {
   clinicName:string;
-  location:string;
-  locationId:string;
+  Latitude:string;
+  Longitude:string;
 };
 
 export interface UpdateClinicParams  {
   clinicName ?:string;
-  location ?:string;
-  locationId ?:string;
+  Latitude ?:string;
+  Longitude ?:string;
 };
 
 export type InsuranceParams = {

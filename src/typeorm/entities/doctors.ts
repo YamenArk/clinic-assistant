@@ -14,9 +14,6 @@ import { Commission } from './commission';
 
 @Entity({ name: 'doctors' })
 export class Doctor {
-    static find(arg0: { relations: string[]; }) {
-      throw new Error('Method not implemented.');
-    }
     @PrimaryGeneratedColumn({ type: 'bigint' })
     doctorId: number;
 
@@ -70,12 +67,6 @@ export class Doctor {
     @IsNotEmpty()
     lastname: string;
 
-   
-    @Column({default : 20})
-    @IsNumber()
-    @IsNotEmpty()
-    appointmentDuring: number;
-
     @Column({default : "3"})
     evaluate: number;
 
@@ -84,10 +75,6 @@ export class Doctor {
     @IsNotEmpty()
     numberOfPeopleWhoVoted: number;
 
-    @Column({default : 0,nullable: true})
-    @IsOptional()
-    @IsNumber()
-    checkupPrice: number;
 
     //accepte null
     @Column({ nullable: true })

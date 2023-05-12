@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Admin } from './typeorm/entities/admin';
 import { AdminsModule } from './admins/admins.module';
@@ -23,6 +21,10 @@ import { Appointment } from './typeorm/entities/appointment';
 import { BlackList } from './typeorm/entities/black-list';
 import { MailService } from './middleware/mail/mail.service';
 import { AuthModule } from './middleware/auth/auth.module';
+import { Governorate } from './typeorm/entities/Governorate';
+import { Area } from './typeorm/entities/Area';
+import { QueryService } from './middleware/sql/query/query.service';
+import { GovernoratesModule } from './governorates/governorates.module';
 // clinicassistant
 @Module({
   imports: [
@@ -33,7 +35,7 @@ import { AuthModule } from './middleware/auth/auth.module';
       username: 'root',
       password: '',
       database: 'clinicassistant',
-      entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Commission,Secreatry,WorkTime,Appointment,BlackList],
+      entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Commission,Secreatry,WorkTime,Appointment,BlackList,Governorate,Area],
       synchronize:  false ,
       migrationsRun: false,
       dropSchema: false
@@ -45,8 +47,8 @@ import { AuthModule } from './middleware/auth/auth.module';
     ClinicsModule,
     InsurancesModule,
     AuthModule,
-    
+    GovernoratesModule
       ],
-  providers: [MailService]
+  providers: [MailService, QueryService]
 })
 export class AppModule {}

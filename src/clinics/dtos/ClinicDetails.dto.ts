@@ -1,16 +1,16 @@
 import { IsNotEmpty, IsString } from "class-validator";
 
 export class ClinicDto {
-    @IsString()
     @IsNotEmpty()
+    @IsString()
     clinicName:string;
 
-    @IsString()
     @IsNotEmpty()
-    location:string;
+    @IsString()
+    Latitude:string;
 
-    @IsString()
     @IsNotEmpty()
-    locationId:string;
+    @IsString()
+    Longitude:string;
   };
   

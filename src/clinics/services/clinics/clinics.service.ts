@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { validate } from 'class-validator';
 import { doc } from 'prettier';
+import { Area } from 'src/typeorm/entities/Area';
 import { Clinic } from 'src/typeorm/entities/clinic';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Doctor } from 'src/typeorm/entities/doctors';
@@ -11,6 +12,8 @@ import { Repository } from 'typeorm';
 @Injectable()
 export class ClinicsService {
     constructor (
+       @InjectRepository(Area) private areaRepository : 
+        Repository<Area>,
         @InjectRepository(Clinic) private clinicRepository : 
         Repository<Clinic>,
         @InjectRepository(Doctor) private doctorRepository:
@@ -18,13 +21,28 @@ export class ClinicsService {
          @InjectRepository(DoctorClinic) private doctorClinicRepository: 
          Repository<DoctorClinic>){}
     
+         async findClinics() {
+          const select: Array<keyof Clinic> = ['clinicId', 'clinicName', 'createdAt', 'numDoctors'];
+          const clinics = await this.clinicRepository.find({ select, relations: ['area'] });        
+          return { clinics: clinics };
+        }
 
-      findClinics():Promise<Clinic[]>{
-        const select: Array<keyof Clinic> =['clinicId', 'clinicName', 'location', 'locationId', 'createdAt', 'numDoctors'];
-        
-          return this.clinicRepository.find({select});
+      async getLocation(clinicId : number){
+        const select: Array<keyof Clinic> = ['clinicId', 'Longitude', 'Latitude'];
+        const clinic = await this.clinicRepository.findOne({
+          where: { clinicId: clinicId },
+          select: select,
+        });
+        if (!clinic ) {
+           throw new HttpException(`clinic with id ${clinicId} not found`, HttpStatus.NOT_FOUND);
+        }
+        return {clinic : clinic};
       }
-      async createClinic(clinicDetails: ClinicParams):Promise<void>{
+      async createClinic(clinicDetails: ClinicParams,areaId : number):Promise<void>{
+          const area  = await this.areaRepository.findOne({where : {areaId : areaId}});
+            if (!area ) {
+                throw new HttpException(`area with id ${areaId} not found`, HttpStatus.NOT_FOUND);
+                      }
           const newClinic = this.clinicRepository.create({
               ...clinicDetails,
               createdAt : new Date()
@@ -34,6 +52,7 @@ export class ClinicsService {
            if (errors.length > 0) {
              throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
            }
+           newClinic.area = area;
           await this.clinicRepository.save(newClinic);
       }
       async updateClinic(clinicId:number,clinicDetails: UpdateClinicParams): Promise<void>{
@@ -52,6 +71,20 @@ export class ClinicsService {
           }
 
           await this.clinicRepository.update({clinicId},{...clinicDetails});
+      }
+
+      async updateClinicArea(clinicId : number , areaId : number)
+      {
+          const clinic  = await this.clinicRepository.findOne({where : {clinicId : clinicId}});
+          if (!clinic ) {
+             throw new HttpException(`clinic with id ${clinicId} not found`, HttpStatus.NOT_FOUND);
+          }
+          const area  = await this.areaRepository.findOne({where : {areaId : areaId}});
+          if (!area ) {
+              throw new HttpException(`area with id ${areaId} not found`, HttpStatus.NOT_FOUND);
+          }
+          clinic.area = area;
+          await this.clinicRepository.save(clinic);
       }
       async deleteClinic(clinicId: number): Promise<void> {
           const clinic  = await this.clinicRepository.findOne({where : {clinicId : clinicId}});

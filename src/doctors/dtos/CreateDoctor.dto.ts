@@ -1,31 +1,32 @@
 import { ArrayMinSize, IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateDoctorDto {
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   @IsEmail()
   email: string;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   phonenumberForAdmin: string;
 
   @IsNotEmpty()
   @IsEnum(['male', 'female'])
   gender: 'male' | 'female'; // update type here
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   firstname: string;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   lastname: string;
 
-
+  @IsNotEmpty()
   @ArrayMinSize(1) 
   clinics: { clinicId: number }[];
 
+  @IsNotEmpty()
   @ArrayMinSize(1) 
   subSpecialties: { subSpecialtyId: number }[];
 

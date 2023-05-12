@@ -1,14 +1,14 @@
 import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
 export class UpdateDoctorForAdminDto {
-    @IsString()
     @IsNotEmpty()
+    @IsString()
     @IsEmail()
     @IsOptional()
     email?: string;
 
-    @IsString()
     @IsNotEmpty()
+    @IsString()
     @IsOptional()
     phonenumberForAdmin?: string;
 

@@ -70,6 +70,7 @@ export class AdminsService {
       
         return {
           access_token: this.jwtService.sign(payload),
+          isAdmin : admin.isAdmin
         };
       }
 
@@ -89,6 +90,7 @@ export class AdminsService {
         // Cache the generated code for 5 minutes
         const cacheKey = `resetCodeForAdmin-${admin.adminId}`;
         await this.cacheManager.set(cacheKey, code, { ttl: 300 });
+        return admin.adminId;
       }
     
       async resetPassword(adminId: number, code: number, newPassword: string): Promise<void> {
