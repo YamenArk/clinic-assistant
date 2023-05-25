@@ -8,10 +8,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule,ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { MailService } from 'src/middleware/mail/mail.service';
+import { Secretary } from 'src/typeorm/entities/secretary';
+import { Doctor } from 'src/typeorm/entities/doctors';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin]),
+    TypeOrmModule.forFeature([Admin,Secretary,Doctor]),
     CacheModule.register(), // add CacheModule here
     PassportModule,
     JwtModule.registerAsync({

@@ -63,6 +63,9 @@ export interface UpdateDoctorForAdminParams {
   specialtyId : number;
  }
 
+ export type emailParams= {
+  email: string;
+ }
  export interface SpecialtyParams  {
   specialtyName:string;
 };
@@ -91,4 +94,25 @@ export type filterDocrotsParams = {
   insuranceId:number;
   subSpecialtyId:number;
   gender : string
+};
+
+export type secondFilterDocrotsParams = {
+  subSpecialtyId?:number;  
+    filterName ?: string;
+    orderByEvaluate?:boolean;
+};
+
+export type patientSignUp = {
+  phoneNumber: string;
+  password: string;
+  firstname: string;
+  lastname: string;
+  birthDate: string;
+  gender: 'ذكر' | 'أنثى';
+};
+
+
+export type verifyParams = {
+  patientId: string;
+  code: number;
 };

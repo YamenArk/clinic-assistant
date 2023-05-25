@@ -24,7 +24,7 @@ export class ClinicsService {
          async findClinics() {
           const select: Array<keyof Clinic> = ['clinicId', 'clinicName', 'createdAt', 'numDoctors'];
           const clinics = await this.clinicRepository.find({ select, relations: ['area'] });        
-          return { clinics: clinics };
+          return clinics;
         }
 
       async getLocation(clinicId : number){

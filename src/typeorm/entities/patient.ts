@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsNumberString, IsString, Matches } from 'class-validator';
 import {
     Column,
     Entity,
@@ -12,34 +12,44 @@ export class Patient {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     patientId: number;
 
-    //accepte null
-    @Column({ nullable: true })
-    phoneNumber: string | null;
+    @Column()
+    @IsEnum(['ذكر', 'أنثى'])
+    gender: string;
 
     @Column()
-    @IsString()
     @IsNotEmpty()
+    @IsNumberString()
+    @Matches(/^09\d{8}$/)
+    phoneNumber: string;
+
+    @Column()
+    @IsNotEmpty()
+    @IsString()
     password: string;
 
     @Column()
-    @IsString()
     @IsNotEmpty()
+    @IsString()
     firstname: string;
 
     @Column()
-    @IsString()
     @IsNotEmpty()
+    @IsString()
     lastname: string;
 
-    //accepte null
-    @Column({ nullable: true })
-    @IsNumber()
-    age: number;
+    // //accepte null
+    // @Column({ nullable: true })
+    // @IsNumber()
+    // age: number;
 
     //accepte null
     @Column({ nullable: true })
     @IsString()
     profilePicture: string;
+
+    @Column({ type: 'date', nullable: false })
+    @IsNotEmpty()
+    birthDate: string;
 
     @Column({default : 0})
     numberOfMissAppointment: number;

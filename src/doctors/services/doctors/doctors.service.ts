@@ -6,25 +6,28 @@ import { CACHE_MANAGER, CacheInterceptor, CacheModule } from '@nestjs/common'; /
 import { Doctor } from 'src/typeorm/entities/doctors';
 import { Insurance } from 'src/typeorm/entities/insurance';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
-import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, filterDocrotsParams } from 'src/utils/types';
-import { MoreThanOrEqual, Repository } from 'typeorm';
+import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, filterDocrotsParams, secondFilterDocrotsParams } from 'src/utils/types';
+import { Like, MoreThanOrEqual, Repository } from 'typeorm';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { Inject } from '@nestjs/common';
-import { FindManyOptions } from 'typeorm';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Clinic } from 'src/typeorm/entities/clinic';
-import { CreateWorkTimeDto } from 'src/doctors/dtos/CreateWorkTime.dto';
 import { WorkTime } from 'src/typeorm/entities/work-time';
 import { Appointment } from 'src/typeorm/entities/appointment';
 import { AuthLoginDto } from 'src/doctors/dtos/AuthLogin.dto';
 import * as bcrypt from 'bcryptjs'
 import { JwtService } from '@nestjs/jwt';
-import { ColdObservable } from 'rxjs/internal/testing/ColdObservable';
+import { Admin } from 'src/typeorm/entities/admin';
+import { Secretary } from 'src/typeorm/entities/secretary';
 @Injectable()
 @UseInterceptors(CacheInterceptor)
 export class DoctorsService {
     constructor (
-      private jwtService : JwtService,
+        private jwtService : JwtService,
+        @InjectRepository(Admin) 
+        private adminRepository : Repository<Admin>,
+        @InjectRepository(Secretary) 
+        private secretaryRepository : Repository<Secretary>,
         @InjectRepository(Clinic) 
         private clinicRepository : Repository<Clinic>,   
         @InjectRepository(Appointment) 
@@ -51,10 +54,23 @@ export class DoctorsService {
       async createDoctor(doctorDetails: CreateDoctorParams): Promise<Doctor> {
         const { email, phonenumberForAdmin, gender, firstname, lastname, clinics, subSpecialties, insurances } = doctorDetails;
     
-        const duplicates = await this.doctorRepository.findOne({ where: { email: doctorDetails.email } });
-            if (duplicates) {
-              throw new BadRequestException(`doctor with name "${doctorDetails.email}" already exists"`);
+        //doctor duplicates
+        const doctorDuplicates = await this.doctorRepository.findOne({ where: { email: email } });
+            if (doctorDuplicates) {
+              throw new BadRequestException(`"${email}" already exists"`);
             }
+
+        //admin duplicates
+        const adminDuplicates = await this.adminRepository.findOne({ where: { email: email } });
+        if (adminDuplicates) {
+          throw new BadRequestException(`"${email}" already exists"`);
+        }
+
+        //secretary duplicates
+        const secretaryDuplicates = await this.secretaryRepository.findOne({ where: { email:email } });
+        if (secretaryDuplicates) {
+          throw new BadRequestException(`"${email}" already exists"`);
+        }
         // create a new Doctor entity
         const doctor = new Doctor();
         doctor.email = email;
@@ -301,7 +317,35 @@ export class DoctorsService {
         await this.doctorRepository.save(doctor);
       }
 
-      //doctor
+      ////////////////////////////////////////////doctor
+
+      async getClinicsForDoctor(doctorId : number){
+        console.log("=what")
+        const doctor = await this.doctorRepository.findOne({ where: { doctorId } });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+
+        const doctorClinics = await this.doctorClinicRepository.find({
+          where: { doctor: { doctorId: doctor.doctorId } },
+          relations: ['clinic'],
+        });
+        console.log(doctorClinics)
+        return {clinic : doctorClinics}
+      }
+
+      async getinurancesForDoctor(doctorId : number){
+        const doctor = await this.doctorRepository.findOne({ where: { doctorId } });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+
+        const doctorClinics = await this.doctorClinicRepository.find({
+          where: { doctor: { doctorId: doctor.doctorId } },
+          relations: ['clinic'],
+        });
+        return {clinic : doctorClinics}
+      }
 
 
       async createWorkTime(workTimeDetails : CreateWorkTimeParams,clinicId : number,doctorId : number)
@@ -417,6 +461,7 @@ export class DoctorsService {
       }
 
       async getWorkTime(clinicId : number,doctorId : number){
+
         if (!doctorId) {
           throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
         }
@@ -428,10 +473,12 @@ export class DoctorsService {
         if (!clinic ) {
           throw new HttpException(`clinic with id ${clinicId} not found`, HttpStatus.NOT_FOUND);
         }
+
         //see the connection 
         const doctorClinic = await this.doctorClinicRepository.findOne({
           where: { doctor: { doctorId }, clinic: { clinicId } },
         });
+
         if (!doctorClinic ) {
           throw new NotFoundException(
             `No doctorClinic entity found for doctor ${doctor.doctorId} and clinic ${clinic.clinicId}`
@@ -449,6 +496,7 @@ export class DoctorsService {
             `you have no set any worktime in this clinic clinic ${clinic.clinicId}`
           );
         }
+        console.log("=12312321312")
         return {workTime : workTime};
       }
     
@@ -571,30 +619,67 @@ export class DoctorsService {
       }
 
 
-      //auth
       async login(authLoginDto: AuthLoginDto) {
         const { email, password } = authLoginDto;
+        const admin = await this.adminRepository.findOne({where: { email: email }});
+        if (admin) {
+          const isPasswordMatch = await bcrypt.compare(password, admin.password); // compare the hashed passwords
+          if (!isPasswordMatch) {
+            throw new UnauthorizedException('Invalid credentials');
+          }
+          const payload = {
+            adminId: admin.adminId,
+          };
+          if(admin.isAdmin)
+          {
+            return {
+              access_token: this.jwtService.sign(payload),
+             type : 0
+            };
+          }
+          else
+          {
+            return {
+              access_token: this.jwtService.sign(payload),
+             type : 1
+            };
+          }
+        }
+
+
         const doctor = await this.doctorRepository.findOne({ where: { email: email } });
-      
-        if (!doctor) {
-          throw new UnauthorizedException('Invalid credentials');
+        if (doctor) {
+          const isPasswordMatch = await bcrypt.compare(password, doctor.password); // compare the hashed passwords
+          if (!isPasswordMatch) {
+            throw new UnauthorizedException('Invalid credentials');
+          }
+          const payload = {
+            doctorId: doctor.doctorId,
+          };
+          return {
+            access_token: this.jwtService.sign(payload),
+            type : 2
+          };
         }
       
-        const isPasswordMatch = await bcrypt.compare(password, doctor.password); // compare the hashed passwords
-        if (!isPasswordMatch) {
-          throw new UnauthorizedException('Invalid credentials');
+        const secretary = await this.secretaryRepository.findOne({ where: { email: email } });
+        if (secretary) {
+          const isPasswordMatch = await bcrypt.compare(password, secretary.password); // compare the hashed passwords
+          if (!isPasswordMatch) {
+            throw new UnauthorizedException('Invalid credentials');
+          }
+          const payload = {
+            secretaryId: secretary.secretaryId,
+          };
+          return {
+            access_token: this.jwtService.sign(payload),
+            type : 3
+          };
         }
-      
-        const payload = {
-          doctorId: doctor.doctorId,
-        };
-      
-        return {
-          access_token: this.jwtService.sign(payload)
-        };
+      // If no matching user found, throw UnauthorizedException
+      throw new UnauthorizedException('Invalid credentials')
+        
       }
-
-
 
 
       async sendResetEmail(email: string): Promise<number> {
@@ -709,72 +794,30 @@ export class DoctorsService {
           {
               throw new HttpException(`No doctor met the conditions `, HttpStatus.NOT_FOUND);
           }
-          return doctors;
+          return {doctors : doctors}; 
       }
-    }    
-        
-    // async findDoctors() {
 
-    //   try {
-    //     const doctors = await this.doctorRepository.find({
-    //       relations: ['subSpecialty', 'subSpecialty.specialty'],
-    //     });
-    
-    //     const specialtiesMap = new Map();
-    
-    //     for (const doctor of doctors) {
-    //       for (const subSpecialty of doctor.subSpecialty) {
-    //         const { subSpecialtyId, subSpecialtyName, specialty } = subSpecialty;
-    //         const { specialtyId, specialtyName } = specialty;
-    
-    //         const specialtyObj = specialtiesMap.get(specialtyId) ?? {
-    //           specialtyId,
-    //           specialtyName,
-    //           subSpecialties: [],
-    //           length: 0,
-    //         };
-    
-    //         const subSpecialtyObj = {
-    //           subSpecialtyId,
-    //           subSpecialtyName,
-    //         };
-    
-    //         specialtyObj.subSpecialties.push(subSpecialtyObj);
-    //         specialtyObj.length++;
-    
-    //         specialtiesMap.set(specialtyId, specialtyObj);
-    //       }
-    //     }
-    
-    //     const specialties = Array.from(specialtiesMap.values());
-    
-    //     const output = doctors.map((doctor) => {
-    //       const { doctorId, firstname, lastname, phonenumberForAdmin, evaluate, profilePicture } = doctor;
-    
-    //       const doctorSpecialties = doctor.subSpecialty.map((subSpecialty) => {
-    //         const { subSpecialtyId, subSpecialtyName, specialty } = subSpecialty;
-    //         const { specialtyId } = specialty;
-    //         const specialtyObj = specialties.find((specialty) => specialty.specialtyId === specialtyId);
-    //         return {
-    //           subSpecialtyId,
-    //           subSpecialtyName,
-    //           specialty: specialtyObj,
-    //         };
-    //       });
-    
-    //       return {
-    //         doctorId,
-    //         firstname,
-    //         lastname,
-    //         phonenumberForAdmin,
-    //         evaluate,
-    //         profilePicture,
-    //         specialties: doctorSpecialties,
-    //       };
-    //     });
-    
-    //     return output;
-    //   } catch (error) {
-    //     // Handle error
-    //   }
-    // }
+      
+      async secondFilterDocrots(secondFilterDocrotsDto : secondFilterDocrotsParams)
+      {
+        const query =  this.doctorRepository.createQueryBuilder('doctor')
+        .leftJoin('doctor.subSpecialty', 'subSpecialty')
+        if (secondFilterDocrotsDto.subSpecialtyId !== undefined) {
+          query.andWhere('subSpecialty.subSpecialtyId = :subSpecialtyId', { subSpecialtyId: secondFilterDocrotsDto.subSpecialtyId });
+        }
+        if (secondFilterDocrotsDto.orderByEvaluate == true) {
+          query.orderBy('doctor.evaluate', 'DESC');
+        }
+        if (secondFilterDocrotsDto.filterName !== undefined) {
+          query.andWhere('CONCAT(doctor.firstname, " ", doctor.lastname) LIKE :name', {
+            name: `%${secondFilterDocrotsDto.filterName}%`,
+          });
+        }
+        const doctors = await query.getMany();
+          if(doctors.length === 0)
+          {
+              throw new HttpException(`No doctor met the conditions `, HttpStatus.NOT_FOUND);
+          }
+          return {doctors : doctors};
+      }     
+    }    

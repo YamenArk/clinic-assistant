@@ -6,13 +6,15 @@ import { DoctorsService } from 'src/doctors/services/doctors/doctors.service';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateWorkTimeParams, UpdateDoctorParams } from 'src/utils/types';
-import { validate } from 'class-validator';
+import { IsEmail } from 'class-validator';
 import { JWTAuthGuardAdmin, JWTAuthGuardDoctor } from 'src/middleware/auth/jwt-auth.guard';
 import { UpdateDoctorForAdminDto } from 'src/doctors/dtos/UpdateDoctorForAdmin.dto';
 import { CreateWorkTimeDto } from 'src/doctors/dtos/CreateWorkTime.dto';
 import { UpdateDoctoeClinicDto } from 'src/doctors/dtos/updateDoctoeClinic.dto';
 import { get } from 'http';
 import { AuthLoginDto } from 'src/doctors/dtos/AuthLogin.dto';
+import { secondFilterDocrotsDto } from 'src/doctors/dtos/secondFilterDocrots.dto';
+import { emailDto } from 'src/doctors/dtos/email.dto';
 
 @Controller('doctors')
 export class DoctorsController {
@@ -47,6 +49,7 @@ export class DoctorsController {
     @Get(':type')//type 1 active doctors 2 not active 2 all
     @UseGuards(JWTAuthGuardAdmin)
     async getDoctors(@Param('type') type?: number) {
+      console.log("=typr")
       return  this.doctorSrevice.findDoctors(type);
     
     }
@@ -104,6 +107,29 @@ export class DoctorsController {
 
     //////////////////////////////////////////////////////////doctor
    
+
+
+    //get clinic
+    // @UseGuards(JWTAuthGuardDoctor)
+    @Get('get-12345')
+    async getclinics(@Req() request) {
+      console.log()
+      console.log("=12312312312321321321")
+      const doctorId = 1; // Accessing the doctorId from the request object
+      return this.doctorSrevice.getClinicsForDoctor(doctorId);
+    }
+
+
+    //get inurance
+    @Get('get-inurance')
+    @UseGuards(JWTAuthGuardDoctor)
+    async getinurances(@Req() request) {
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      return this.doctorSrevice.getinurancesForDoctor(doctorId);
+    }
+
+
+
     //create work times
     @Post('set-work-time/:clinicId')
     @UseGuards(JWTAuthGuardDoctor)
@@ -158,14 +184,14 @@ export class DoctorsController {
     //auth
     @Post('login')
     async login(@Body(new ValidationPipe({ whitelist: true })) authLoginDto: AuthLoginDto) {
-      const access_token = await  this.doctorSrevice.login(authLoginDto);
-      return {access_token : access_token}
+      const loginDetails = await  this.doctorSrevice.login(authLoginDto);
+      return {loginDetails : loginDetails}
     }
 
     @Post('send-email')
-    async sendResetEmail(@Body('email') email: string) {
-        const doctorId = await this.doctorSrevice.sendResetEmail(email);
-        return {message : 'message has been sent to your Email',doctorId : doctorId}
+      async sendResetEmail(@Body(new ValidationPipe({ whitelist: true })) email: emailDto) {
+      const doctorId = await this.doctorSrevice.sendResetEmail(email.email);
+      return { message: 'message has been sent to your Email', doctorId: doctorId };
     }
   
     @Post('reset-password')
@@ -217,6 +243,11 @@ export class DoctorsController {
     @Post('filterDocrots')
     filterDocrots(@Body() filterDocrotsDto : filterDocrotsDto){
         return this.doctorSrevice.filterDocrots(filterDocrotsDto);
+    }     
+
+    @Post('secondFilterDocrots')
+    secondFilterDocrots(@Body() filterDocrotsDto : secondFilterDocrotsDto){
+        return this.doctorSrevice.secondFilterDocrots(filterDocrotsDto);
     }     
 
 

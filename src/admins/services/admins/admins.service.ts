@@ -8,13 +8,19 @@ import * as bcrypt from 'bcryptjs'
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from 'src/middleware/mail/mail.service';
-import { CACHE_MANAGER, CacheInterceptor, CacheModule } from '@nestjs/common'; // import CACHE_MANAGER
+import { CACHE_MANAGER } from '@nestjs/common'; // import CACHE_MANAGER
 import { Inject } from '@nestjs/common';
+import { Doctor } from 'src/typeorm/entities/doctors';
+import { Secretary } from 'src/typeorm/entities/secretary';
 
 @Injectable()
 export class AdminsService {
     constructor (
         private jwtService : JwtService,
+        @InjectRepository(Doctor) 
+        private doctorRepository : Repository<Doctor>,
+        @InjectRepository(Secretary) 
+        private secretaryRepository : Repository<Secretary>,
         @InjectRepository(Admin) 
         private adminRepository : Repository<Admin>,
         private readonly mailService: MailService,
@@ -30,49 +36,39 @@ export class AdminsService {
         return {admins};
     }
     async createAdmin(adminDetails: CreateAdminParams) {
-        const duplicates = await this.adminRepository.findOne({ where: { email: adminDetails.email } });
-        if (duplicates) {
-          throw new BadRequestException(`admin with name "${adminDetails.email}" already exists"`);
-        }
+      const email = adminDetails.email;
+       //doctor duplicates
+       const doctorDuplicates = await this.doctorRepository.findOne({ where: { email: email } });
+       if (doctorDuplicates) {
+         throw new BadRequestException(`"${email}" already exists"`);
+       }
+
+      //admin duplicates
+      const adminDuplicates = await this.adminRepository.findOne({ where: { email: email } });
+      if (adminDuplicates) {
+        throw new BadRequestException(`"${email}" already exists"`);
+      }
+
+      //secretary duplicates
+      const secretaryDuplicates = await this.secretaryRepository.findOne({ where: { email:email } });
+      if (secretaryDuplicates) {
+        throw new BadRequestException(`"${email}" already exists"`);
+     }
       
-        const newAdmin = this.adminRepository.create({
-          ...adminDetails,
-        //   password: hashedPassword, // store the hashed password
-          createdAt: new Date(),
-        });
-      
-        // Validate the newAdmin object using class-validator
-        const errors = await validate(newAdmin);
-        if (errors.length > 0) {
-          throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
-        }
-      
-        return this.adminRepository.save(newAdmin);
+      const newAdmin = this.adminRepository.create({
+        ...adminDetails,
+        createdAt: new Date(),
+      });
+    
+      // Validate the newAdmin object using class-validator
+      const errors = await validate(newAdmin);
+      if (errors.length > 0) {
+        throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
       }
     
-     
-    async login(authLoginDto: AuthLoginDto) {
-        const { email, password } = authLoginDto;
-        const admin = await this.adminRepository.findOne({ where: { email: email } });
-      
-        if (!admin) {
-          throw new UnauthorizedException('Invalid credentials');
-        }
-      
-        const isPasswordMatch = await bcrypt.compare(password, admin.password); // compare the hashed passwords
-        if (!isPasswordMatch) {
-          throw new UnauthorizedException('Invalid credentials');
-        }
-      
-        const payload = {
-          adminId: admin.adminId,
-        };
-      
-        return {
-          access_token: this.jwtService.sign(payload),
-          isAdmin : admin.isAdmin
-        };
-      }
+      return this.adminRepository.save(newAdmin);
+    }
+    
 
       async sendResetEmail(email: string) {
         const admin = await this.adminRepository.findOne({where: {email : email}});

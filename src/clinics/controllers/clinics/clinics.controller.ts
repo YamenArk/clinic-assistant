@@ -10,7 +10,6 @@ export class ClinicsController {
     constructor(private clinicSrevice : ClinicsService){}
     ///////////////////////////admin
     @Get()
-    @UseGuards(JWTAuthGuardAdmin)
     async getClinics(){
         const clinics =  await this.clinicSrevice.findClinics()
         return {clinics : clinics}; 

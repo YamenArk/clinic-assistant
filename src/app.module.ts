@@ -15,7 +15,7 @@ import { Clinic } from './typeorm/entities/clinic';
 import { InsurancesModule } from './insurances/insurances.module';
 import { DoctorClinic } from './typeorm/entities/doctor-clinic';
 import { Commission } from './typeorm/entities/commission';
-import { Secreatry } from './typeorm/entities/secretary';
+import { Secretary } from './typeorm/entities/secretary';
 import { WorkTime } from './typeorm/entities/work-time';
 import { Appointment } from './typeorm/entities/appointment';
 import { BlackList } from './typeorm/entities/black-list';
@@ -25,6 +25,8 @@ import { Governorate } from './typeorm/entities/Governorate';
 import { Area } from './typeorm/entities/Area';
 import { QueryService } from './middleware/sql/query/query.service';
 import { GovernoratesModule } from './governorates/governorates.module';
+import { PatientsModule } from './patients/patients.module';
+// import { PhoneService } from './middleware/phone/phone.service';
 // clinicassistant
 @Module({
   imports: [
@@ -35,7 +37,7 @@ import { GovernoratesModule } from './governorates/governorates.module';
       username: 'root',
       password: '',
       database: 'clinicassistant',
-      entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Commission,Secreatry,WorkTime,Appointment,BlackList,Governorate,Area],
+      entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Commission,Secretary,WorkTime,Appointment,BlackList,Governorate,Area],
       synchronize:  false ,
       migrationsRun: false,
       dropSchema: false
@@ -47,8 +49,10 @@ import { GovernoratesModule } from './governorates/governorates.module';
     ClinicsModule,
     InsurancesModule,
     AuthModule,
-    GovernoratesModule
+    GovernoratesModule,
+    PatientsModule
       ],
+  // providers: [MailService, QueryService, PhoneService]
   providers: [MailService, QueryService]
 })
 export class AppModule {}

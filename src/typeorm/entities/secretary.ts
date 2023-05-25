@@ -1,16 +1,17 @@
 import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 import { DoctorClinic } from './doctor-clinic';
 
-@Entity({ name: 'secreatries' })
-export class Secreatry {
+@Entity({ name: 'secretaries' })
+export class Secretary {
     @PrimaryGeneratedColumn({ type: 'bigint' })
-    secreatryId: number;
+    secretaryId: number;
 
-    @Column()
+    @Column({unique : true})
     @IsString()
     @IsNotEmpty()
-    userName: string;
+    @IsEmail()
+    email : string;
 
     @Column()
     @IsString()
@@ -31,6 +32,6 @@ export class Secreatry {
         this.privateId = nanoid(5);
     }
 
-    @OneToMany(() => DoctorClinic, doctorClinic => doctorClinic.secreatry)
+    @OneToMany(() => DoctorClinic, doctorClinic => doctorClinic.secretary)
     public doctorClinic: DoctorClinic[];
 }

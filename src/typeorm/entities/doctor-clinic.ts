@@ -7,7 +7,7 @@ import {
   } from 'typeorm';
 import { Doctor } from './doctors';
 import { Clinic } from './clinic';
-import { Secreatry } from './secretary';
+import { Secretary } from './secretary';
 import { IsNumber, IsOptional, Min, Validate } from 'class-validator';
 
 @Entity({ name: 'doctorClinics' })
@@ -43,8 +43,9 @@ export class DoctorClinic {
     @ManyToOne(() => Clinic, (clinic) => clinic.doctorClinic)
     public clinic: Clinic; // Ensure that the type of this property is Clinic
 
-    @ManyToOne(() => Secreatry, (secreatry) => secreatry.doctorClinic)
-    public secreatry: Secreatry
 
 
+    @ManyToOne(() => Secretary, (secretary) => secretary.doctorClinic)
+    @JoinColumn({ name: 'secretaryId' })
+    public secretary: Secretary;
 }

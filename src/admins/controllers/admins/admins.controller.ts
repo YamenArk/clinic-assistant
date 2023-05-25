@@ -22,11 +22,6 @@ export class AdminsController {
         return {message : 'doctor has been created'}
     }
     
-    @Post('login')
-    async login(@Body(new ValidationPipe({ whitelist: true })) authLoginDto: AuthLoginDto) {
-      const loginDetails = await this.adminSrevice.login(authLoginDto);
-      return {loginDetails : loginDetails}
-    }
 
     @Post('send-email')
     async sendResetEmail(@Body('email') email: string) {
