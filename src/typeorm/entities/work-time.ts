@@ -53,10 +53,10 @@ export class WorkTime {
     @IsNotEmpty()
     date: string;
 
-    @ManyToOne(() => Doctor, (doctor) => doctor.doctorClinic)
+    @ManyToOne(() => Doctor, (doctor) => doctor.workTime)
     public doctor: Doctor
 
-    @ManyToOne(() => Clinic, (clinic) => clinic.doctorClinic)
+    @ManyToOne(() => Clinic, (clinic) => clinic.workTime)
     public clinic: Clinic
  
     @OneToMany(() => Appointment, appointment => appointment.workTime)

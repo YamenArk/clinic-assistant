@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, Req, Res, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, Res, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CreateDoctorDto } from 'src/doctors/dtos/CreateDoctor.dto';
 import { UpdateDoctorDto } from 'src/doctors/dtos/UpdateDoctor.dto';
 import { filterDocrotsDto } from 'src/doctors/dtos/filterDocrots.dto';
@@ -15,6 +15,7 @@ import { get } from 'http';
 import { AuthLoginDto } from 'src/doctors/dtos/AuthLogin.dto';
 import { secondFilterDocrotsDto } from 'src/doctors/dtos/secondFilterDocrots.dto';
 import { emailDto } from 'src/doctors/dtos/email.dto';
+import { profileDetailsDto } from 'src/doctors/dtos/profileDetails.dto';
 
 @Controller('doctors')
 export class DoctorsController {
@@ -25,6 +26,16 @@ export class DoctorsController {
 
 
     //////////////////////////////////////////////////////////admin
+
+
+    //doctor profile
+    @Get('admin/doctor-profile/:doctorId')
+    @UseGuards(JWTAuthGuardAdmin)
+    async getdoctorprofile(
+      @Param('doctorId', new ParseIntPipe()) doctorId: number,
+    ){
+      return this.doctorSrevice.getprofileforadmin(doctorId);
+  }
 
     //create doctor
     @Post()
@@ -38,20 +49,20 @@ export class DoctorsController {
     @Put('update/:doctorId')
     @UseGuards(JWTAuthGuardAdmin)
     async updateDoctorForAdmin(
-      @Param('doctorId') doctorId: number,
+      @Param('doctorId',ParseIntPipe) doctorId: number,
       @Body(new ValidationPipe({ whitelist: true })) updateDoctorForAdminDto: UpdateDoctorForAdminDto,
     ) {
       await this.doctorSrevice.updateDoctorforAdmin(doctorId,updateDoctorForAdminDto);
       return {message : "doctor updated successfully"}
     }
 
-    //get doctors
-    @Get(':type')//type 1 active doctors 2 not active 2 all
-    @UseGuards(JWTAuthGuardAdmin)
-    async getDoctors(@Param('type') type?: number) {
-      console.log("=typr")
+    @Get(':type(1|2|3)')
+    @UseGuards(JWTAuthGuardAdmin)//type 1 active doctors 2 not active 3 all
+    async getDoctors(@Param('type', ParseIntPipe) type: number) {
+      if (type < 1 || type > 3) {
+        throw new BadRequestException('Invalid type parameter');
+      }
       return  this.doctorSrevice.findDoctors(type);
-    
     }
 
     //doctor insurances
@@ -107,18 +118,51 @@ export class DoctorsController {
 
     //////////////////////////////////////////////////////////doctor
    
+    //my profile
+    @UseGuards(JWTAuthGuardDoctor)
+    @Get('get-profile')
+    async getProfile(@Req() request) {
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      return this.doctorSrevice.getprofile(doctorId);
+    }
+
+       
+
+
+    //update my profile
+    @UseGuards(JWTAuthGuardDoctor)
+    @Put('update-profile')
+    async updateProfile(
+      @Req() request,
+      @Body(new ValidationPipe({ whitelist: true })) profileDetails: profileDetailsDto,
+      @UploadedFile() file: Express.Multer.File,
+      ) {
+      console.log(file)
+      console.log("=====================")
+      console.log(profileDetails)
+
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      this.doctorSrevice.updateprofile(doctorId,profileDetails,file);
+      return {message : "doctor updated successfully"}
+    }
 
 
     //get clinic
-    // @UseGuards(JWTAuthGuardDoctor)
-    @Get('get-12345')
+    @UseGuards(JWTAuthGuardDoctor)
+    @Get('get-clinic')
     async getclinics(@Req() request) {
-      console.log()
-      console.log("=12312312312321321321")
-      const doctorId = 1; // Accessing the doctorId from the request object
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
       return this.doctorSrevice.getClinicsForDoctor(doctorId);
     }
 
+
+    //get sub
+    @UseGuards(JWTAuthGuardDoctor)
+    @Get('get-sub')
+    async getsubs(@Req() request) {
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      return this.doctorSrevice.getSubs(doctorId);
+    }
 
     //get inurance
     @Get('get-inurance')
@@ -167,6 +211,7 @@ export class DoctorsController {
       @Param('clinicId') clinicId: number,
       @Req() request
     ) {
+      
       const doctorId = request.doctorId; // Accessing the doctorId from the request object
       await this.doctorSrevice.updateDoctoeClinicDetails(doctorClinicDetails,clinicId,doctorId);
     }    
@@ -208,18 +253,7 @@ export class DoctorsController {
 
 
 
-    @Put(':doctorId')
-    @UseInterceptors(FileInterceptor('file'))
-    async updateDoctor(
-      @Param('doctorId') doctorId: number,
-      @Body() updateDoctorDto: UpdateDoctorDto,
-      @UploadedFile() file: Express.Multer.File,
-    ) {
-      await this.doctorSrevice.updateDoctor(doctorId,updateDoctorDto,file);
-      return {message : "doctor updated successfully"}
-    }
-
-
+  
 
     // @Post('send-email')
     // async sendResetEmai1l(@Body('email') email: string): Promise<void> {
@@ -249,6 +283,15 @@ export class DoctorsController {
     secondFilterDocrots(@Body() filterDocrotsDto : secondFilterDocrotsDto){
         return this.doctorSrevice.secondFilterDocrots(filterDocrotsDto);
     }     
+
+
+
+    @Get('profile/:doctorId')
+    async getprofile(
+      @Param('doctorId', new ParseIntPipe()) doctorId: number,
+    ){
+      return this.doctorSrevice.getprofileforpatient(doctorId);
+  }
 
 
 

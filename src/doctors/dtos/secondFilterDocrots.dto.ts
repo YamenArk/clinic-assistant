@@ -1,4 +1,3 @@
-
 export class secondFilterDocrotsDto {
     subSpecialtyId?:number;  
     filterName ?: string;

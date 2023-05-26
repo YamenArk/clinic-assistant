@@ -22,6 +22,6 @@ export class SubSpecialty {
     @ManyToOne(() => Specialty, (specialty) => specialty.subSpecialties)
     specialty: Specialty;
 
-    @ManyToMany(() => Doctor, doctor => doctor.insurance)
+    @ManyToMany(() => Doctor, doctor => doctor.subSpecialty)
     public doctor: Doctor[];  
 }

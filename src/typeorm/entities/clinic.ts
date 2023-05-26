@@ -8,6 +8,7 @@ import {
 import { DoctorClinic } from './doctor-clinic';
 import { IsNotEmpty, IsString } from 'class-validator';
 import { Area } from './Area';
+import { WorkTime } from './work-time';
 
 @Entity({ name: 'clinics' })
 export class Clinic {
@@ -40,6 +41,13 @@ export class Clinic {
 
     @ManyToOne(() => Area, (area) => area.clinic)
     area: Area;
+
+
+
+    
+    @OneToMany(() => WorkTime, workTime => workTime.clinic)
+    public workTime: WorkTime[];
+
 
     @OneToMany(() => DoctorClinic, doctorClinic => doctorClinic.clinic)
     public doctorClinic: DoctorClinic[];

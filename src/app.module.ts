@@ -27,6 +27,7 @@ import { QueryService } from './middleware/sql/query/query.service';
 import { GovernoratesModule } from './governorates/governorates.module';
 import { PatientsModule } from './patients/patients.module';
 // import { PhoneService } from './middleware/phone/phone.service';
+import { SecretariesModule } from './secretaries/secretaries.module';
 // clinicassistant
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import { PatientsModule } from './patients/patients.module';
       password: '',
       database: 'clinicassistant',
       entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Commission,Secretary,WorkTime,Appointment,BlackList,Governorate,Area],
-      synchronize:  false ,
+      synchronize:  true ,
       migrationsRun: false,
       dropSchema: false
     }),
@@ -50,7 +51,8 @@ import { PatientsModule } from './patients/patients.module';
     InsurancesModule,
     AuthModule,
     GovernoratesModule,
-    PatientsModule
+    PatientsModule,
+    SecretariesModule
       ],
   // providers: [MailService, QueryService, PhoneService]
   providers: [MailService, QueryService]

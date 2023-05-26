@@ -5,12 +5,20 @@ import {
     ManyToMany,
     OneToMany,
     PrimaryGeneratedColumn,
+    ValueTransformer,
   } from 'typeorm';
 import { Insurance } from './insurance';
 import { SubSpecialty } from './sub-specialty';
 import { DoctorClinic } from './doctor-clinic';
 import { IsBoolean, IsEmail, IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Commission } from './commission';
+import { WorkTime } from './work-time';
+
+
+const decimalTransformer: ValueTransformer = {
+  to: (value: number): number => value,
+  from: (value: string | null): number => (value ? parseFloat(value) : 0),
+};
 
 @Entity({ name: 'doctors' })
 export class Doctor {
@@ -30,8 +38,8 @@ export class Doctor {
 
     //accepte null
     @Column()
-    @IsString()
     @IsNotEmpty()
+    @IsString()
     phonenumberForAdmin: string ;
 
 
@@ -57,17 +65,17 @@ export class Doctor {
 
     
     @Column()
-    @IsString()
     @IsNotEmpty()
+    @IsString()
     firstname: string;
 
    
     @Column()
-    @IsString()
     @IsNotEmpty()
+    @IsString()
     lastname: string;
-
-    @Column({default : "3"})
+    
+    @Column({ type: 'decimal', precision: 4, scale: 2, default: 3.0 })
     evaluate: number;
 
     @Column({default : 0})
@@ -98,6 +106,9 @@ export class Doctor {
     
     @OneToMany(() => DoctorClinic, doctorClinic => doctorClinic.doctor)
     public doctorClinic: DoctorClinic[];
+
+    @OneToMany(() => WorkTime, workTime => workTime.doctor)
+    public workTime: WorkTime[];
 
     @OneToMany(() => Commission, (commission) => commission.doctor)
     commission: Commission[]    

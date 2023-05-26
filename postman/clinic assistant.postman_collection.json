@@ -12,7 +12,7 @@
 					"name": "clinics",
 					"item": [
 						{
-							"name": "get",
+							"name": "get all",
 							"request": {
 								"method": "GET",
 								"header": [],
@@ -25,6 +25,33 @@
 									"port": "3000",
 									"path": [
 										"clinics"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/clinics/patient/:clinicId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"clinics",
+										"patient",
+										":clinicId"
+									],
+									"variable": [
+										{
+											"key": "clinicId",
+											"value": "1"
+										}
 									]
 								}
 							},
@@ -113,6 +140,33 @@
 									"path": [
 										"doctors",
 										"secondFilterDocrots"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "profile",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/doctors/profile/:doctorId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"doctors",
+										"profile",
+										":doctorId"
+									],
+									"variable": [
+										{
+											"key": "doctorId",
+											"value": "1"
+										}
 									]
 								}
 							},
@@ -231,7 +285,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUwMDIzMjMsImV4cCI6MTY4NTA4ODcyM30.9U7gqES3_wkn_2PCzfN7TysH2Gu7LCVDJx2RPwlwWJ8",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUxMTYzOTYsImV4cCI6MTY4NTIwMjc5Nn0.OZHSf6eyEHIQOzqAxMei5XagEJAnLB85Esg603RiMG4",
 													"type": "string"
 												}
 											]
@@ -277,7 +331,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUwMDIzMjMsImV4cCI6MTY4NTA4ODcyM30.9U7gqES3_wkn_2PCzfN7TysH2Gu7LCVDJx2RPwlwWJ8",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUxMTYzOTYsImV4cCI6MTY4NTIwMjc5Nn0.OZHSf6eyEHIQOzqAxMei5XagEJAnLB85Esg603RiMG4",
 													"type": "string"
 												}
 											]
@@ -536,7 +590,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODQ4NjI2MzUsImV4cCI6MTY4NDk0OTAzNX0.tVftnlv4GzKI-zmcSxVJX6P-ozQiz3dqj3_CJfXWt4w",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUwOTg3MzUsImV4cCI6MTY4NTE4NTEzNX0.hRM3kpLrJ5H-a3vG8LnsK7vqv2E0p3kFqhoqgsvI3v0",
 													"type": "string"
 												}
 											]
@@ -544,7 +598,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "http://localhost:3000/doctors/g",
+											"raw": "http://localhost:3000/doctors/get-clinic",
 											"protocol": "http",
 											"host": [
 												"localhost"
@@ -552,7 +606,142 @@
 											"port": "3000",
 											"path": [
 												"doctors",
-												"g"
+												"get-clinic"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get inurance",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUwOTg3MzUsImV4cCI6MTY4NTE4NTEzNX0.hRM3kpLrJ5H-a3vG8LnsK7vqv2E0p3kFqhoqgsvI3v0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/get-inurance",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"get-inurance"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get sub",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUwOTg3MzUsImV4cCI6MTY4NTE4NTEzNX0.hRM3kpLrJ5H-a3vG8LnsK7vqv2E0p3kFqhoqgsvI3v0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/get-sub",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"get-sub"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "profile",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUxMDc3NjYsImV4cCI6MTY4NTE5NDE2Nn0.5MzoBlN_b3sCD7O0BD0Fgl9DWC-4rt8ZSONQvXKfRFc",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/get-profile",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"get-profile"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "update profile",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUxMDc3NjYsImV4cCI6MTY4NTE5NDE2Nn0.5MzoBlN_b3sCD7O0BD0Fgl9DWC-4rt8ZSONQvXKfRFc",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "",
+												"value": "",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"description\":\"im a good doctor\",\r\n    \"phonenumber\":\"0932691632\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://localhost:3000/doctors/update-profile",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"update-profile"
 											]
 										}
 									},
@@ -561,45 +750,198 @@
 							]
 						},
 						{
-							"name": "update doctor",
-							"request": {
-								"method": "PUT",
-								"header": [
-									{
-										"key": "",
-										"value": "",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"password\" : \"1234\",\r\n    \"appointmentDuring\": 20,\r\n    \"checkupPrice\": 200,\r\n    \"phoneNumber\": \"0932691632\"\r\n\r\n\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
+							"name": "secretary",
+							"item": [
+								{
+									"name": "add",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUxMDU2ODcsImV4cCI6MTY4NTE5MjA4N30.G8bwjRXut2oXVL8qc8FPZ5YjJzhS0O2AsR1LacUPNU4",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"email\":\"huda@gmail.com\",\r\n    \"phonenumber\":\"0932691632\",\r\n    \"firstname\":\"huda\",\r\n    \"lastname\":\"asas\",\r\n    \"age\":22\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://localhost:3000/secretaries",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"secretaries"
+											]
 										}
-									}
+									},
+									"response": []
 								},
-								"url": {
-									"raw": "http://localhost:3000/doctors/:doctorId",
-									"protocol": "http",
-									"host": [
-										"localhost"
-									],
-									"port": "3000",
-									"path": [
-										"doctors",
-										":doctorId"
-									],
-									"variable": [
-										{
-											"key": "doctorId",
-											"value": "1"
+								{
+									"name": "get one ByprivateId",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUxMDU2ODcsImV4cCI6MTY4NTE5MjA4N30.G8bwjRXut2oXVL8qc8FPZ5YjJzhS0O2AsR1LacUPNU4",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/secretaries/privateId/:privateId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"secretaries",
+												"privateId",
+												":privateId"
+											],
+											"variable": [
+												{
+													"key": "privateId",
+													"value": "05991"
+												}
+											]
 										}
-									]
+									},
+									"response": []
+								},
+								{
+									"name": "get By secretaryId",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUxMDU2ODcsImV4cCI6MTY4NTE5MjA4N30.G8bwjRXut2oXVL8qc8FPZ5YjJzhS0O2AsR1LacUPNU4",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/secretaries/secretaryId/:secretaryId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"secretaries",
+												"secretaryId",
+												":secretaryId"
+											],
+											"variable": [
+												{
+													"key": "secretaryId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "add to clinic",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUxMDU2ODcsImV4cCI6MTY4NTE5MjA4N30.G8bwjRXut2oXVL8qc8FPZ5YjJzhS0O2AsR1LacUPNU4",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/secretaries/:clinicId/:secretaryId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"secretaries",
+												":clinicId",
+												":secretaryId"
+											],
+											"variable": [
+												{
+													"key": "clinicId",
+													"value": "1"
+												},
+												{
+													"key": "secretaryId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "remove from clinic",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUxMDU2ODcsImV4cCI6MTY4NTE5MjA4N30.G8bwjRXut2oXVL8qc8FPZ5YjJzhS0O2AsR1LacUPNU4",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/secretaries/:clinicId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"secretaries",
+												":clinicId"
+											],
+											"variable": [
+												{
+													"key": "clinicId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
 								}
-							},
-							"response": []
+							]
 						},
 						{
 							"name": "getDoctorsWithAllTheirInformation",
@@ -609,7 +951,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzgwMzc1MCwiZXhwIjoxNjgzODkwMTUwfQ.R8AD8beYy7utCTMAtf82idMs5LUbEcqHTZm3Ynf76qc",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODQwNjE0MTgsImV4cCI6MTY4NDE0NzgxOH0.YYZIs-wW530DzeDVsIy-UjFVOq3F4G2UsZj08Xp9Gd8",
 											"type": "string"
 										}
 									]
@@ -685,7 +1027,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzAzNDI1MywiZXhwIjoxNjgzMTIwNjUzfQ.NG0oG2ENc5w5fYFaXnb6BVdUZA6gfCzja763Rck8D1c",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUxMDU2ODcsImV4cCI6MTY4NTE5MjA4N30.G8bwjRXut2oXVL8qc8FPZ5YjJzhS0O2AsR1LacUPNU4",
 													"type": "string"
 												}
 											]
@@ -923,7 +1265,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4NDgzNTAyMSwiZXhwIjoxNjg0OTIxNDIxfQ.PIiA6ZrDiF7l8-0hsW3NYBneLiuajA06bMtN92oOumA",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4NTAzMTU1NCwiZXhwIjoxNjg1MTE3OTU0fQ.-av5j4UHwbouEY-STHZIy0vRPzqNlRASJtUi93oX01o",
 													"type": "string"
 												}
 											]
@@ -946,11 +1288,11 @@
 											"variable": [
 												{
 													"key": "doctorId",
-													"value": "2"
+													"value": "1"
 												},
 												{
 													"key": "subSpecialtyId",
-													"value": "3"
+													"value": "5"
 												}
 											]
 										}
@@ -1082,6 +1424,44 @@
 										}
 									},
 									"response": []
+								},
+								{
+									"name": "profile",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4NTEyMzM1MiwiZXhwIjoxNjg1MjA5NzUyfQ.4_22tihOfVP0U92YwGWpUrE17nri3zUhmbkDT9rZrNU",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/admin/doctor-profile/:doctorId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"admin",
+												"doctor-profile",
+												":doctorId"
+											],
+											"variable": [
+												{
+													"key": "doctorId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
 								}
 							]
 						},
@@ -1096,7 +1476,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4NDgzNTAyMSwiZXhwIjoxNjg0OTIxNDIxfQ.PIiA6ZrDiF7l8-0hsW3NYBneLiuajA06bMtN92oOumA",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4NTEwNTU5NSwiZXhwIjoxNjg1MTkxOTk1fQ.XupueuZX6XrNjffurA8h0oT-gj94MJ4T33nmeU9PUQ0",
 													"type": "string"
 												}
 											]
@@ -1237,7 +1617,7 @@
 									"response": []
 								},
 								{
-									"name": "get all Sub for specialty",
+									"name": "s",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -1286,7 +1666,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4NDgzNTAyMSwiZXhwIjoxNjg0OTIxNDIxfQ.PIiA6ZrDiF7l8-0hsW3NYBneLiuajA06bMtN92oOumA",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4NTEwNTU5NSwiZXhwIjoxNjg1MTkxOTk1fQ.XupueuZX6XrNjffurA8h0oT-gj94MJ4T33nmeU9PUQ0",
 													"type": "string"
 												}
 											]
@@ -1295,7 +1675,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"subSpecialtyName\":\"311e3\"\r\n}",
+											"raw": "{\r\n    \"subSpecialtyName\":\"3e3\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1417,7 +1797,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4NDgzNTAyMSwiZXhwIjoxNjg0OTIxNDIxfQ.PIiA6ZrDiF7l8-0hsW3NYBneLiuajA06bMtN92oOumA",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4NTEwNTU5NSwiZXhwIjoxNjg1MTkxOTk1fQ.XupueuZX6XrNjffurA8h0oT-gj94MJ4T33nmeU9PUQ0",
 													"type": "string"
 												}
 											]
@@ -1572,7 +1952,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4MzAzNDI1MywiZXhwIjoxNjgzMTIwNjUzfQ.NG0oG2ENc5w5fYFaXnb6BVdUZA6gfCzja763Rck8D1c",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4NTEyMDM0NCwiZXhwIjoxNjg1MjA2NzQ0fQ.Ho8kBdQ1jtIworIF3lQQl9fk_VxUZ_GmrnQJb_--U-Y",
 													"type": "string"
 												}
 											]
@@ -1594,7 +1974,7 @@
 											"variable": [
 												{
 													"key": "clinicId",
-													"value": "3"
+													"value": "1"
 												}
 											]
 										}
@@ -1682,7 +2062,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4NDgzNTAyMSwiZXhwIjoxNjg0OTIxNDIxfQ.PIiA6ZrDiF7l8-0hsW3NYBneLiuajA06bMtN92oOumA",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsImlhdCI6MTY4NTEwNTU5NSwiZXhwIjoxNjg1MTkxOTk1fQ.XupueuZX6XrNjffurA8h0oT-gj94MJ4T33nmeU9PUQ0",
 													"type": "string"
 												}
 											]
@@ -1691,7 +2071,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"companyName\":\"Nabel2C13om2pny\"\r\n}",
+											"raw": "{\r\n    \"companyName\":\"Nabel2C1ompny\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"

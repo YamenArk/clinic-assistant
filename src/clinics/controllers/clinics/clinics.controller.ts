@@ -1,4 +1,4 @@
-import {UseGuards, Controller, Get, Post, Put,Delete, Param, Body, Res, ValidationPipe } from '@nestjs/common';
+import {UseGuards, Controller, Get, Post, Put,Delete, Param, Body, Res, ValidationPipe, ParseIntPipe } from '@nestjs/common';
 import { ClinicDto } from 'src/clinics/dtos/ClinicDetails.dto';
 import { ClinicsService } from 'src/clinics/services/clinics/clinics.service';
 import { Response } from 'express';
@@ -91,5 +91,13 @@ export class ClinicsController {
         ){
           const doctors =  await this.clinicSrevice.findAllDoctorsForClinics(clinicId)
           return {doctors : doctors};
+          
+      }
+      ///////////////////////////////////paitnet
+      @Get('patient/:clinicId')
+      async getclinicForpatient( 
+        @Param('clinicId', new ParseIntPipe()) clinicId: number,
+        ){
+          return this.clinicSrevice.getclinicForpatient(clinicId)
       }
 }

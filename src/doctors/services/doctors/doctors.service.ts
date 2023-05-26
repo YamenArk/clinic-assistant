@@ -6,8 +6,8 @@ import { CACHE_MANAGER, CacheInterceptor, CacheModule } from '@nestjs/common'; /
 import { Doctor } from 'src/typeorm/entities/doctors';
 import { Insurance } from 'src/typeorm/entities/insurance';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
-import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, filterDocrotsParams, secondFilterDocrotsParams } from 'src/utils/types';
-import { Like, MoreThanOrEqual, Repository } from 'typeorm';
+import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, filterDocrotsParams, profileDetailsParams, secondFilterDocrotsParams } from 'src/utils/types';
+import { In, Like, MoreThanOrEqual, Repository } from 'typeorm';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { Inject } from '@nestjs/common';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
@@ -19,11 +19,14 @@ import * as bcrypt from 'bcryptjs'
 import { JwtService } from '@nestjs/jwt';
 import { Admin } from 'src/typeorm/entities/admin';
 import { Secretary } from 'src/typeorm/entities/secretary';
+import { Specialty } from 'src/typeorm/entities/specialty';
 @Injectable()
 @UseInterceptors(CacheInterceptor)
 export class DoctorsService {
     constructor (
         private jwtService : JwtService,
+        @InjectRepository(Specialty) 
+        private specialtyRepository : Repository<Specialty>,
         @InjectRepository(Admin) 
         private adminRepository : Repository<Admin>,
         @InjectRepository(Secretary) 
@@ -319,8 +322,48 @@ export class DoctorsService {
 
       ////////////////////////////////////////////doctor
 
+      async updateprofile(doctorId : number,profileDetails : profileDetailsParams,file: Express.Multer.File){
+          const doctor = await this.doctorRepository.findOne({
+            where: { doctorId },
+          });
+          if (!doctor) {
+            throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+          }
+
+          // If a file is provided, save it to disk and set the profilePicture property
+          if (file) {
+          const filename = `${doctorId}_${file.originalname}`;
+          const uploadPath = 'C:/Users/ASUS/Desktop/nestjs-projects/clinic-assistant/public/dolctors/' + filename;
+
+          await new Promise((resolve, reject) => {
+            const stream = createWriteStream(uploadPath);
+            stream.on('finish', resolve);
+            stream.on('error', reject);
+            stream.write(file.buffer);
+            stream.end();
+          });
+
+          // doctorDetails.profilePicture = filename;
+          profileDetails.profilePicture = uploadPath;
+          }
+        const updatedDoctor = Object.assign(doctor, profileDetails); // Merge profileDetails into the doctor object
+        await this.doctorRepository.save(updatedDoctor); // Save the updated doctor object
+      }
+
+      async getprofile(doctorId : number){
+        const doctor = await this.doctorRepository.findOne({
+
+          where: { doctorId },
+          select : ['doctorId','firstname','lastname','description','evaluate',"phonenumber","profilePicture"] 
+        });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+        return {doctor : doctor}
+      }
+
+
       async getClinicsForDoctor(doctorId : number){
-        console.log("=what")
         const doctor = await this.doctorRepository.findOne({ where: { doctorId } });
         if (!doctor) {
           throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
@@ -328,10 +371,27 @@ export class DoctorsService {
 
         const doctorClinics = await this.doctorClinicRepository.find({
           where: { doctor: { doctorId: doctor.doctorId } },
-          relations: ['clinic'],
+          relations : ['clinic']
         });
-        console.log(doctorClinics)
-        return {clinic : doctorClinics}
+        const clinicIds = doctorClinics.map((doctorClinic) => doctorClinic.clinic.clinicId);
+        const clinics = await this.clinicRepository.find({
+          where: { clinicId: In(clinicIds) },
+          select : ['clinicId','clinicName','phonenumber']
+        });
+        return {clinics : clinics}
+      }
+
+
+      async getSubs(doctorId : number){
+        const doctor = await this.doctorRepository.findOne({ where: { doctorId } });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+        const specialties = await this.specialtyRepository.find({
+          where: { subSpecialties: { doctor: { doctorId } } },
+          relations: ['subSpecialties'],
+        });
+        return {specialties : specialties}
       }
 
       async getinurancesForDoctor(doctorId : number){
@@ -340,11 +400,14 @@ export class DoctorsService {
           throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
         }
 
-        const doctorClinics = await this.doctorClinicRepository.find({
-          where: { doctor: { doctorId: doctor.doctorId } },
-          relations: ['clinic'],
+        const insurances = await this.insuranceRepository.find({
+          where: {
+            doctor: {
+              doctorId,
+            },
+          },
         });
-        return {clinic : doctorClinics}
+        return {insurances : insurances}
       }
 
 
@@ -576,49 +639,6 @@ export class DoctorsService {
       }
 
 
-
-
-
-      async updateDoctor(doctorId: number, doctorDetails: UpdateDoctorParams, file: Express.Multer.File) {
-
-        const doctor  = await this.doctorRepository.findOne({where : {doctorId : doctorId}});
-        if (!doctor ) {
-            throw new HttpException(`doctor with id ${doctorId} not found`, HttpStatus.NOT_FOUND);
-          }
-        // Create a new Doctor object with the updated properties
-        const updatedDoctor = this.doctorRepository.create({ ...doctor, ...doctorDetails });
-  
-        // Validate the updatedDoctor object using class-validator
-        const errors = await validate(updatedDoctor);
-        if (errors.length > 0) {
-          throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
-        }
-  
-  
-        // If a file is provided, save it to disk and set the profilePicture property
-        if (file) {
-          const filename = `${doctorId}_${file.originalname}`;
-          const uploadPath = 'C:/Users/ASUS/Desktop/nestjs-projects/clinic-assistant/public/dolctors/' + filename;
-  
-          await new Promise((resolve, reject) => {
-            const stream = createWriteStream(uploadPath);
-            stream.on('finish', resolve);
-            stream.on('error', reject);
-            stream.write(file.buffer);
-            stream.end();
-          });
-  
-          // doctorDetails.profilePicture = filename;
-          doctorDetails.profilePicture = uploadPath;
-        }
-        // Update the doctor in the database
-        await this.doctorRepository.update(doctorId, doctorDetails);
-  
-        // Return the updated doctor
-        return this.doctorRepository.update({doctorId},{...doctorDetails});
-      }
-
-
       async login(authLoginDto: AuthLoginDto) {
         const { email, password } = authLoginDto;
         const admin = await this.adminRepository.findOne({where: { email: email }});
@@ -820,4 +840,141 @@ export class DoctorsService {
           }
           return {doctors : doctors};
       }     
+
+      async getprofileforpatient(doctorId : number){
+        const doctor = await this.doctorRepository.findOne({
+          where: { doctorId },
+          select : ['doctorId','firstname','lastname','description','evaluate',"phonenumber","profilePicture"],
+          relations: ['workTime','workTime.clinic'],
+        });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+
+
+        const doctorClinics = await this.doctorClinicRepository.find({
+          where: { doctor: { doctorId: doctor.doctorId } },
+          relations : ['clinic']
+        });
+        const clinicIds = doctorClinics.map((doctorClinic) => doctorClinic.clinic.clinicId);
+        const clinics = await this.clinicRepository.find({
+          where: { clinicId: In(clinicIds) },
+          relations: ['area', 'area.governorate'],
+          select: ['clinicId', 'clinicName', 'phonenumber', 'area']
+        });
+
+
+        const specialties = await this.specialtyRepository.find({
+          where: { subSpecialties: { doctor: { doctorId } } },
+          relations: ['subSpecialties'],
+        });
+
+
+        
+        const insurances = await this.insuranceRepository.find({
+          where: {
+            doctor: {
+              doctorId,
+            },
+          },
+        });
+
+
+        //check if the doctor is working  
+        const now = new Date();
+        const currentTime = now.toLocaleTimeString('en-US', { hour12: false });
+        const currentDate = formatDate(now);
+
+        let clinicWorkingNow;
+        const isWorkingNow = doctor.workTime.some(workTime => {
+          const { date, startingTime, finishingTime } = workTime;
+          if (date !== currentDate) {
+            return false; // not working on this date
+          }
+          if (currentTime < startingTime || currentTime > finishingTime) {
+            return false; // not working at this time
+          }
+          clinicWorkingNow = {
+            clinicId : workTime.clinic.clinicId,
+            clinicName : workTime.clinic.clinicName
+          }
+          return true; // working now
+        });
+        
+        function formatDate(date) {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        }
+
+
+
+        // Remove workTime property from doctor object
+        delete doctor.workTime;
+        if(isWorkingNow)
+        {
+          return {
+            doctor : doctor,
+            clinics : clinics,
+            specialties : specialties,
+            insurances : insurances,
+            clinicWorkingNow : clinicWorkingNow
+          }
+        }
+        clinicWorkingNow = null;
+        return {
+          doctor : doctor,
+          clinics : clinics,
+          specialties : specialties,
+          insurances : insurances,
+          clinicWorkingNow : clinicWorkingNow
+        }
+      }
+
+
+
+      async getprofileforadmin(doctorId : number){
+        const doctor = await this.doctorRepository.findOne({
+          where: { doctorId },
+          select : ['doctorId','firstname','lastname',"phonenumber","email"],
+        });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+
+
+        const doctorClinics = await this.doctorClinicRepository.find({
+          where: { doctor: { doctorId: doctor.doctorId } },
+          relations : ['clinic']
+        });
+        const clinicIds = doctorClinics.map((doctorClinic) => doctorClinic.clinic.clinicId);
+        const clinics = await this.clinicRepository.find({
+          where: { clinicId: In(clinicIds) },
+          relations: ['area', 'area.governorate'],
+          select: ['clinicId', 'clinicName', 'phonenumber', 'area']
+        });
+
+
+        const specialties = await this.specialtyRepository.find({
+          where: { subSpecialties: { doctor: { doctorId } } },
+          relations: ['subSpecialties'],
+        });
+
+
+        
+        const insurances = await this.insuranceRepository.find({
+          where: {
+            doctor: {
+              doctorId,
+            },
+          },
+        });
+        return {
+          doctor : doctor,
+          clinics : clinics,
+          specialties : specialties,
+          insurances : insurances,
+        }
+      }
     }    

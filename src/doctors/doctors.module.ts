@@ -16,10 +16,11 @@ import { Appointment } from 'src/typeorm/entities/appointment';
 import { DoctorJwtStrategy } from 'src/middleware/auth/jwt.strategy';
 import { Secretary } from 'src/typeorm/entities/secretary';
 import { Admin } from 'src/typeorm/entities/admin';
+import { Specialty } from 'src/typeorm/entities/specialty';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Doctor, Insurance, SubSpecialty,DoctorClinic,Clinic,WorkTime,Appointment,Admin,Secretary]),
+    TypeOrmModule.forFeature([Doctor, Insurance, SubSpecialty,DoctorClinic,Clinic,WorkTime,Appointment,Admin,Secretary,Specialty]),
     CacheModule.register(), // add CacheModule here
     PassportModule,
     JwtModule.registerAsync({

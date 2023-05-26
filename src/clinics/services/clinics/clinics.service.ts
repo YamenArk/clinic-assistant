@@ -23,7 +23,7 @@ export class ClinicsService {
     
          async findClinics() {
           const select: Array<keyof Clinic> = ['clinicId', 'clinicName', 'createdAt', 'numDoctors'];
-          const clinics = await this.clinicRepository.find({ select, relations: ['area'] });        
+          const clinics = await this.clinicRepository.find({ select, relations: ['area','area.governorate'] });        
           return clinics;
         }
 
@@ -143,11 +143,86 @@ export class ClinicsService {
           where: { clinic: { clinicId: clinic.clinicId } },
           relations: ['doctor'],
         });
-        
         const doctors = doctorClinics.map(doctorClinic => doctorClinic.doctor);
         if (doctors.length === 0) {
           throw new HttpException(`No doctors found for this clinic`, HttpStatus.NOT_FOUND);
         }
         return doctors;
+      }
+
+      async getclinicForpatient (clinicId : number){
+        const clinic = await this.clinicRepository.findOne({ 
+          where: { clinicId },
+          relations : ['doctorClinic.doctor','workTime.doctor']
+         });
+        if (!clinic) {
+          throw new HttpException('Clinic not found', HttpStatus.NOT_FOUND);
+        }
+         let i  = 0;
+         let doctors = []
+         while(clinic.doctorClinic[i])
+         {
+          doctors[i] = {
+            doctorId : clinic.doctorClinic[i].doctor.doctorId,
+            firstname : clinic.doctorClinic[i].doctor.firstname,
+            lastname : clinic.doctorClinic[i].doctor.lastname,
+            evaluate : clinic.doctorClinic[i].doctor.evaluate,
+          }
+          i++;
+         }
+
+
+        
+        //check if the doctor is working  
+        const now = new Date();
+        const currentTime = now.toLocaleTimeString('en-US', { hour12: false });
+        const currentDate = formatDate(now);
+
+        let doctorWorkingNow;
+        const isWorkingNow = clinic.workTime.some(workTime => {
+          const { date, startingTime, finishingTime } = workTime;
+          if (date !== currentDate) {
+            return false; // not working on this date
+          }
+          if (currentTime < startingTime || currentTime > finishingTime) {
+            return false; // not working at this time
+          }
+          doctorWorkingNow = {
+            doctorId : workTime.doctor.doctorId,
+            firstname : workTime.doctor.firstname,
+            lastname : workTime.doctor.lastname,
+          }
+          return true; // working now
+        });
+        
+        function formatDate(date) {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        }
+
+        
+        delete clinic.doctorClinic;
+        delete clinic.workTime;
+
+        if(isWorkingNow)
+        {
+          return {
+            clinic : clinic,
+            doctors : doctors,
+            doctorWorkingNow : doctorWorkingNow
+          }
+        }
+        doctorWorkingNow = null;
+        return {
+          clinic : clinic,
+          doctors : doctors,
+          doctorWorkingNow : doctorWorkingNow
+        }
+
+
+
+
       }
     }

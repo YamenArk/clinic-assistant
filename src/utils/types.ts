@@ -116,3 +116,20 @@ export type verifyParams = {
   patientId: string;
   code: number;
 };
+
+
+export type profileDetailsParams = {
+  description ?: string;
+  phonenumber ?: string;
+  profilePicture ?: string;
+
+}
+
+
+export type createSecretaryParams = {
+  email: string;
+  phonenumber: string;
+  firstname: string;
+  lastname: string;
+  age: number;
+}
