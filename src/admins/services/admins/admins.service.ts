@@ -72,6 +72,9 @@ export class AdminsService {
 
       async sendResetEmail(email: string) {
         const admin = await this.adminRepository.findOne({where: {email : email}});
+        console.log(email);
+        console.log("=======");
+        console.log(admin);
 
         if (!admin) {
           throw new HttpException(

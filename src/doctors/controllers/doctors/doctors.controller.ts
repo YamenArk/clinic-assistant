@@ -275,12 +275,12 @@ export class DoctorsController {
 
 
     @Post('filterDocrots')
-    filterDocrots(@Body() filterDocrotsDto : filterDocrotsDto){
+    filterDocrots(@Body(new ValidationPipe({ whitelist: true })) filterDocrotsDto : filterDocrotsDto){
         return this.doctorSrevice.filterDocrots(filterDocrotsDto);
     }     
 
     @Post('secondFilterDocrots')
-    secondFilterDocrots(@Body() filterDocrotsDto : secondFilterDocrotsDto){
+    secondFilterDocrots(@Body(new ValidationPipe({ whitelist: true })) filterDocrotsDto : secondFilterDocrotsDto){
         return this.doctorSrevice.secondFilterDocrots(filterDocrotsDto);
     }     
 

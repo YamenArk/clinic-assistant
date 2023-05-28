@@ -97,9 +97,9 @@ export type filterDocrotsParams = {
 };
 
 export type secondFilterDocrotsParams = {
-  subSpecialtyId?:number;  
-    filterName ?: string;
-    orderByEvaluate?:boolean;
+  subSpecialtyId:number;  
+    filterName : string;
+    orderByEvaluate:boolean;
 };
 
 export type patientSignUp = {

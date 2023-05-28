@@ -797,15 +797,15 @@ export class DoctorsService {
   
   
                   
-          if (filterDetasils.gender !== undefined) {
+          if (filterDetasils.gender !== null) {
               query.andWhere('doctor.gender = :gender', { gender: filterDetasils.gender });
           }
           
-          if (filterDetasils.subSpecialtyId !== undefined) {
+          if (filterDetasils.subSpecialtyId !== null) {
               query.andWhere('subSpecialty.subSpecialtyId = :subSpecialtyId', { subSpecialtyId: filterDetasils.subSpecialtyId });
           }
           
-          if (filterDetasils.insuranceId !== undefined) {
+          if (filterDetasils.insuranceId !== null) {
               query.andWhere('insurance.insuranceId = :insuranceId', { insuranceId: filterDetasils.insuranceId });
           }
   
@@ -822,13 +822,13 @@ export class DoctorsService {
       {
         const query =  this.doctorRepository.createQueryBuilder('doctor')
         .leftJoin('doctor.subSpecialty', 'subSpecialty')
-        if (secondFilterDocrotsDto.subSpecialtyId !== undefined) {
+        if (secondFilterDocrotsDto.subSpecialtyId !== null) {
           query.andWhere('subSpecialty.subSpecialtyId = :subSpecialtyId', { subSpecialtyId: secondFilterDocrotsDto.subSpecialtyId });
         }
         if (secondFilterDocrotsDto.orderByEvaluate == true) {
           query.orderBy('doctor.evaluate', 'DESC');
         }
-        if (secondFilterDocrotsDto.filterName !== undefined) {
+        if (secondFilterDocrotsDto.filterName !== null) {
           query.andWhere('CONCAT(doctor.firstname, " ", doctor.lastname) LIKE :name', {
             name: `%${secondFilterDocrotsDto.filterName}%`,
           });

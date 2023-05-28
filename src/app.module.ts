@@ -39,7 +39,7 @@ import { SecretariesModule } from './secretaries/secretaries.module';
       password: '',
       database: 'clinicassistant',
       entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Commission,Secretary,WorkTime,Appointment,BlackList,Governorate,Area],
-      synchronize:  true ,
+      synchronize:  false ,
       migrationsRun: false,
       dropSchema: false
     }),
