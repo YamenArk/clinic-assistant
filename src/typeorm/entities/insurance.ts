@@ -21,4 +21,5 @@ export class Insurance {
 
     @ManyToMany(() => Doctor, doctor => doctor.insurance)
     public doctor: Doctor[];
+
 }

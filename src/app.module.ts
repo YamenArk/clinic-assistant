@@ -28,6 +28,7 @@ import { GovernoratesModule } from './governorates/governorates.module';
 import { PatientsModule } from './patients/patients.module';
 // import { PhoneService } from './middleware/phone/phone.service';
 import { SecretariesModule } from './secretaries/secretaries.module';
+import { DoctorPatient } from './typeorm/entities/doctor-patient';
 // clinicassistant
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import { SecretariesModule } from './secretaries/secretaries.module';
       username: 'root',
       password: '',
       database: 'clinicassistant',
-      entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Commission,Secretary,WorkTime,Appointment,BlackList,Governorate,Area],
+      entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Commission,Secretary,WorkTime,Appointment,BlackList,Governorate,Area,DoctorPatient],
       synchronize:  false ,
       migrationsRun: false,
       dropSchema: false

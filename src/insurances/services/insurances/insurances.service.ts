@@ -4,7 +4,7 @@ import { validate } from 'class-validator';
 import { doc } from 'prettier';
 import { Doctor } from 'src/typeorm/entities/doctors';
 import { Insurance } from 'src/typeorm/entities/insurance';
-import { InsuranceParams } from 'src/utils/types';
+import { InsuranceParams, filterNameParams } from 'src/utils/types';
 import { Not, Repository } from 'typeorm';
 
 @Injectable()
@@ -21,6 +21,23 @@ export class InsurancesService {
     findInsurances():Promise<Insurance[]>{
         return this.insuranceRepository.find();
     }
+
+    
+    async filterInsurancesByName(filte :filterNameParams ){
+      const query =  this.insuranceRepository.createQueryBuilder('insurance')
+      .where('insurance.companyName LIKE :name', {
+        name: `%${filte.filterName}%`,
+      })
+      const insurances = await query.getMany();
+      if(insurances.length === 0)
+      {
+          throw new HttpException(`No insurance company met the conditions `, HttpStatus.NOT_FOUND);
+      }
+      return {insurances : insurances};
+
+    }
+
+
     async createInsurance(insuranceDetails: InsuranceParams):Promise<Insurance>{
         const insurance  = await this.insuranceRepository.findOne({where : {companyName : insuranceDetails.companyName}});
         if (insurance ) {

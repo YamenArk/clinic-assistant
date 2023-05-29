@@ -5,8 +5,9 @@ import { ExtractJwt } from "passport-jwt";
 import { Strategy } from "passport-jwt";
 import { Admin } from "src/typeorm/entities/admin";
 import { Doctor } from "src/typeorm/entities/doctors";
-import { Repository } from "typeorm";
+import { NumericType, Repository } from "typeorm";
 import { ExecutionContext } from '@nestjs/common';
+import { Patient } from "src/typeorm/entities/patient";
 
 @Injectable()
 export class AdminIsAdminJwtStrategy extends PassportStrategy(Strategy, 'admin-is-admin-jwt') {
@@ -20,13 +21,15 @@ export class AdminIsAdminJwtStrategy extends PassportStrategy(Strategy, 'admin-i
     });
   }
 
-  async validate(payload: { adminId: number }) {
-    const admin = await this.adminRepository.findOne({where : {adminId : payload.adminId}});
-
-    if (!admin || !admin.isAdmin) {
+  async validate(payload: { adminId: number , type :  number}) {
+    if (payload.type != 0 ) {
       throw new UnauthorizedException('Access denied');
     }
+    const admin = await this.adminRepository.findOne({where : {adminId : payload.adminId}});
 
+    if (!admin) {
+      throw new UnauthorizedException('Access denied');
+    }
     return { admin };
   }
 }
@@ -44,9 +47,11 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
     });
   }
 
-  async validate(payload: { adminId: number }) {
+  async validate(payload: { adminId: number,type : number }) {
+    if (!(payload.type == 0 || payload.type == 1)) {
+      throw new UnauthorizedException('Access denied');
+    }
     const admin = await this.adminRepository.findOne({where : {adminId : payload.adminId}});
-    console.log("=123123")
     if (!admin) {
       throw new UnauthorizedException('Access denied');
     }
@@ -70,12 +75,43 @@ export class DoctorJwtStrategy extends PassportStrategy(Strategy, 'doctor-jwt') 
     });
   }
 
-  async validate(payload: { doctorId: number }) {
+  async validate(payload: { doctorId: number , type : number}) {
+    if (!(payload.type == 2)) {
+      throw new UnauthorizedException('Access denied');
+    }
     const doctor = await this.doctorRepository.findOne({where : {doctorId : payload.doctorId}});
     if (!doctor) {
       throw new UnauthorizedException('Access denied');
     }
     return { user: { doctor } };
+  }
+}
+
+
+
+
+@Injectable()
+export class PatientJwtStrategy extends PassportStrategy(Strategy, 'patient-jwt') {
+  constructor(
+    @InjectRepository(Patient)
+    private patientRepository: Repository<Patient>,
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.JWT_SECRET,
+    });
+  }
+
+  async validate(payload: { patientId: number , type : number}) {
+    if (!(payload.type == 4)) {
+      throw new UnauthorizedException('Access denied');
+    }
+
+    const patient = await this.patientRepository.findOne({where : {patientId : payload.patientId}});
+    if (!patient) {
+      throw new UnauthorizedException('Access denied');
+    }
+    return { user: { patient } };
   }
 }
 

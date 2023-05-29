@@ -10,8 +10,8 @@ export class PatientsController {
      //auth
      @Post('login')
      async login(@Body(new ValidationPipe({ whitelist: true })) authLoginDto: AuthLoginDto) {
-       const access_token = await  this.patientSrevice.login(authLoginDto);
-       return {access_token : access_token}
+       const accessToken = await  this.patientSrevice.login(authLoginDto);
+       return {accessToken : accessToken}
      }
 
     @Post('signup')
@@ -23,5 +23,6 @@ export class PatientsController {
     @Post('verify')
     async verify(@Body(new ValidationPipe({ whitelist: true })) verifyDto: verifyDto) {
       await this.patientSrevice.verify(verifyDto);
+      return {message : 'account created successfully'}
   }   
 }

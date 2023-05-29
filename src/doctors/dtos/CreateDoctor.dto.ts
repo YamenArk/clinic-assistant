@@ -1,4 +1,4 @@
-import { ArrayMinSize, IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { ArrayMinSize, IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Matches } from "class-validator";
 
 export class CreateDoctorDto {
   @IsNotEmpty()
@@ -8,6 +8,7 @@ export class CreateDoctorDto {
 
   @IsNotEmpty()
   @IsString()
+  @Matches(/^09\d{8}$/)
   phonenumberForAdmin: string;
 
   @IsNotEmpty()

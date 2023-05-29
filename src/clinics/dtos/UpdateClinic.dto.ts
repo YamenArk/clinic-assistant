@@ -1,19 +1,20 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
 
 export class UpdateClinicDto {
     @IsString()
-    @IsNotEmpty()
     @IsOptional()
     clinicName:string;
 
-    @IsNotEmpty()
-    @IsString()
     @IsOptional()
-    Latitude:string;
+    @IsNumber()
+    @Min(34)
+    @Max(38)
+    Latitude:number;
 
-    @IsNotEmpty()
-    @IsString()
     @IsOptional()
-    Longitude:string;
+    @IsNumber()
+    @Min(34)
+    @Max(38)
+    Longitude:number;
   };
   

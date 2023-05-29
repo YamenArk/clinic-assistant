@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, Matches } from "class-validator";
 
 export class CreateAdminDto {
     @IsNotEmpty()
@@ -6,6 +6,18 @@ export class CreateAdminDto {
     email: string;
 
     @IsNotEmpty()
+    @IsString()
+    @Matches(/^09\d{8}$/)
     phonenumber: string;
+
+    @IsNotEmpty()
+    @IsString()
+    firstname: string;
+
+   
+    @IsNotEmpty()
+    @IsString()
+    lastname: string;
+    
   };
   

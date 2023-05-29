@@ -6,6 +6,7 @@ import {
     PrimaryGeneratedColumn,
   } from 'typeorm';
 import { Appointment } from './appointment';
+import { DoctorPatient } from './doctor-patient';
 
 @Entity({ name: 'patients' })
 export class Patient {
@@ -16,7 +17,7 @@ export class Patient {
     @IsEnum(['ذكر', 'أنثى'])
     gender: string;
 
-    @Column()
+    @Column({unique : true})
     @IsNotEmpty()
     @IsNumberString()
     @Matches(/^09\d{8}$/)
@@ -56,4 +57,8 @@ export class Patient {
 
     @OneToMany(() => Appointment, appointment => appointment.patient)
     public appointment: Appointment[];
+
+
+    @OneToMany(() => DoctorPatient, doctorPatient => doctorPatient.patient)
+    public doctorPatient: DoctorPatient[];
 }

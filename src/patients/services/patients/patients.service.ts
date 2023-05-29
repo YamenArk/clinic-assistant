@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthLoginDto } from 'src/patients/dtos/AuthLogin.dto';
 import { Patient } from 'src/typeorm/entities/patient';
@@ -25,25 +25,35 @@ export class PatientsService {
 
     async login(authLoginDto : AuthLoginDto){
         const {phoneNumber , password} = authLoginDto
-        const patient = await this.patientRepository.findOne({where : {phoneNumber : phoneNumber,password :password}})
+        const patient = await this.patientRepository.findOne({
+          where : {phoneNumber : phoneNumber,password :password},
+          select : ['patientId','birthDate','firstname','lastname','profilePicture','phoneNumber','numberOfMissAppointment']
+        })
         if(!patient)
         {
             // If no matching user found, throw UnauthorizedException
             throw new UnauthorizedException('Invalid credentials')
         }
-        // const isPasswordMatch  = await bcrypt.compare(password, patient.password); // compare the hashed passwords
-        // if (!isPasswordMatch) {
-        //     throw new UnauthorizedException('Invalid credentials');
-        // }
         const payload = {
             patientId: patient.patientId,
-          };
+            type : 4
+          };  
         return {
-        access_token: this.jwtService.sign(payload)
+        accessToken: this.jwtService.sign(payload),
+        patient
         };
     }
     async signUp(patientSignUp : patientSignUp){
 
+        const duplicates = await this.patientRepository.findOne({
+          where : {
+            phoneNumber :  patientSignUp.phoneNumber
+          }
+        })
+        if(duplicates)
+        {
+          throw new BadRequestException('this phone number already exist')
+        }
         const patient = new Patient();
         patient.gender = patientSignUp.gender;
         patient.phoneNumber = patientSignUp.phoneNumber;

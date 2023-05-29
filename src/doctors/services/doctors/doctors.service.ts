@@ -6,7 +6,7 @@ import { CACHE_MANAGER, CacheInterceptor, CacheModule } from '@nestjs/common'; /
 import { Doctor } from 'src/typeorm/entities/doctors';
 import { Insurance } from 'src/typeorm/entities/insurance';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
-import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, filterDocrotsParams, profileDetailsParams, secondFilterDocrotsParams } from 'src/utils/types';
+import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, evaluateDoctorParams, filterDocrotsParams, filterNameParams, profileDetailsParams, secondFilterDocrotsParams } from 'src/utils/types';
 import { In, Like, MoreThanOrEqual, Repository } from 'typeorm';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { Inject } from '@nestjs/common';
@@ -20,11 +20,17 @@ import { JwtService } from '@nestjs/jwt';
 import { Admin } from 'src/typeorm/entities/admin';
 import { Secretary } from 'src/typeorm/entities/secretary';
 import { Specialty } from 'src/typeorm/entities/specialty';
+import { DoctorPatient } from 'src/typeorm/entities/doctor-patient';
+import { Patient } from 'src/typeorm/entities/patient';
 @Injectable()
 @UseInterceptors(CacheInterceptor)
 export class DoctorsService {
     constructor (
         private jwtService : JwtService,
+        @InjectRepository(Patient) 
+        private PatientRepository : Repository<Patient>,
+        @InjectRepository(DoctorPatient) 
+        private doctorPatientRepository : Repository<DoctorPatient>,
         @InjectRepository(Specialty) 
         private specialtyRepository : Repository<Specialty>,
         @InjectRepository(Admin) 
@@ -142,6 +148,26 @@ export class DoctorsService {
     
         return newDoctor;
       }
+
+
+      async filterDoctorByName(filte :filterNameParams ){
+
+        const query =  this.doctorRepository.createQueryBuilder('doctor')
+        .where('CONCAT(doctor.firstname, " ", doctor.lastname) LIKE :name', {
+          name: `%${filte.filterName}%`,
+        });
+
+        const doctors = await query.getMany();
+        if(doctors.length === 0)
+        {
+            throw new HttpException(`No doctor met the conditions `, HttpStatus.NOT_FOUND);
+        }
+        return {doctors : doctors};
+
+      }
+
+
+
 
       async updateDoctorforAdmin(doctorId: number, doctorDetails: UpdateDoctorForAdminParams) {
         const doctor  = await this.doctorRepository.findOne({where : {doctorId : doctorId}});
@@ -647,11 +673,12 @@ export class DoctorsService {
           if (!isPasswordMatch) {
             throw new UnauthorizedException('Invalid credentials');
           }
-          const payload = {
-            adminId: admin.adminId,
-          };
           if(admin.isAdmin)
           {
+            const payload = {
+              adminId: admin.adminId,
+              type  : 0
+            };
             return {
               access_token: this.jwtService.sign(payload),
              type : 0
@@ -659,6 +686,10 @@ export class DoctorsService {
           }
           else
           {
+            const payload = {
+              adminId: admin.adminId,
+              type : 1
+            };
             return {
               access_token: this.jwtService.sign(payload),
              type : 1
@@ -675,6 +706,7 @@ export class DoctorsService {
           }
           const payload = {
             doctorId: doctor.doctorId,
+            type : 2
           };
           return {
             access_token: this.jwtService.sign(payload),
@@ -690,6 +722,7 @@ export class DoctorsService {
           }
           const payload = {
             secretaryId: secretary.secretaryId,
+            type : 3
           };
           return {
             access_token: this.jwtService.sign(payload),
@@ -841,7 +874,7 @@ export class DoctorsService {
           return {doctors : doctors};
       }     
 
-      async getprofileforpatient(doctorId : number){
+      async getprofileforpatient(doctorId : number,patientId : number){
         const doctor = await this.doctorRepository.findOne({
           where: { doctorId },
           select : ['doctorId','firstname','lastname','description','evaluate',"phonenumber","profilePicture"],
@@ -908,7 +941,29 @@ export class DoctorsService {
           return `${year}-${month}-${day}`;
         }
 
+        let patient;
+        let canEvaluate = false
+        if(patientId)
+        {
+          patient = await this.PatientRepository.findOne({
+          where : {patientId}
+          })
+          if (!patient) {
+            throw new HttpException('patient not found', HttpStatus.NOT_FOUND);
+          }
+          const doctorPatient = await this.doctorPatientRepository.findOne({
+          where : {
+            doctor : doctor,
+            patient : patient
+          }})
+          console.log(doctorPatient)
+          if(doctorPatient){
+            canEvaluate = true;
+          }
+        }
+       
 
+    
 
         // Remove workTime property from doctor object
         delete doctor.workTime;
@@ -919,7 +974,8 @@ export class DoctorsService {
             clinics : clinics,
             specialties : specialties,
             insurances : insurances,
-            clinicWorkingNow : clinicWorkingNow
+            clinicWorkingNow : clinicWorkingNow,
+            canEvaluate : canEvaluate
           }
         }
         clinicWorkingNow = null;
@@ -928,7 +984,8 @@ export class DoctorsService {
           clinics : clinics,
           specialties : specialties,
           insurances : insurances,
-          clinicWorkingNow : clinicWorkingNow
+          clinicWorkingNow : clinicWorkingNow,
+          canEvaluate : canEvaluate
         }
       }
 
@@ -977,4 +1034,38 @@ export class DoctorsService {
           insurances : insurances,
         }
       }
+
+
+      async evaluateDoctor(evaluateDoctor : evaluateDoctorParams , patientId : number,doctorId : number){
+        const doctor = await this.doctorRepository.findOne({
+          where: { doctorId }
+        });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+        const patient = await this.PatientRepository.findOne({
+          where : {patientId}
+          })
+          if (!patient) {
+            throw new HttpException('patient not found', HttpStatus.NOT_FOUND);
+          }
+          // console.log(doctor);
+          // console.log(patientId);
+          
+          let doctorPatient = await this.doctorPatientRepository.findOne({
+            where: { doctor: {
+              doctorId : doctorId
+            },
+             patient: {
+              patientId : patientId
+             } },
+          });          
+          if(!doctorPatient){
+            throw new BadRequestException('you cant Evaluate a doctor you are not connected with')
+          }
+          doctorPatient.evaluate = evaluateDoctor.evaluate;
+          await this.doctorPatientRepository.save(doctorPatient);
+          return {message : 'doctor evaluated successfully'}
+      }
+
     }    

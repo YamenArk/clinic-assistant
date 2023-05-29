@@ -2,7 +2,7 @@ import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundExc
 import { InjectRepository } from '@nestjs/typeorm';
 import { validate } from 'class-validator';
 import { Admin } from 'src/typeorm/entities/admin';
-import { CreateAdminParams } from 'src/utils/types';
+import { CreateAdminParams, filterNameParams, updateAdminParams } from 'src/utils/types';
 import { AuthLoginDto } from 'src/admins/dtos/auth-login.dto';
 import * as bcrypt from 'bcryptjs'
 import { Repository } from 'typeorm';
@@ -31,7 +31,7 @@ export class AdminsService {
 
 
     async findAdmins(){
-      const select: Array<keyof Admin> =['adminId', 'email', 'phonenumber', 'createdAt'];
+      const select: Array<keyof Admin> =['adminId', 'email', 'phonenumber', 'firstname','lastname','active'];
         const admins =  await this.adminRepository.find({select, where:{ isAdmin : false}});
         return {admins};
     }
@@ -57,6 +57,7 @@ export class AdminsService {
       
       const newAdmin = this.adminRepository.create({
         ...adminDetails,
+        active : true,
         createdAt: new Date(),
       });
     
@@ -70,11 +71,48 @@ export class AdminsService {
     }
     
 
+    
+    
+    async filterAdminByName(filte :filterNameParams ){
+      const query =  this.adminRepository.createQueryBuilder('admin')
+      .select(['admin.adminId','admin.email','admin.phonenumber','admin.firstname','admin.lastname','admin.active',])
+      .where('CONCAT(admin.firstname, " ", admin.lastname) LIKE :name', {
+        name: `%${filte.filterName}%`,
+      })
+      const admins = await query.getMany();
+      if(admins.length === 0)
+      {
+          throw new HttpException(`No admin met the conditions `, HttpStatus.NOT_FOUND);
+      }
+      return {admins : admins};
+    }
+
+
+    
+
+
+    async updateAdmin(adminId: number, updateAdmin: updateAdminParams) {
+      const admin  = await this.adminRepository.findOne({where : {adminId : adminId}});
+      if (!admin ) {
+          throw new HttpException(`admin with id ${adminId} not found`, HttpStatus.NOT_FOUND);
+        }
+      // Create a new Doctor object with the updated properties
+      const updatedAdmin = this.adminRepository.create({ ...admin, ...updateAdmin });
+
+      // Validate the updatedDoctor object using class-validator
+      const errors = await validate(updatedAdmin);
+      if (errors.length > 0) {
+        throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
+      }
+
+      // Update the doctor in the database
+      await this.adminRepository.update(adminId, updateAdmin);
+    }
+
+
+
       async sendResetEmail(email: string) {
         const admin = await this.adminRepository.findOne({where: {email : email}});
-        console.log(email);
-        console.log("=======");
-        console.log(admin);
 
         if (!admin) {
           throw new HttpException(

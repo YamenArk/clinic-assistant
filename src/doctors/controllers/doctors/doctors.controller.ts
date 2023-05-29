@@ -7,7 +7,7 @@ import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateWorkTimeParams, UpdateDoctorParams } from 'src/utils/types';
 import { IsEmail } from 'class-validator';
-import { JWTAuthGuardAdmin, JWTAuthGuardDoctor } from 'src/middleware/auth/jwt-auth.guard';
+import { JWTAuthGuardAdmin, JWTAuthGuardDoctor, JWTAuthGuardPatient } from 'src/middleware/auth/jwt-auth.guard';
 import { UpdateDoctorForAdminDto } from 'src/doctors/dtos/UpdateDoctorForAdmin.dto';
 import { CreateWorkTimeDto } from 'src/doctors/dtos/CreateWorkTime.dto';
 import { UpdateDoctoeClinicDto } from 'src/doctors/dtos/updateDoctoeClinic.dto';
@@ -16,7 +16,10 @@ import { AuthLoginDto } from 'src/doctors/dtos/AuthLogin.dto';
 import { secondFilterDocrotsDto } from 'src/doctors/dtos/secondFilterDocrots.dto';
 import { emailDto } from 'src/doctors/dtos/email.dto';
 import { profileDetailsDto } from 'src/doctors/dtos/profileDetails.dto';
-
+import { filterNameDto } from 'src/doctors/dtos/filterName.dto';
+import * as jwt from 'jsonwebtoken';
+import { JwtPayload } from 'jsonwebtoken';
+import { evaluateDto } from 'src/doctors/dtos/evaluate.dto';
 @Controller('doctors')
 export class DoctorsController {
 
@@ -44,6 +47,15 @@ export class DoctorsController {
         await this.doctorSrevice.createDoctor(createDoctorDto);
         return{message : "doctor created successfully"}
     }
+
+
+    //filter doctor
+    @Post('filter-by-names')
+    @UseGuards(JWTAuthGuardAdmin)
+    async  filterDoctor(@Body(new ValidationPipe({ whitelist: true })) filterName : filterNameDto){
+        return this.doctorSrevice.filterDoctorByName(filterName);
+    }
+
 
 
     @Put('update/:doctorId')
@@ -286,14 +298,41 @@ export class DoctorsController {
 
 
 
+
+
+
     @Get('profile/:doctorId')
-    async getprofile(
+    async getprofile1(
       @Param('doctorId', new ParseIntPipe()) doctorId: number,
+      @Req() request
     ){
-      return this.doctorSrevice.getprofileforpatient(doctorId);
-  }
+      if (request.headers.authorization) {
+        const token = request.headers.authorization.split(' ')[1]; // Get the token from the authorization heade
+        const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload; // Decode the token using the secret key and cast to JwtPayload
+        if(decoded.type!=4)
+        {
+          return this.doctorSrevice.getprofileforpatient(doctorId,null);
+        }
+        return this.doctorSrevice.getprofileforpatient(doctorId,decoded.patientId);
+      } else {
+        // The request does not contain an authorization header, so the user is not authenticated
+        return this.doctorSrevice.getprofileforpatient(doctorId,null);
+      }
+    }
 
 
+
+    @Put('evaluate/:doctorId')
+    @UseGuards(JWTAuthGuardPatient)
+    evaluateDoctor(
+      @Body(new ValidationPipe({ whitelist: true })) evaluateDoctor : evaluateDto,
+      @Param('doctorId', new ParseIntPipe()) doctorId: number,
+      @Req() request
+      ){
+      const patientId = request.patientId; // Accessing the doctorId from the request object
+        return this.doctorSrevice.evaluateDoctor(evaluateDoctor,patientId,doctorId);
+        
+    }     
 
     @Get('withInformation')
      async getDoctorsWithInformation(){

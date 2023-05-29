@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { validate } from 'class-validator';
 import { Specialty } from 'src/typeorm/entities/specialty';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
-import { CreateSubSpecialtyParams } from 'src/utils/types';
+import { CreateSubSpecialtyParams, filterNameParams } from 'src/utils/types';
 import { Not, Repository } from 'typeorm';
 
 @Injectable()
@@ -49,6 +49,30 @@ export class SubSpecialtiesService {
             newSubSpecialty.specialty = specialty;
             return this.subSpecialtyRepository.save(newSubSpecialty);
         }
+
+
+        
+        async filtersubSpecialtiesByName(filte :filterNameParams ,specialtyId : number){
+          const query =  this.subSpecialtyRepository.createQueryBuilder('subSpecialty')
+          .andWhere({
+            specialty: {
+              specialtyId: specialtyId
+            }
+          })
+          .andWhere('subSpecialty.subSpecialtyName LIKE :name', {
+            name: `%${filte.filterName}%`,
+          })
+       
+  
+          const subSpecialties = await query.getMany();
+          if(subSpecialties.length === 0)
+          {
+              throw new HttpException(`No subSpecialties met the conditions `, HttpStatus.NOT_FOUND);
+          }
+          return {subSpecialties : subSpecialties};
+  
+        }
+
 
         async updateSubSpecialty(subSpecialtyId: number, newData: CreateSubSpecialtyParams): Promise<void> {
 

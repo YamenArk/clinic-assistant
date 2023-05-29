@@ -6,9 +6,10 @@ import { Clinic } from 'src/typeorm/entities/clinic';
 import { Doctor } from 'src/typeorm/entities/doctors';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Area } from 'src/typeorm/entities/Area';
+import { Specialty } from 'src/typeorm/entities/specialty';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Clinic,Doctor,DoctorClinic,Area])],
+  imports: [TypeOrmModule.forFeature([Clinic,Doctor,DoctorClinic,Area,Specialty])],
   providers: [ClinicsService],
   controllers: [ClinicsController]
 })

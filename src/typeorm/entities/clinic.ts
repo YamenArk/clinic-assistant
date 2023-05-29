@@ -6,9 +6,10 @@ import {
     PrimaryGeneratedColumn,
   } from 'typeorm';
 import { DoctorClinic } from './doctor-clinic';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { Area } from './Area';
 import { WorkTime } from './work-time';
+import { Specialty } from './specialty';
 
 @Entity({ name: 'clinics' })
 export class Clinic {
@@ -20,15 +21,18 @@ export class Clinic {
     @IsNotEmpty()
     clinicName: string;
 
-    @Column()
-    @IsString()
-    @IsNotEmpty()
-    Latitude: string;
 
-    @Column()
-    @IsString()
+    @Column({ type: 'decimal', precision: 16, scale: 14 })
     @IsNotEmpty()
-    Longitude: string;
+    @Min(34)
+    @Max(39)
+    Latitude: number;
+
+    @Column({ type: 'decimal', precision: 16, scale: 14})
+    @IsNotEmpty()
+    @Min(34)
+    @Max(39)
+    Longitude: number;
 
     @Column()
     createdAt: Date;
@@ -51,4 +55,9 @@ export class Clinic {
 
     @OneToMany(() => DoctorClinic, doctorClinic => doctorClinic.clinic)
     public doctorClinic: DoctorClinic[];
+
+
+    
+    @ManyToOne(() => Specialty, (specialty) => specialty.clinic)
+    public specialty: Specialty; // Ensure that the type of this property is Clinic
 }

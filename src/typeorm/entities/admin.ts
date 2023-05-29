@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import {
     Column,
     Entity,
@@ -27,6 +27,23 @@ export class Admin {
 
     @Column({ nullable: true })
     phonenumber: string;
+
+
+    @Column()
+    @IsNotEmpty()
+    @IsString()
+    firstname: string;
+
+   
+    @Column()
+    @IsNotEmpty()
+    @IsString()
+    lastname: string;
+    
+    @Column({default : true})
+    @IsBoolean()
+    active: boolean;
+
 
     @Column()
     createdAt: Date;

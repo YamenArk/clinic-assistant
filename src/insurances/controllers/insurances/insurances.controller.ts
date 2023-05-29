@@ -3,17 +3,27 @@ import { InsuranceDto } from 'src/insurances/dtos/InsuranceDetails.dto';
 import { InsurancesService } from 'src/insurances/services/insurances/insurances.service';
 import { Response } from 'express';
 import { JWTAuthGuardAdmin } from 'src/middleware/auth/jwt-auth.guard';
+import { filterNameDto } from 'src/insurances/dtos/filterName.dto';
 
 @Controller('insurances')
 export class InsurancesController {
     constructor(private InsuranceSrevice : InsurancesService){}
     @Get()
     @UseGuards(JWTAuthGuardAdmin)
-    async getClinics(){
-        const clinics =  await this.InsuranceSrevice.findInsurances()
-        return {clinics : clinics};
+    async getInsurances(){
+        const insurances =  await this.InsuranceSrevice.findInsurances()
+        return {insurances : insurances};
     }
     
+
+      //filter insurances
+      @Post('filter-by-names')
+      @UseGuards(JWTAuthGuardAdmin)
+      async  filterInsurances(@Body(new ValidationPipe({ whitelist: true })) filterName : filterNameDto){
+          return this.InsuranceSrevice.filterInsurancesByName(filterName);
+      }
+
+
     @Post()
     @UseGuards(JWTAuthGuardAdmin)
     async createClinic(@Body(new ValidationPipe({ whitelist: true })) createSpecialtyDto: InsuranceDto){

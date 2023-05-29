@@ -1,10 +1,8 @@
-import {UseGuards, Body, Controller, Delete, Get, Param, Post, Put, Res, ValidationPipe } from '@nestjs/common';
+import {UseGuards, Body, Controller, Delete, Get, Param, Post, Put, Res, ValidationPipe, BadRequestException } from '@nestjs/common';
 import { SpecialtyDto } from 'src/specialties/dtos/Specialty.dto';
 import { SpecialtiesService } from 'src/specialties/services/specialties/specialties.service';
-import { Specialty } from 'src/typeorm/entities/specialty';
-import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
-import { Response } from 'express';
 import { JWTAuthGuardAdmin } from 'src/middleware/auth/jwt-auth.guard';
+import { filterNameDto } from 'src/specialties/dtos/filterName.dto';
 
 @Controller('specialties')
 export class SpecialtiesController {
@@ -18,11 +16,25 @@ export class SpecialtiesController {
     async createSpecialty(@Body(new ValidationPipe({ whitelist: true })) createSpecialtyDto: SpecialtyDto) {
         return  await this.specialtySrevice.createspecialty(createSpecialtyDto);
     }
+
+
+      //filter Specialty
+      @Post('filter-by-names')
+      @UseGuards(JWTAuthGuardAdmin)
+      async  filterSpecialty(@Body(new ValidationPipe({ whitelist: true })) filterName : filterNameDto){
+          return this.specialtySrevice.filterSpecialtyByName(filterName);
+      }
+
+
     @Delete(':specialtyId')
     @UseGuards(JWTAuthGuardAdmin)
     async  deletespecialty(
       @Param('specialtyId') specialtyId: number
       ) {
+        // Check if specialtyId and specialtyId are numbers
+        if (isNaN(+specialtyId)) {
+          throw new BadRequestException('specialtyId must be numbers');
+        }
         await  this.specialtySrevice.deletespecialty(specialtyId);
          return {message : 'specialty deleted successfully'}
       } 
@@ -33,6 +45,10 @@ export class SpecialtiesController {
       @Param('specialtyId') specialtyId: number,
       @Body(new ValidationPipe({ whitelist: true })) newData: SpecialtyDto,
     ) {
+      // Check if specialtyId and specialtyId are numbers
+      if (isNaN(+specialtyId)) {
+        throw new BadRequestException('specialtyId must be numbers');
+      }
       await this.specialtySrevice.updatespecialty(+specialtyId, newData);
       return {message : 'specialty updated successfully'}
     }
@@ -47,6 +63,10 @@ export class SpecialtiesController {
     @Get(':specialtyId/subSpecialties')
     @UseGuards(JWTAuthGuardAdmin)
     async findAllSubsByspecialty(@Param('specialtyId') specialtyId: number) {
+      // Check if specialtyId and specialtyId are numbers
+      if (isNaN(+specialtyId)) {
+        throw new BadRequestException('specialtyId must be numbers');
+      }
       const subSpecialties = await this.specialtySrevice.findAllSubsByspecialty(specialtyId);
       return {subSpecialties : subSpecialties}
     }
@@ -54,6 +74,7 @@ export class SpecialtiesController {
 
 
 
+    
 
 
     @Get('subspecialties')

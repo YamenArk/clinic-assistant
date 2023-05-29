@@ -17,10 +17,13 @@ import { DoctorJwtStrategy } from 'src/middleware/auth/jwt.strategy';
 import { Secretary } from 'src/typeorm/entities/secretary';
 import { Admin } from 'src/typeorm/entities/admin';
 import { Specialty } from 'src/typeorm/entities/specialty';
+import { DoctorPatient } from 'src/typeorm/entities/doctor-patient';
+import { Patient } from 'src/typeorm/entities/patient';
+import { JWTAuthGuardPatient } from 'src/middleware/auth/jwt-auth.guard';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Doctor, Insurance, SubSpecialty,DoctorClinic,Clinic,WorkTime,Appointment,Admin,Secretary,Specialty]),
+    TypeOrmModule.forFeature([Doctor, Insurance, SubSpecialty,DoctorClinic,Clinic,WorkTime,Appointment,Admin,Secretary,Specialty,DoctorPatient,Patient]),
     CacheModule.register(), // add CacheModule here
     PassportModule,
     JwtModule.registerAsync({
@@ -33,7 +36,7 @@ import { Specialty } from 'src/typeorm/entities/specialty';
       inject : [ConfigService]
     })
   ],
-  providers: [DoctorsService, MailService,DoctorJwtStrategy],
+  providers: [DoctorsService, MailService,DoctorJwtStrategy,JWTAuthGuardPatient],
   controllers: [DoctorsController],
 })
 export class DoctorsModule {}

@@ -10,9 +10,10 @@ import {
 import { Insurance } from './insurance';
 import { SubSpecialty } from './sub-specialty';
 import { DoctorClinic } from './doctor-clinic';
-import { IsBoolean, IsEmail, IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { Commission } from './commission';
 import { WorkTime } from './work-time';
+import { DoctorPatient } from './doctor-patient';
 
 
 const decimalTransformer: ValueTransformer = {
@@ -76,6 +77,8 @@ export class Doctor {
     lastname: string;
     
     @Column({ type: 'decimal', precision: 4, scale: 2, default: 3.0 })
+    @Min(1)
+    @Max(5)
     evaluate: number;
 
     @Column({default : 0})
@@ -106,6 +109,9 @@ export class Doctor {
     
     @OneToMany(() => DoctorClinic, doctorClinic => doctorClinic.doctor)
     public doctorClinic: DoctorClinic[];
+
+    @OneToMany(() => DoctorPatient, doctorPatient => doctorPatient.doctor)
+    public doctorPatient: DoctorPatient[];
 
     @OneToMany(() => WorkTime, workTime => workTime.doctor)
     public workTime: WorkTime[];

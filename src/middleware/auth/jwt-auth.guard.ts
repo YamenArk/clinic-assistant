@@ -29,3 +29,24 @@ export class JWTAuthGuardDoctor extends AuthGuard('doctor-jwt') {
     return isAuthed;
   }
 }
+
+
+@Injectable()
+export class JWTAuthGuardPatient extends AuthGuard('patient-jwt') {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    // Call the super method to authenticate the user and get the doctor object
+    const isAuthed = await super.canActivate(context);
+
+    const isObservable = isAuthed instanceof Observable;
+    if (isObservable) {
+      const isAuthedValue = await isAuthed.toPromise();
+      return isAuthedValue;
+    }
+    const patient = request.user.user.patient;
+    // Save the doctor object to the request object
+    request.patientId = patient.patientId;
+
+    return isAuthed;
+  }
+}

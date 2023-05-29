@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { validate } from 'class-validator';
 import { Specialty } from 'src/typeorm/entities/specialty';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
-import { SpecialtyParams } from 'src/utils/types';
+import { SpecialtyParams, filterNameParams } from 'src/utils/types';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -45,6 +45,25 @@ export class SpecialtiesService {
         }
 
 
+        
+
+        async filterSpecialtyByName(filte :filterNameParams ){
+          const query =  this.specialtyRepository.createQueryBuilder('specialty')
+          .where('specialty.specialtyName LIKE :name', {
+            name: `%${filte.filterName}%`,
+          })
+  
+          const specialties = await query.getMany();
+          if(specialties.length === 0)
+          {
+              throw new HttpException(`No specialty met the conditions `, HttpStatus.NOT_FOUND);
+          }
+          return {specialties : specialties};
+  
+        }
+
+
+
         async updatespecialty(specialtyId: number, newData: SpecialtyParams): Promise<void> {
             const specialty  = await this.specialtyRepository.findOne({where : {specialtyId : specialtyId}});
             if (!specialty ) {
@@ -53,18 +72,22 @@ export class SpecialtiesService {
               // Create a new Doctor object with the updated properties
             const updatedSpecialty = this.specialtyRepository.create({ ...specialty, ...newData });
 
+
+
+              // Check if the specialtyName is unique
+              const existingSpecialty = await this.specialtyRepository.findOne({ where: { specialtyName: newData.specialtyName } });
+              if (existingSpecialty && existingSpecialty.specialtyId !== specialtyId) {
+                  throw new HttpException(`Specialty name must be unique`, HttpStatus.BAD_REQUEST);
+              }
+  
+
             // Validate the updatedDoctor object using class-validator
             const errors = await validate(updatedSpecialty);
             if (errors.length > 0) {
               throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
             }
 
-            // Check if the specialtyName is unique
-            const existingSpecialty = await this.specialtyRepository.findOne({ where: { specialtyName: newData.specialtyName } });
-            if (existingSpecialty && existingSpecialty.specialtyId !== specialtyId) {
-                throw new HttpException(`Specialty name must be unique`, HttpStatus.BAD_REQUEST);
-            }
-
+          
             await this.specialtyRepository.update({specialtyId},{...newData});
           }
 

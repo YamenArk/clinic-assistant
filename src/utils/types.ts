@@ -75,14 +75,14 @@ export type CreateSubSpecialtyParams = {
 };
 export interface ClinicParams  {
   clinicName:string;
-  Latitude:string;
-  Longitude:string;
+  Latitude:number;
+  Longitude:number;
 };
 
 export interface UpdateClinicParams  {
   clinicName ?:string;
-  Latitude ?:string;
-  Longitude ?:string;
+  Latitude ?:number;
+  Longitude ?:number;
 };
 
 export type InsuranceParams = {
@@ -133,3 +133,22 @@ export type createSecretaryParams = {
   lastname: string;
   age: number;
 }
+
+
+export type filterNameParams = {
+  filterName : string
+}
+
+export type updateAdminParams = {
+  email?: string;
+  phonenumber?: string;   
+  firstname?: string;
+  lastname?: string;
+  active?: boolean;
+
+}
+
+export type evaluateDoctorParams = {
+  evaluate: number;
+}
+
