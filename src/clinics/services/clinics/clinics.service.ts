@@ -194,7 +194,7 @@ export class ClinicsService {
       async getclinicForpatient (clinicId : number){
         const clinic = await this.clinicRepository.findOne({ 
           where: { clinicId },
-          relations : ['doctorClinic.doctor','workTime.doctor','specialty']
+          relations : ['doctorClinic.doctor','workTime.doctor','specialty','area.governorate']
          });
         if (!clinic) {
           throw new HttpException('Clinic not found', HttpStatus.NOT_FOUND);
@@ -208,6 +208,7 @@ export class ClinicsService {
             firstname : clinic.doctorClinic[i].doctor.firstname,
             lastname : clinic.doctorClinic[i].doctor.lastname,
             evaluate : clinic.doctorClinic[i].doctor.evaluate,
+            profilePicture : clinic.doctorClinic[i].doctor.profilePicture,
           }
           i++;
          }

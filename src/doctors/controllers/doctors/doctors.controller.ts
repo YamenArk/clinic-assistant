@@ -300,25 +300,57 @@ export class DoctorsController {
 
 
 
-
     @Get('profile/:doctorId')
     async getprofile1(
       @Param('doctorId', new ParseIntPipe()) doctorId: number,
       @Req() request
     ){
+      let patientId:number|null = null;
+      let tokenIsCorrect = false;
       if (request.headers.authorization) {
-        const token = request.headers.authorization.split(' ')[1]; // Get the token from the authorization heade
-        const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload; // Decode the token using the secret key and cast to JwtPayload
-        if(decoded.type!=4)
-        {
-          return this.doctorSrevice.getprofileforpatient(doctorId,null);
+        try{
+          const token = request.headers.authorization.split(' ')[1]; // Get the token from the authorization heade
+          const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload; // Decode the token using the secret key and cast to JwtPayload
+          if(decoded.type===4)
+          {
+            tokenIsCorrect = true
+            patientId = decoded.patientId;
+          }
         }
-        return this.doctorSrevice.getprofileforpatient(doctorId,decoded.patientId);
-      } else {
-        // The request does not contain an authorization header, so the user is not authenticated
-        return this.doctorSrevice.getprofileforpatient(doctorId,null);
-      }
+        catch{}
+      }  
+      // The request does not contain an authorization header, so the user is not authenticated
+        return this.doctorSrevice.getprofileforpatient(doctorId,patientId,tokenIsCorrect);
     }
+
+
+
+
+    // @Get('profile/:doctorId')
+    // async getprofile1(
+    //   @Param('doctorId', new ParseIntPipe()) doctorId: number,
+    //   @Req() request
+    // ){
+    //   if (request.headers.authorization) {
+    //     const token = request.headers.authorization.split(' ')[1]; // Get the token from the authorization heade
+    //     let decoded;
+    //     try{
+
+    //       decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload; // Decode the token using the secret key and cast to JwtPayload
+    //     }
+    //     catch{
+    //       return this.doctorSrevice.getprofileforpatient(doctorId,null);
+    //     }
+    //     if(decoded.type!=4)
+    //     {
+    //       return this.doctorSrevice.getprofileforpatient(doctorId,null);
+    //     }
+    //     return this.doctorSrevice.getprofileforpatient(doctorId,decoded.patientId);
+    //   } else {
+    //     // The request does not contain an authorization header, so the user is not authenticated
+    //     return this.doctorSrevice.getprofileforpatient(doctorId,null);
+    //   }
+    // }
 
 
 
@@ -333,6 +365,19 @@ export class DoctorsController {
         return this.doctorSrevice.evaluateDoctor(evaluateDoctor,patientId,doctorId);
         
     }     
+
+    @Get('evaluate/:doctorId')
+    @UseGuards(JWTAuthGuardPatient)
+    getevaluateDoctor(
+      @Param('doctorId', new ParseIntPipe()) doctorId: number,
+      @Req() request
+      ){
+      const patientId = request.patientId; // Accessing the doctorId from the request object
+        return this.doctorSrevice.getevaluateDoctor(patientId,doctorId);
+        
+    }     
+    
+
 
     @Get('withInformation')
      async getDoctorsWithInformation(){

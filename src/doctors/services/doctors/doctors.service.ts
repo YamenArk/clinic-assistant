@@ -22,6 +22,8 @@ import { Secretary } from 'src/typeorm/entities/secretary';
 import { Specialty } from 'src/typeorm/entities/specialty';
 import { DoctorPatient } from 'src/typeorm/entities/doctor-patient';
 import { Patient } from 'src/typeorm/entities/patient';
+import { doc } from 'prettier';
+import { pairwise } from 'rxjs';
 @Injectable()
 @UseInterceptors(CacheInterceptor)
 export class DoctorsService {
@@ -585,7 +587,6 @@ export class DoctorsService {
             `you have no set any worktime in this clinic clinic ${clinic.clinicId}`
           );
         }
-        console.log("=12312321312")
         return {workTime : workTime};
       }
     
@@ -824,30 +825,61 @@ export class DoctorsService {
 
       async filterDocrots(filterDetasils : filterDocrotsParams)
       {
-          const query =  this.doctorRepository.createQueryBuilder('doctor')
-          .leftJoin('doctor.subSpecialty', 'subSpecialty')
-          .leftJoin('doctor.insurance', 'insurance')
+        const query = this.doctorRepository.createQueryBuilder('doctor')
+        .leftJoin('doctor.subSpecialty', 'subSpecialty')
+        .leftJoin('doctor.insurance', 'insurance')
+        .select([
+            'doctor.doctorId',
+            'doctor.firstname',
+            'doctor.lastname',
+            'doctor.evaluate',
+            'doctor.profilePicture',
+        ]);
+    
+    if (filterDetasils.gender !== null) {
+        query.andWhere('doctor.gender = :gender', { gender: filterDetasils.gender });
+    }
+    
+    if (filterDetasils.subSpecialtyId !== null) {
+        query.andWhere('subSpecialty.subSpecialtyId = :subSpecialtyId', { subSpecialtyId: filterDetasils.subSpecialtyId });
+    }
+    
+    if (filterDetasils.insuranceId !== null) {
+        query.andWhere('insurance.insuranceId = :insuranceId', { insuranceId: filterDetasils.insuranceId });
+    }
+    
+    const results  = await query.getMany();
+    
+    if (results.length === 0) {
+        throw new HttpException(`No doctor met the conditions`, HttpStatus.NOT_FOUND);
+    }
+        
+    const doctorsWithSpecialties = await Promise.all(results.map(async result => {
+      const doctor = {
+          doctorId: result.doctorId,
+          firstname: result.firstname,
+          lastname: result.lastname,
+          evaluate: result.evaluate,
+          profilePicture: result.profilePicture,
+          specialties: []
+      };
+      if (result.doctorId) {
+          const specialties = await this.specialtyRepository.find({
+              where: { subSpecialties: { doctor: { doctorId: result.doctorId } } },
+              relations: ['subSpecialties'],
+              select: ['specialtyId', 'specialtyName']
+          });
+          doctor.specialties = specialties.map(specialty => ({ specialtyId: specialty.specialtyId, specialtyName: specialty.specialtyName }));
+      }
+      return doctor;
+  }));
   
+  if (doctorsWithSpecialties.length === 0) {
+      throw new HttpException(`No doctor met the conditions`, HttpStatus.NOT_FOUND);
+  }
   
-                  
-          if (filterDetasils.gender !== null) {
-              query.andWhere('doctor.gender = :gender', { gender: filterDetasils.gender });
-          }
-          
-          if (filterDetasils.subSpecialtyId !== null) {
-              query.andWhere('subSpecialty.subSpecialtyId = :subSpecialtyId', { subSpecialtyId: filterDetasils.subSpecialtyId });
-          }
-          
-          if (filterDetasils.insuranceId !== null) {
-              query.andWhere('insurance.insuranceId = :insuranceId', { insuranceId: filterDetasils.insuranceId });
-          }
-  
-          const doctors = await query.getMany();
-          if(doctors.length === 0)
-          {
-              throw new HttpException(`No doctor met the conditions `, HttpStatus.NOT_FOUND);
-          }
-          return {doctors : doctors}; 
+  return doctorsWithSpecialties;
+
       }
 
       
@@ -855,6 +887,14 @@ export class DoctorsService {
       {
         const query =  this.doctorRepository.createQueryBuilder('doctor')
         .leftJoin('doctor.subSpecialty', 'subSpecialty')
+        .select([
+          'doctor.doctorId',
+          'doctor.firstname',
+          'doctor.lastname',
+          'doctor.evaluate',
+          'doctor.profilePicture',
+      ]);
+
         if (secondFilterDocrotsDto.subSpecialtyId !== null) {
           query.andWhere('subSpecialty.subSpecialtyId = :subSpecialtyId', { subSpecialtyId: secondFilterDocrotsDto.subSpecialtyId });
         }
@@ -866,15 +906,39 @@ export class DoctorsService {
             name: `%${secondFilterDocrotsDto.filterName}%`,
           });
         }
-        const doctors = await query.getMany();
-          if(doctors.length === 0)
-          {
-              throw new HttpException(`No doctor met the conditions `, HttpStatus.NOT_FOUND);
+        const results  = await query.getMany();
+    
+        if (results.length === 0) {
+            throw new HttpException(`No doctor met the conditions`, HttpStatus.NOT_FOUND);
+        }
+            
+        const doctorsWithSpecialties = await Promise.all(results.map(async result => {
+          const doctor = {
+              doctorId: result.doctorId,
+              firstname: result.firstname,
+              lastname: result.lastname,
+              evaluate: result.evaluate,
+              profilePicture: result.profilePicture,
+              specialties: []
+          };
+          if (result.doctorId) {
+              const specialties = await this.specialtyRepository.find({
+                  where: { subSpecialties: { doctor: { doctorId: result.doctorId } } },
+                  relations: ['subSpecialties'],
+                  select: ['specialtyId', 'specialtyName']
+              });
+              doctor.specialties = specialties.map(specialty => ({ specialtyId: specialty.specialtyId, specialtyName: specialty.specialtyName }));
           }
-          return {doctors : doctors};
+          return doctor;
+          }));
+          
+          if (doctorsWithSpecialties.length === 0) {
+              throw new HttpException(`No doctor met the conditions`, HttpStatus.NOT_FOUND);
+          }
+          return doctorsWithSpecialties;
       }     
 
-      async getprofileforpatient(doctorId : number,patientId : number){
+      async getprofileforpatient(doctorId : number,patientId : number,tokenIsCorrect : boolean){
         const doctor = await this.doctorRepository.findOne({
           where: { doctorId },
           select : ['doctorId','firstname','lastname','description','evaluate',"phonenumber","profilePicture"],
@@ -956,7 +1020,6 @@ export class DoctorsService {
             doctor : doctor,
             patient : patient
           }})
-          console.log(doctorPatient)
           if(doctorPatient){
             canEvaluate = true;
           }
@@ -975,7 +1038,8 @@ export class DoctorsService {
             specialties : specialties,
             insurances : insurances,
             clinicWorkingNow : clinicWorkingNow,
-            canEvaluate : canEvaluate
+            canEvaluate : canEvaluate,
+            tokenIsCorrect : tokenIsCorrect
           }
         }
         clinicWorkingNow = null;
@@ -985,7 +1049,8 @@ export class DoctorsService {
           specialties : specialties,
           insurances : insurances,
           clinicWorkingNow : clinicWorkingNow,
-          canEvaluate : canEvaluate
+          canEvaluate : canEvaluate, 
+          tokenIsCorrect : tokenIsCorrect
         }
       }
 
@@ -1066,6 +1131,38 @@ export class DoctorsService {
           doctorPatient.evaluate = evaluateDoctor.evaluate;
           await this.doctorPatientRepository.save(doctorPatient);
           return {message : 'doctor evaluated successfully'}
+      }
+
+      async getevaluateDoctor(patientId : number,doctorId : number){
+        const doctor = await this.doctorRepository.findOne({
+          where: { doctorId }
+        });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+        const patient = await this.PatientRepository.findOne({
+          where : {patientId}
+          })
+          if (!patient) {
+            throw new HttpException('patient not found', HttpStatus.NOT_FOUND);
+          }
+
+          let doctorPatient = await this.doctorPatientRepository.findOne({
+            where: { doctor: {
+              doctorId : doctorId
+            },
+             patient: {
+              patientId : patientId
+             } },
+          });          
+          if(!doctorPatient){
+            throw new BadRequestException('you are not connected to this doctor to get the evaluate')
+          }
+          if(!doctorPatient.evaluate)
+          {
+            return {evaluate : 0}
+          }
+          return {evaluate : doctorPatient.evaluate}
       }
 
     }    
