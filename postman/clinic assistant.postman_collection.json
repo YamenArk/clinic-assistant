@@ -123,7 +123,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"orderByEvaluate\":true,\r\n    \"subSpecialtyId\":3,\r\n    \"filterName\":\"yamen arksose\"\r\n}",
+									"raw": "{\r\n    \"orderByEvaluate\":true,\r\n    \"subSpecialtyId\":null,\r\n    \"filterName\":\"ya\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -153,7 +153,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIyIiwidHlwZSI6NCwiaWF0IjoxNjg1Mzk1ODY3LCJleHAiOjE2ODU0ODIyNjd9.l5HvAOdECvZJWl-uogZfNt0EAW75iTMU0l8oqngVmx8",
+											"value": "",
 											"type": "string"
 										}
 									]
@@ -227,6 +227,43 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "evaludate a doctor",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg2MTI0ODI5LCJleHAiOjE2ODYyMTEyMjl9.F8qWfZ6L9luRd14c272rcTO7y3RNG83tJAOAVnjj12A",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/doctors/evaluate/:doctorId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"doctors",
+										"evaluate",
+										":doctorId"
+									],
+									"variable": [
+										{
+											"key": "doctorId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -240,7 +277,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"phoneNumber\":\"0932691631\",\r\n    \"password\":\"12313\"\r\n}",
+									"raw": "{\r\n    \"phoneNumber\":\"0932691632\",\r\n    \"password\":\"12313\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -315,6 +352,218 @@
 									"path": [
 										"patients",
 										"verify"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "appoitments",
+					"item": [
+						{
+							"name": "getDoctorClinic",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/doctors/clinic/:clinicId/:doctorId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"doctors",
+										"clinic",
+										":clinicId",
+										":doctorId"
+									],
+									"variable": [
+										{
+											"key": "clinicId",
+											"value": "1"
+										},
+										{
+											"key": "doctorId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get work times",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/doctors/work-time/:clinicId/:doctorId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"doctors",
+										"work-time",
+										":clinicId",
+										":doctorId"
+									],
+									"variable": [
+										{
+											"key": "clinicId",
+											"value": "1"
+										},
+										{
+											"key": "doctorId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "work Times With Filter",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"year\":\"2023\",\r\n    \"month\":\"7\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/doctors/work-time/:clinicId/:doctorId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"doctors",
+										"work-time",
+										":clinicId",
+										":doctorId"
+									],
+									"variable": [
+										{
+											"key": "clinicId",
+											"value": "1"
+										},
+										{
+											"key": "doctorId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get appotiments",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/doctors/appoitment/:workTimeId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"doctors",
+										"appoitment",
+										":workTimeId"
+									],
+									"variable": [
+										{
+											"key": "workTimeId",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "book an appoitment",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg2MjI4MzUwLCJleHAiOjE2ODYzMTQ3NTB9.JkzKoQxS26QSlhJpV6p8k4Eq6osZ4C--tjVCYMRg86c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/doctors/appoitment/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"doctors",
+										"appoitment",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get time between today and the appoitment",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg2MjI4MzUwLCJleHAiOjE2ODYzMTQ3NTB9.JkzKoQxS26QSlhJpV6p8k4Eq6osZ4C--tjVCYMRg86c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/doctors/appoitment/patient/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"doctors",
+										"appoitment",
+										"patient",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1"
+										}
 									]
 								}
 							},

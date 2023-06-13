@@ -20,6 +20,7 @@ import { filterNameDto } from 'src/doctors/dtos/filterName.dto';
 import * as jwt from 'jsonwebtoken';
 import { JwtPayload } from 'jsonwebtoken';
 import { evaluateDto } from 'src/doctors/dtos/evaluate.dto';
+import { workTimeFilterDto } from 'src/doctors/dtos/workTimeFilter.dto';
 @Controller('doctors')
 export class DoctorsController {
 
@@ -37,7 +38,8 @@ export class DoctorsController {
     async getdoctorprofile(
       @Param('doctorId', new ParseIntPipe()) doctorId: number,
     ){
-      return this.doctorSrevice.getprofileforadmin(doctorId);
+      const doctorProfile = await this.doctorSrevice.getprofileforadmin(doctorId);
+      return {doctorProfile : doctorProfile}
   }
 
     //create doctor
@@ -320,7 +322,8 @@ export class DoctorsController {
         catch{}
       }  
       // The request does not contain an authorization header, so the user is not authenticated
-        return this.doctorSrevice.getprofileforpatient(doctorId,patientId,tokenIsCorrect);
+        const doctorProfile = await this.doctorSrevice.getprofileforpatient(doctorId,patientId,tokenIsCorrect);
+        return {doctorProfile : doctorProfile}
     }
 
 
@@ -377,11 +380,66 @@ export class DoctorsController {
         
     }     
     
+    
+    @Get('clinic/:clinicId/:doctorId')
+    @UseGuards(JWTAuthGuardPatient)
+    async getDoctorClinic(
+      @Param('doctorId', new ParseIntPipe()) doctorId: number,
+      @Param('clinicId', new ParseIntPipe()) clinicId: number,
+    ){
+       const doctorClinicDetails = await this.doctorSrevice.getDoctorClinic(doctorId,clinicId);
+       return {doctorClinicDetails : doctorClinicDetails}
+   }
 
+      
+   @Get('work-time/:clinicId/:doctorId')
+   @UseGuards(JWTAuthGuardPatient)
+   async getworkTimes(
+     @Param('doctorId', new ParseIntPipe()) doctorId: number,
+     @Param('clinicId', new ParseIntPipe()) clinicId: number,
+   ){
+      const doctorClinicWorkTime = await this.doctorSrevice.getWorkTime(doctorId,clinicId);
+      return {doctorClinicWorkTime : doctorClinicWorkTime}
+  }
 
-    @Get('withInformation')
-     async getDoctorsWithInformation(){
-        const doctors = await this.doctorSrevice.getDoctorsWithAllTheirInformation();
-        return {doctors : doctors}
-    }
+  @Post('work-time/:clinicId/:doctorId')
+  @UseGuards(JWTAuthGuardPatient)
+  async getworkTimesWithFilter(
+    @Param('doctorId', new ParseIntPipe()) doctorId: number,
+    @Param('clinicId', new ParseIntPipe()) clinicId: number,
+    @Body(new ValidationPipe({ whitelist: true })) workTimeFilter : workTimeFilterDto,
+  ){
+    workTimeFilterDto.validate(workTimeFilter); // Call the validate() method as a static method on CreateWorkTimeDto
+
+     const doctorClinicWorkTime = await this.doctorSrevice.getWorkTimeWithFilter(doctorId,clinicId,workTimeFilter);
+     return {doctorClinicWorkTime : doctorClinicWorkTime}
+ }
+
+  @Get('appoitment/:workTimeId')
+    @UseGuards(JWTAuthGuardPatient)
+    async getAppoitments(
+      @Param('workTimeId', new ParseIntPipe()) workTimeId: number,
+    ){
+      return this.doctorSrevice.getAppoitmentForPatient(workTimeId);
+  }
+
+  @Post('appoitment/:id')
+  @UseGuards(JWTAuthGuardPatient)
+  async setAppitments(
+    @Param('id', new ParseIntPipe()) id: number,
+    @Req() request
+    ){
+    const patientId = request.patientId; // Accessing the doctorId from the request object
+
+      await this.doctorSrevice.setAppitments(id,patientId);
+      return {mesaage : 'you have been booked successfully'}
+  }
+  @Get('appoitment/patient/:id')
+  // @UseGuards(JWTAuthGuardPatient)
+  async getTimeBetweenTodayAndTheAppoitment(
+    @Param('id', new ParseIntPipe()) id: number,
+  ){
+    return this.doctorSrevice.getTimeBetweenTodayAndTheAppoitment(id);
+  }
+
 }

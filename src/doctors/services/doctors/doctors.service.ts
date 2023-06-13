@@ -6,8 +6,8 @@ import { CACHE_MANAGER, CacheInterceptor, CacheModule } from '@nestjs/common'; /
 import { Doctor } from 'src/typeorm/entities/doctors';
 import { Insurance } from 'src/typeorm/entities/insurance';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
-import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, evaluateDoctorParams, filterDocrotsParams, filterNameParams, profileDetailsParams, secondFilterDocrotsParams } from 'src/utils/types';
-import { In, Like, MoreThanOrEqual, Repository } from 'typeorm';
+import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, evaluateDoctorParams, filterDocrotsParams, filterNameParams, profileDetailsParams, secondFilterDocrotsParams,WorkTimeWithAppointments, workTimeFilterParams,appointmentwithBooked } from 'src/utils/types';
+import { Between, In, IsNull, Like, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { Inject } from '@nestjs/common';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
@@ -62,7 +62,7 @@ export class DoctorsService {
 
       //admin
 
-      async createDoctor(doctorDetails: CreateDoctorParams): Promise<Doctor> {
+      async createDoctor(doctorDetails: CreateDoctorParams){
         const { email, phonenumberForAdmin, gender, firstname, lastname, clinics, subSpecialties, insurances } = doctorDetails;
     
         //doctor duplicates
@@ -136,19 +136,15 @@ export class DoctorsService {
         const newDoctor = await this.doctorRepository.save(doctor);
     
         // associate the Doctor with the Clinics using DoctorClinic entities
-        const doctorClinicEntities = clinicsArray.map(clinic => {
+        const doctorClinicEntities = await Promise.all(clinicsArray.map(async (clinic) => {
           const doctorClinic = new DoctorClinic();
           doctorClinic.doctor = newDoctor;
           doctorClinic.clinic = clinic;
+          clinic.numDoctors ++;
+          await this.clinicRepository.save(clinic);
           return doctorClinic;
-        });
-
-
-
+        }));
         await this.doctorClinicRepository.save(doctorClinicEntities);
-    
-    
-        return newDoctor;
       }
 
 
@@ -551,7 +547,8 @@ export class DoctorsService {
           
       }
 
-      async getWorkTime(clinicId : number,doctorId : number){
+
+      async getWorkTime(clinicId : number,doctorId : number): Promise<{ workTimes: WorkTimeWithAppointments[],startingDate :string, finishingDate : string }> {
 
         if (!doctorId) {
           throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
@@ -587,10 +584,39 @@ export class DoctorsService {
             `you have no set any worktime in this clinic clinic ${clinic.clinicId}`
           );
         }
-        return {workTime : workTime};
+        
+        
+        
+        const workTimeWithAppointments = await Promise.all(workTime.map(async result => {
+          const workTime = {
+              workTimeId: result.workTimeId,
+              startingTime: result.startingTime,
+              finishingTime: result.finishingTime,
+              day: result.day,
+              date: result.date,
+              haveAppointments : false
+          };
+          const appointment = await this.appointmentRepository.findOne({
+            where: {
+              workTime: result,
+              patient: IsNull(),
+            },
+            relations: ['patient'],
+          });
+          if(appointment)
+          {
+            workTime.haveAppointments = true
+          }      
+          return workTime;
+          }));
+        // return {worktimes : workTimeWithAppointments};
+        return { workTimes: workTimeWithAppointments,
+                  startingDate : workTime[0].date,
+                  finishingDate :  workTime[workTime.length-1].date
+         };
       }
     
-
+      
       async getAppoitment(workTimeId : number,doctorId : number){
         if (!doctorId) {
           throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
@@ -608,7 +634,7 @@ export class DoctorsService {
         if(appointment.length == 0)
         {
           throw new NotFoundException(
-            `you have no set any appointment in this wotk time ${workTimeId}`
+            `you have not set any appointment in this wotk time ${workTimeId}`
           );
         }
         
@@ -782,46 +808,6 @@ export class DoctorsService {
       }
 
       //patient
-      async getDoctorsWithAllTheirInformation()
-      {
-        const doctors = await this.doctorRepository.createQueryBuilder('doctor')
-        .select([
-          'doctor.doctorId',
-          'doctor.description',
-          'doctor.active',
-          'doctor.gender',
-          'doctor.profilePicture',
-          'doctor.firstname',
-          'doctor.lastname',
-          'doctor.appointmentDuring',
-          'doctor.evaluate',
-          'doctor.numberOfPeopleWhoVoted',
-          'doctor.checkupPrice',
-          'doctor.phoneNumber',
-          'doctor.createdAt',
-          'subSpecialty.subSpecialtyName',
-          'specialty.specialtyName',
-          'doctorClinic.id',
-          'clinic.clinicId',
-          'clinic.clinicName',
-          'clinic.location',
-          'clinic.locationId',
-          'clinic.createdAt',
-          'clinic.phonenumber',
-        ])
-        .leftJoin('doctor.subSpecialty', 'subSpecialty')
-        .leftJoin('subSpecialty.specialty', 'specialty')
-        .leftJoin('doctor.doctorClinic', 'doctorClinic')
-        .leftJoin('doctorClinic.clinic', 'clinic')
-        .getMany();
-      
-      if (doctors.length === 0) {
-        throw new HttpException(`No doctors found`, HttpStatus.NOT_FOUND);
-      }
-
-      return { doctors };
-
-      }
 
       async filterDocrots(filterDetasils : filterDocrotsParams)
       {
@@ -872,14 +858,12 @@ export class DoctorsService {
           doctor.specialties = specialties.map(specialty => ({ specialtyId: specialty.specialtyId, specialtyName: specialty.specialtyName }));
       }
       return doctor;
-  }));
-  
-  if (doctorsWithSpecialties.length === 0) {
-      throw new HttpException(`No doctor met the conditions`, HttpStatus.NOT_FOUND);
-  }
-  
-  return doctorsWithSpecialties;
-
+      }));
+      
+      if (doctorsWithSpecialties.length === 0) {
+          throw new HttpException(`No doctor met the conditions`, HttpStatus.NOT_FOUND);
+      }
+      return {doctor : doctorsWithSpecialties};
       }
 
       
@@ -935,7 +919,7 @@ export class DoctorsService {
           if (doctorsWithSpecialties.length === 0) {
               throw new HttpException(`No doctor met the conditions`, HttpStatus.NOT_FOUND);
           }
-          return doctorsWithSpecialties;
+          return {doctor : doctorsWithSpecialties};
       }     
 
       async getprofileforpatient(doctorId : number,patientId : number,tokenIsCorrect : boolean){
@@ -1165,4 +1149,245 @@ export class DoctorsService {
           return {evaluate : doctorPatient.evaluate}
       }
 
+      async getDoctorClinic(doctorId : number ,clinicId : number){
+        const doctor = await this.doctorRepository.findOne({
+          where: { doctorId },
+          select : ['firstname','lastname']
+        });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+        const clinic = await this.clinicRepository.findOne({
+          where: { clinicId },
+          relations : ['specialty','area.governorate'],
+          select : ['clinicId','clinicName','specialty','area','phonenumber']
+        });
+        if (!clinic) {
+          throw new HttpException('clinic not found', HttpStatus.NOT_FOUND);
+        }
+        const doctorClinics = await this.doctorClinicRepository.findOne({
+          where: { 
+            clinic: { clinicId },
+            doctor : {doctorId} 
+          },
+          select : ["id",'appointmentDuring','checkupPrice']
+        });
+
+        if (!doctorClinics) {
+          throw new BadRequestException('this doctor is not connected to this clinic');
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const workTime = await this.workTimeRepository.find({
+          where: { 
+            doctor: { doctorId }, 
+            clinic: { clinicId },
+            date: MoreThanOrEqual(today.toISOString())},
+        });
+        
+
+        
+        //check if the doctor is working  
+        const now = new Date();
+        const currentTime = now.toLocaleTimeString('en-US', { hour12: false });
+        const currentDate = formatDate(now);
+        const isWorkingNow = workTime.some(workTime => {
+          const { date, startingTime, finishingTime } = workTime;
+          if (date !== currentDate) {
+            return false; // not working on this date
+          }
+          if (currentTime < startingTime || currentTime > finishingTime) {
+            return false; // not working at this time
+          }
+          return true; // working now
+        });
+        
+        function formatDate(date) {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        }
+        return {
+          doctorClinics : doctorClinics,
+          doctor : doctor,
+          clinic : clinic,
+          isWorkingNow : isWorkingNow,
+          workTime : workTime
+        };
+      }
+
+
+      async getWorkTimeWithFilter(clinicId : number,doctorId : number,workTimeFilter : workTimeFilterParams): Promise<{ workTimes: WorkTimeWithAppointments[],startingDate :string, finishingDate : string }> {
+
+        if (!doctorId) {
+          throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
+        }
+        const doctor = await this.doctorRepository.findOne({where : {doctorId : doctorId}});
+        if (!doctor ) {
+          throw new HttpException(`doctor with id ${doctorId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const clinic = await this.clinicRepository.findOne({where : {clinicId : clinicId}});
+        if (!clinic ) {
+          throw new HttpException(`clinic with id ${clinicId} not found`, HttpStatus.NOT_FOUND);
+        }
+
+        //see the connection 
+        const doctorClinic = await this.doctorClinicRepository.findOne({
+          where: { doctor: { doctorId }, clinic: { clinicId } },
+        });
+
+        if (!doctorClinic ) {
+          throw new NotFoundException(
+            `No doctorClinic entity found for doctor ${doctor.doctorId} and clinic ${clinic.clinicId}`
+          );
+        }
+        //get worktimes        
+        const month = parseInt(workTimeFilter.month, 10);
+        const year = parseInt(workTimeFilter.year, 10);
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+        const workTime = await this.workTimeRepository.find({
+          where: {
+            doctor: { doctorId },
+            clinic: { clinicId },
+            date: Between(startDate.toISOString().slice(0, 10), endDate.toISOString().slice(0, 10)),
+          },
+        });
+        if(workTime.length == 0)
+        {
+          throw new NotFoundException(
+            `thier are no work times in the clinic ${clinic.clinicId}`
+          );
+        }
+        
+
+        
+        
+        const workTimeWithAppointments = await Promise.all(workTime.map(async result => {
+          const workTime = {
+              workTimeId: result.workTimeId,
+              startingTime: result.startingTime,
+              finishingTime: result.finishingTime,
+              day: result.day,
+              date: result.date,
+              haveAppointments : false
+          };
+          const appointment = await this.appointmentRepository.findOne({
+            where: {
+              workTime: result,
+              patient: IsNull(),
+            },
+            relations: ['patient'],
+          });
+          if(appointment)
+          {
+            workTime.haveAppointments = true
+          }      
+          return workTime;
+          }));
+        return { workTimes: workTimeWithAppointments,
+                  startingDate : workTime[0].date,
+                  finishingDate :  workTime[workTime.length-1].date
+         };
+      }
+
+
+        
+      async   getAppoitmentForPatient(workTimeId : number) : Promise<{ appointment: appointmentwithBooked[],}>{
+        const workTime = await this.workTimeRepository.findOne({where : {workTimeId : workTimeId}});
+        if (!workTime ) {
+          throw new HttpException(`clinic with id ${workTimeId} not found`, HttpStatus.NOT_FOUND);
+        }
+     
+        const appointment = await this.appointmentRepository.find({
+          where : {
+            workTime : {workTimeId}}, 
+            relations: ['patient'],
+            select : ['id','startingTime','finishingTime','patient'] 
+          });
+        if(appointment.length == 0)
+        {
+          throw new NotFoundException(
+            `thier is no appoitments in this worktime ${workTimeId}`
+          );
+        }
+
+             
+        const appointmentwithBooked =(appointment.map( result => {
+          let isBooked = false;
+          if(result.patient)
+          {
+            isBooked = true
+          }
+          const appointment = {
+            id : result.id,
+            startingTime : result.startingTime,
+            finishingTime : result.finishingTime  ,
+            isBooked :  isBooked  
+                 };
+          return appointment;
+          }));
+        return {appointment : appointmentwithBooked};
+      }
+      async setAppitments(appointmentId : number,patientId : number){
+        const appointment = await this.appointmentRepository.findOne({
+          where : {
+           id : appointmentId
+          }})
+        if(!appointment)
+        {
+          throw new NotFoundException(
+            `thier is no appoitments with this id`
+          );
+        }
+        if(appointment.patient)
+        {
+          throw new BadRequestException('youe cant book an booked appoitment')
+        }
+        const patient = await this.PatientRepository.findOne({
+          where : {patientId}
+          })
+          if (!patient) {
+            throw new HttpException('patient not found', HttpStatus.NOT_FOUND);
+          }
+          appointment.patient = patient;
+          await this.appointmentRepository.save(appointment);
+      }
+
+      
+      async getTimeBetweenTodayAndTheAppoitment(appointmentId : number){
+        const appointment = await this.appointmentRepository.findOne({
+          where : {
+           id : appointmentId
+          }})
+        if(!appointment)
+        {
+          throw new NotFoundException(
+            `thier is no appoitments with this id`
+          );
+        }
+        const now = new Date();
+        const syriaTimezone = 'Asia/Damascus';
+        const moment = require('moment-timezone');
+        const currentHour = Number(moment().tz(syriaTimezone).format('H'));
+        const currentMinute = now.getUTCMinutes();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const date = new Date(appointment.date);
+        const startingTime = appointment.startingTime.split(':').map(Number);
+        
+        if (date.getTime() === today.getTime()) {
+          if (currentHour === startingTime[0]) {
+            const timeDiffMinutes = currentMinute - startingTime[1];
+            return { message: `الفرق الزمني ${timeDiffMinutes} دقائق` };
+          } else {
+            const timeDiffHours = currentHour - startingTime[0];
+            return { message: `الفرق الزمني ${timeDiffHours} ساعات` };
+          }
+        } else {
+          const timeDiffDays = Math.round((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          return { message: `الفرق الزمني ${timeDiffDays} أيام` };
+        }
+      }
     }    

@@ -262,9 +262,5 @@ export class ClinicsService {
           doctors : doctors,
           doctorWorkingNow : doctorWorkingNow
         }
-
-
-
-
       }
     }

@@ -152,3 +152,27 @@ export type evaluateDoctorParams = {
   evaluate: number;
 }
 
+
+
+export interface WorkTimeWithAppointments {
+  workTimeId: number;
+  startingTime: string;
+  finishingTime: string;
+  day: Day;
+  date: string;
+  haveAppointments: boolean;
+}
+
+export interface appointmentwithBooked {
+  id: number;
+  startingTime: string;
+  finishingTime: string;
+  isBooked: boolean;
+}
+
+
+export type workTimeFilterParams = {
+  month: string;
+  year: string;
+
+}
