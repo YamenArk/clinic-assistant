@@ -24,14 +24,14 @@ export class Clinic {
 
     @Column({ type: 'decimal', precision: 16, scale: 14 })
     @IsNotEmpty()
-    @Min(34)
-    @Max(39)
+    @Min(30)
+    @Max(40)
     Latitude: number;
 
     @Column({ type: 'decimal', precision: 16, scale: 14})
     @IsNotEmpty()
-    @Min(34)
-    @Max(39)
+    @Min(30)
+    @Max(40)
     Longitude: number;
 
     @Column()

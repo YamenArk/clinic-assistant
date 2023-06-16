@@ -7,14 +7,14 @@ export class UpdateClinicDto {
 
     @IsOptional()
     @IsNumber()
-    @Min(34)
-    @Max(38)
+    @Min(30)
+    @Max(40)
     Latitude:number;
 
     @IsOptional()
     @IsNumber()
-    @Min(34)
-    @Max(38)
+    @Min(30)
+    @Max(40)
     Longitude:number;
   };
   

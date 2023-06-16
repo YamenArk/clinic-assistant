@@ -572,11 +572,18 @@ export class DoctorsService {
             `No doctorClinic entity found for doctor ${doctor.doctorId} and clinic ${clinic.clinicId}`
           );
         }
-        //get worktimes        
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+
+         const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+        const lastAppointment = new Date(today);
+        lastAppointment.setDate(today.getDate() + doctorClinic.daysToSeeLastAppointment);
         const workTime = await this.workTimeRepository.find({
-          where: { doctor: { doctorId }, clinic: { clinicId },date: MoreThanOrEqual(today.toISOString()), },
+          where: {
+              doctor: { doctorId },
+              clinic: { clinicId },
+              date: Between(today.toISOString(), lastAppointment.toISOString())
+          }
         });
         if(workTime.length == 0)
         {
@@ -1152,11 +1159,12 @@ export class DoctorsService {
       async getDoctorClinic(doctorId : number ,clinicId : number){
         const doctor = await this.doctorRepository.findOne({
           where: { doctorId },
-          select : ['firstname','lastname']
+          select : ['firstname','lastname','profilePicture']
         });
         if (!doctor) {
           throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
         }
+
         const clinic = await this.clinicRepository.findOne({
           where: { clinicId },
           relations : ['specialty','area.governorate'],
@@ -1177,6 +1185,7 @@ export class DoctorsService {
           throw new BadRequestException('this doctor is not connected to this clinic');
         }
 
+        
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const workTime = await this.workTimeRepository.find({
@@ -1185,10 +1194,8 @@ export class DoctorsService {
             clinic: { clinicId },
             date: MoreThanOrEqual(today.toISOString())},
         });
-        
 
-        
-        //check if the doctor is working  
+
         const now = new Date();
         const currentTime = now.toLocaleTimeString('en-US', { hour12: false });
         const currentDate = formatDate(now);

@@ -26,7 +26,7 @@ export class ClinicsService {
     
          async findClinics() {
           const select: Array<keyof Clinic> = ['clinicId', 'clinicName', 'createdAt', 'numDoctors'];
-          const clinics = await this.clinicRepository.find({ select, relations: ['area','area.governorate'] });        
+          const clinics = await this.clinicRepository.find({ select, relations: ['area','area.governorate','specialty'] });        
           return clinics;
         }
 
@@ -34,6 +34,9 @@ export class ClinicsService {
         async filterClinicByName(filte :filterNameParams ){
           const query =  this.clinicRepository.createQueryBuilder('clinic')
           .select(['clinic.clinicId','clinic.clinicName','clinic.createdAt','clinic.numDoctors'])
+          .leftJoinAndSelect('clinic.specialty', 'specialty')
+          .leftJoinAndSelect('clinic.area', 'area')
+          .leftJoinAndSelect('area.governorate', 'governorate')
           .where('clinic.clinicName LIKE :name', {
             name: `%${filte.filterName}%`,
           })
@@ -180,15 +183,40 @@ export class ClinicsService {
         if (!clinic) {
           throw new HttpException('Clinic not found', HttpStatus.NOT_FOUND);
         }
-        const doctorClinics = await this.doctorClinicRepository.find({
-          where: { clinic: { clinicId: clinic.clinicId } },
-          relations: ['doctor'],
+        // const doctorClinics = await this.doctorClinicRepository.createQueryBuilder('doctorClinic')
+        // .leftJoinAndSelect('doctorClinic.doctor', 'doctor')
+        // .select(['doctor.doctorId', 'doctor.firstname', 'doctor.lastname'])
+        // .where('doctorClinic.clinic.clinicId = :clinicId', { clinicId: clinicId })
+        // .getMany();
+        // console.log(doctorClinics)
+        // const doctors = doctorClinics.map(doctorClinic => doctorClinic.doctor);
+        // if (doctors.length === 0) {
+        //   throw new HttpException(`No doctors found for this clinic`, HttpStatus.NOT_FOUND);
+        // }
+        // const specialties = await this.specialtyRepository.find({
+        //   where: { subSpecialties: { doctor: { doctorId: result.doctorId } } },
+        //   relations: ['subSpecialties'],
+        //   select: ['specialtyId', 'specialtyName']
+        // });
+
+
+        const doctors = await this.doctorRepository.find({
+          where: {
+              doctorClinic: {
+                  clinic: clinic
+              }
+          },
+          relations: ['doctorClinic'],
+          select :['doctorId','phonenumberForAdmin','active','gender','firstname','lastname']
         });
-        const doctors = doctorClinics.map(doctorClinic => doctorClinic.doctor);
         if (doctors.length === 0) {
           throw new HttpException(`No doctors found for this clinic`, HttpStatus.NOT_FOUND);
         }
-        return doctors;
+        const doctorsWithoutClinics = doctors.map(doctor => {
+          const { doctorClinic, ...rest } = doctor;
+          return rest;
+      });
+        return doctorsWithoutClinics;
       }
 
       async getclinicForpatient (clinicId : number){

@@ -17,7 +17,6 @@ export class ClinicsController {
     }
     //filter clinic
     @Post('filter-by-names')
-    @UseGuards(JWTAuthGuardAdmin)
     async  filterDoctor(@Body(new ValidationPipe({ whitelist: true })) filterName : filterNameDto){
         return this.clinicSrevice.filterClinicByName(filterName);
     }

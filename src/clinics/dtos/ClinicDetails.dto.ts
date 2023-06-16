@@ -8,14 +8,14 @@ export class ClinicDto {
 
     @IsNotEmpty()
     @IsNumber()
-    @Min(34)
-    @Max(39)
+    @Min(30)
+    @Max(40)
     Latitude:number;
 
     @IsNotEmpty()
     @IsNumber()
-    @Min(34)
-    @Max(39)
+    @Min(30)
+    @Max(40)
     Longitude:number;
 
     
