@@ -395,13 +395,22 @@ export class DoctorsService {
 
         const doctorClinics = await this.doctorClinicRepository.find({
           where: { doctor: { doctorId: doctor.doctorId } },
-          relations : ['clinic']
+          relations : ['clinic','secretary']
         });
-        const clinicIds = doctorClinics.map((doctorClinic) => doctorClinic.clinic.clinicId);
-        const clinics = await this.clinicRepository.find({
-          where: { clinicId: In(clinicIds) },
-          select : ['clinicId','clinicName','phonenumber']
-        });
+
+        console.log(doctorClinics[0].secretary)
+        const clinics = doctorClinics.map(doctorClinic => ({
+          clinicId: doctorClinic.clinic.clinicId,
+          clinicName: doctorClinic.clinic.clinicName,
+          phonenumber: doctorClinic.clinic.phonenumber,
+          secretary: doctorClinic.secretary ? {
+            secretaryId: doctorClinic.secretary.secretaryId,
+            firstname: doctorClinic.secretary.firstname,
+            lastname: doctorClinic.secretary.lastname,
+            age: doctorClinic.secretary.age,
+            phonenumber: doctorClinic.secretary.phonenumber,
+          } : null,
+        }));
         return {clinics : clinics}
       }
 

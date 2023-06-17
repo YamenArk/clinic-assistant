@@ -392,7 +392,7 @@ export class DoctorsController {
    }
 
       
-   @Get('work-time/:clinicId/:doctorId')
+   @Get('work-time/:doctorId/:clinicId')
    @UseGuards(JWTAuthGuardPatient)
    async getworkTimes(
      @Param('doctorId', new ParseIntPipe()) doctorId: number,

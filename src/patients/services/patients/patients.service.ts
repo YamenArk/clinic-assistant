@@ -39,10 +39,18 @@ export class PatientsService {
             type : 4
           };  
         return {
-        accessToken: this.jwtService.sign(payload),
-        patient
+        accessToken: this.jwtService.sign(payload)
         };
     }
+
+    async getmyAccount(patientId : number){
+      const patient = await this.patientRepository.findOne({
+        where : {patientId : patientId},
+        select : ['patientId','birthDate','firstname','lastname','profilePicture','phoneNumber','numberOfMissAppointment']
+      }) 
+      return {patient : patient}
+    }
+    
     async signUp(patientSignUp : patientSignUp){
 
         const duplicates = await this.patientRepository.findOne({
