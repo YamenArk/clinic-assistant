@@ -189,7 +189,7 @@ export class DoctorsService {
       }
 
       async findDoctors(type?: number) {
-        const select: Array<keyof Doctor> =['active', 'phonenumberForAdmin', 'email', 'firstname', 'lastname', 'doctorId'];
+        const select: Array<keyof Doctor> =['active', 'phonenumberForAdmin', 'email', 'firstname', 'lastname', 'doctorId','gender'];
         let where: any = {};
         if (type == 1) {
           where = { active: true };
@@ -397,19 +397,11 @@ export class DoctorsService {
           where: { doctor: { doctorId: doctor.doctorId } },
           relations : ['clinic','secretary']
         });
-
-        console.log(doctorClinics[0].secretary)
         const clinics = doctorClinics.map(doctorClinic => ({
           clinicId: doctorClinic.clinic.clinicId,
           clinicName: doctorClinic.clinic.clinicName,
           phonenumber: doctorClinic.clinic.phonenumber,
-          secretary: doctorClinic.secretary ? {
-            secretaryId: doctorClinic.secretary.secretaryId,
-            firstname: doctorClinic.secretary.firstname,
-            lastname: doctorClinic.secretary.lastname,
-            age: doctorClinic.secretary.age,
-            phonenumber: doctorClinic.secretary.phonenumber,
-          } : null,
+          hasSecretary: !!doctorClinic.secretary,
         }));
         return {clinics : clinics}
       }

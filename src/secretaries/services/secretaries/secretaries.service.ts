@@ -9,6 +9,8 @@ import { Doctor } from 'src/typeorm/entities/doctors';
 import { Secretary } from 'src/typeorm/entities/secretary';
 import { createSecretaryParams } from 'src/utils/types';
 import {  Repository } from 'typeorm';
+import * as bcrypt from 'bcryptjs'
+
 
 @Injectable()
 export class SecretariesService {
@@ -68,18 +70,39 @@ export class SecretariesService {
         return {secretary : secretary}
     }
 
-    async getSecretaryBysecretaryId(secretaryId : number){
-        const secretary = await this.secretaryRepository.findOne({
-             where: { secretaryId :  secretaryId},
-             select : ['secretaryId','firstname','lastname','age','phonenumber'] 
-            });
-        if (!secretary) {
+    async getSecretaryClinicId(clinicId : number,doctorId:number){
+        const clinic = await this.clinicRepository.findOne({ where: { clinicId :  clinicId} });
+        if (!clinic) {
             throw new HttpException(
-                `secretar with secretaryId ${secretaryId} not found`,
+                `clinic with id ${clinicId} not found`,
                 HttpStatus.NOT_FOUND,
               );
         }
-        return {secretary : secretary}
+
+        const doctorClinic = await this.doctorClinicRepository
+        .createQueryBuilder('doctorClinic')
+        .leftJoinAndSelect('doctorClinic.secretary', 'secretary')
+        .select([
+          'doctorClinic.id',
+          'doctorClinic.clinicClinicId',
+          'doctorClinic.doctorDoctorId',
+          'secretary.secretaryId',
+          'secretary.email',
+          'secretary.phonenumber',
+          'secretary.firstname',
+          'secretary.lastname',
+          'secretary.age',
+        ])
+        .where({
+          doctor: { doctorId: doctorId },
+          clinic: { clinicId: clinicId },
+        })
+        .getOne();
+      
+      if (!doctorClinic || !doctorClinic.secretary) {
+        throw new BadRequestException(`You do not have a secretary in the clinic`);
+      }
+        return {secretary : doctorClinic.secretary}
     }
 
     async deletesecretaryToClinic(clinicId : number ,doctorId : number){
@@ -138,4 +161,77 @@ export class SecretariesService {
         doctorClinic.secretary = secretary;
         await this.doctorClinicRepository.save(doctorClinic);
     }
+
+    async getMyAccount(secretaryId : number){
+        if(!secretaryId)
+        {
+            throw new BadRequestException('thier is something wrong with the tonken')
+        }
+        const secretary = await this.secretaryRepository.findOne({
+            where : {
+                secretaryId : secretaryId
+            },
+            select :['secretaryId','email','phonenumber','firstname','lastname','age','privateId']
+        })
+        if(!secretary)
+        {
+            throw new HttpException(
+                `secretary with id ${secretaryId} not found`,
+                HttpStatus.NOT_FOUND,
+              );
+        }
+        return secretary;
+    }
+
+
+    
+
+    async sendResetEmail(email: string): Promise<number> {
+        const secretary = await this.secretaryRepository.findOne({where: {email : email}});
+
+        if (!secretary) {
+          throw new HttpException(
+            `secretary not found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }    
+        const code = Math.floor(10000 + Math.random() * 90000);
+        const message = `Please reset your password using this code: ${code}`;
+        await this.mailService.sendMail(secretary.email , 'Password reset', message);
+      
+        // Cache the generated code for 5 minutes
+        const cacheKey = `resetCode-${secretary.secretaryId}`;
+        await this.cacheManager.set(cacheKey, code, { ttl: 300 });
+      
+        return secretary.secretaryId;
+      }
+ 
+    
+      async resetPassword(secretaryId: number, code: number, newPassword: string): Promise<void> {
+        const secretary = await this.secretaryRepository.findOne({where: {secretaryId : secretaryId}});
+        
+        if (!secretary) {
+          throw new HttpException(
+            `Doctor with id ${secretaryId} not found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      
+        const cacheKey = `resetCode-${secretary.secretaryId}`;
+        const cachedCode = await this.cacheManager.get(cacheKey);
+      
+        if (!cachedCode || cachedCode !== code) {
+          throw new HttpException(
+            `Invalid reset code for secretary with id ${secretary.secretaryId}`,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10); // hash the password
+        secretary.password = hashedPassword;
+        await this.secretaryRepository.save(secretary);
+      }
+
+
+
+
 }

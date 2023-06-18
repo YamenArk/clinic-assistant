@@ -8,6 +8,7 @@ import { Doctor } from "src/typeorm/entities/doctors";
 import { NumericType, Repository } from "typeorm";
 import { ExecutionContext } from '@nestjs/common';
 import { Patient } from "src/typeorm/entities/patient";
+import { Secretary } from "src/typeorm/entities/secretary";
 
 @Injectable()
 export class AdminIsAdminJwtStrategy extends PassportStrategy(Strategy, 'admin-is-admin-jwt') {
@@ -55,8 +56,8 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
     if (!admin) {
       throw new UnauthorizedException('Access denied');
     }
+    return { user: { admin } };
 
-    return { admin };
   }
 }
 
@@ -90,6 +91,35 @@ export class DoctorJwtStrategy extends PassportStrategy(Strategy, 'doctor-jwt') 
 
 
 
+
+@Injectable()
+export class SecretaryJwtStrategy extends PassportStrategy(Strategy, 'secretary-jwt') {
+  constructor(
+    @InjectRepository(Secretary)
+    private secretaryRepository: Repository<Secretary>,
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.JWT_SECRET,
+    });
+  }
+
+  async validate(payload: { secretaryId: number , type : number}) {
+    if (!(payload.type == 3)) {
+      throw new UnauthorizedException('Access denied');
+    }
+    const secretary = await this.secretaryRepository.findOne({where : {secretaryId : payload.secretaryId}});
+    if (!secretary) {
+      throw new UnauthorizedException('Access denied');
+    }
+    return { user: { secretary } };
+  }
+}
+
+
+
+
+
 @Injectable()
 export class PatientJwtStrategy extends PassportStrategy(Strategy, 'patient-jwt') {
   constructor(
@@ -118,33 +148,3 @@ export class PatientJwtStrategy extends PassportStrategy(Strategy, 'patient-jwt'
 
 
 
-// export class JWTStrategy extends PassportStrategy(Strategy) {
-//     constructor(@InjectRepository(Admin) private adminRepository: Repository<Admin>, @InjectRepository(Doctor) private doctorRepository: Repository<Doctor>) {
-//       super({
-//         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-//         ignoreExpiration: false,
-//         secretOrKey: process.env.JWT_SECRET,
-//         passReqToCallback: true, // add request object as first argument to validate()
-//       });
-//     }
-  
-//     async validate(req: Request, payload: { adminId?: number, doctorId?: number }): Promise<any> {
-//       if (req.baseUrl === '/admins') {
-//         // validation logic for admins
-//         const admin = await this.adminRepository.findOne({ id: payload.adminId });
-//         if (!admin) {
-//           throw new UnauthorizedException();
-//         }
-//         return { adminId: admin.id };
-//       } else if (req.baseUrl === '/doctors') {
-//         // validation logic for doctors
-//         const doctor = await this.doctorRepository.findOne({ id: payload.doctorId });
-//         if (!doctor) {
-//           throw new UnauthorizedException();
-//         }
-//         return { doctorId: doctor.id };
-//       } else {
-//         throw new UnauthorizedException();
-//       }
-//     }
-//   }

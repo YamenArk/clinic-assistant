@@ -22,13 +22,13 @@ export class Clinic {
     clinicName: string;
 
 
-    @Column({ type: 'decimal', precision: 16, scale: 14 })
+    @Column({ type: 'decimal', precision: 17, scale: 15 })
     @IsNotEmpty()
     @Min(30)
     @Max(40)
     Latitude: number;
 
-    @Column({ type: 'decimal', precision: 16, scale: 14})
+    @Column({ type: 'decimal', precision: 17, scale: 15})
     @IsNotEmpty()
     @Min(30)
     @Max(40)

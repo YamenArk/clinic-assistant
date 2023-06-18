@@ -1,6 +1,7 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Req, UseGuards, ValidationPipe } from '@nestjs/common';
-import { JWTAuthGuardDoctor } from 'src/middleware/auth/jwt-auth.guard';
+import { JWTAuthGuardDoctor, JWTAuthGuardSecretary } from 'src/middleware/auth/jwt-auth.guard';
 import { CreateSecretaryDto } from 'src/secretaries/dtos/CreateSecretary.dto';
+import { emailDto } from 'src/secretaries/dtos/email.dto';
 import { SecretariesService } from 'src/secretaries/services/secretaries/secretaries.service';
 
 @Controller('secretaries')
@@ -61,16 +62,46 @@ export class SecretariesController {
       return this.secretariesService.getSecretaryByprivateId(privateId);
     }
 
-    @Get('secretaryId/:secretaryId')
+    @Get(':clinicId')
     @UseGuards(JWTAuthGuardDoctor)
     async getsecretaryBysecretaryId(
-        @Param('secretaryId', new ParseIntPipe()) secretaryId: number,
+        @Param('clinicId', new ParseIntPipe()) clinicId: number,
+      @Req() request
     ) {
-      if (!secretaryId) {
-        throw new BadRequestException('secretaryId is required');
+      if (!clinicId) {
+        throw new BadRequestException('clinicId is required');
       }
-      return this.secretariesService.getSecretaryBysecretaryId(secretaryId);
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      return this.secretariesService.getSecretaryClinicId(clinicId,doctorId);
     }
+
+    /////////////////////////////////////////////////////////////////////secretaries
+    @Get('myAccount')
+    @UseGuards(JWTAuthGuardSecretary)
+    async getMyAccount(
+      @Req() request
+    ) {
+      const secretaryId = request.secretaryId; // Accessing the doctorId from the request object
+      const secretar = await this.secretariesService.getMyAccount(secretaryId)
+      return {secretar : secretar}
+    }
+
+
+
+    @Post('send-email')
+    async sendResetEmail(@Body(new ValidationPipe({ whitelist: true })) email: emailDto) {
+    const secretaryId = await this.secretariesService.sendResetEmail(email.email);
+    return { message: 'message has been sent to your Email', secretaryId: secretaryId };
+  }
+
+  @Post('reset-password')
+  async resetPassword(
+    @Body('secretaryId') secretaryId: number,
+    @Body('code') code: number,
+    @Body('newPassword') newPassword: string,
+  ): Promise<void> {
+    await this.secretariesService.resetPassword(secretaryId, code, newPassword);
+  }
 
 
 }

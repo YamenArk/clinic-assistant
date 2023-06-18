@@ -152,7 +152,6 @@ export class ClinicsService {
         const newDoctorClinic = new DoctorClinic();
         newDoctorClinic.doctor = doctor;
         newDoctorClinic.clinic = clinic;
-        
         clinic.numDoctors = clinic.numDoctors + 1;
         await this.clinicRepository.save(clinic);
 
@@ -178,6 +177,8 @@ export class ClinicsService {
         await this.doctorClinicRepository.remove(doctorClinic);
       }
 
+
+      
       async findAllDoctorsForClinics(clinicId: number){
         const clinic = await this.clinicRepository.findOne({ where: { clinicId } });
         if (!clinic) {

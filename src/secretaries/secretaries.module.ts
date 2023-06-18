@@ -11,7 +11,7 @@ import { Clinic } from 'src/typeorm/entities/clinic';
 import { Secretary } from 'src/typeorm/entities/secretary';
 import { Admin } from 'src/typeorm/entities/admin';
 import { MailService } from 'src/middleware/mail/mail.service';
-import { DoctorJwtStrategy } from 'src/middleware/auth/jwt.strategy';
+import { DoctorJwtStrategy, SecretaryJwtStrategy } from 'src/middleware/auth/jwt.strategy';
 
 @Module({
   imports: [
@@ -29,6 +29,6 @@ import { DoctorJwtStrategy } from 'src/middleware/auth/jwt.strategy';
     })
   ],
   controllers: [SecretariesController],
-  providers: [SecretariesService, MailService,DoctorJwtStrategy]
+  providers: [SecretariesService, MailService,DoctorJwtStrategy,SecretaryJwtStrategy]
 })
 export class SecretariesModule {}

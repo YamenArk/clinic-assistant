@@ -71,7 +71,22 @@ export class AdminsService {
     }
     
 
-    
+    async deleteAdmin(adminId : number){
+      const admin = await this.adminRepository.findOne({
+        where : {
+          adminId : adminId
+        }
+      })
+      if (!admin ) {
+        throw new HttpException(`admin with id ${adminId} not found`, HttpStatus.NOT_FOUND);
+      }
+      if(admin.isAdmin)
+      {
+        throw new BadRequestException(`you can not delete the admins`);
+      }
+      await this.adminRepository.remove(admin);
+    }
+
     
     async filterAdminByName(filte :filterNameParams ){
       const query =  this.adminRepository.createQueryBuilder('admin')
@@ -135,7 +150,7 @@ export class AdminsService {
         
         if (!admin) {
           throw new HttpException(
-            `Doctor with id ${admin} not found`,
+            `admin with id ${admin} not found`,
             HttpStatus.NOT_FOUND,
           );
         }
@@ -152,4 +167,24 @@ export class AdminsService {
         admin.password = hashedPassword;
         await this.adminRepository.save(admin);
       }
+
+      async getMyAccount(adminId : number){
+        const admin = await this.adminRepository.findOne({
+          where : {
+            adminId : adminId
+          },
+          select : ['adminId','email','phonenumber','firstname','lastname']
+        })
+        if (!admin) {
+          throw new HttpException(
+            `admin with id ${admin} not found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        if(admin.isAdmin)
+        {
+          throw new BadRequestException('you cant get your information')
+        }
+        return admin;
+      } 
 }

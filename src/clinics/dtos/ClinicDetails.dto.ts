@@ -22,13 +22,13 @@ export class ClinicDto {
     static validate(createSpecialtyDto: ClinicDto) {
  
 
-    if (!/^([+-]?\d{1,2}\.\d{14})$/.test(createSpecialtyDto.Latitude.toString())) {
-      throw new HttpException("Latitude must be in the format of '2 digits before the decimal point and 14 digits after the decimal point'", HttpStatus.BAD_REQUEST);
-    }
-
-    if (!/^([+-]?\d{1,2}\.\d{14})$/.test(createSpecialtyDto.Longitude.toString())) {
-      throw new HttpException("Longitude must be in the format of '2 digits before the decimal point and 14 digits after the decimal point'", HttpStatus.BAD_REQUEST);
-    }
+      if (!/^([+-]?\d{1,2}\.\d{14,15})$/.test(createSpecialtyDto.Latitude.toString())) {
+        throw new HttpException("Latitude must be in the format of '2 digits before the decimal point and either 14 or 15 digits after the decimal point'", HttpStatus.BAD_REQUEST);
+      }
+      
+      if (!/^([+-]?\d{1,2}\.\d{14,15})$/.test(createSpecialtyDto.Longitude.toString())) {
+        throw new HttpException("Longitude must be in the format of '2 digits before the decimal point and either 14 or 15 digits after the decimal point'", HttpStatus.BAD_REQUEST);
+      }
   }
     
   };

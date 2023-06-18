@@ -85,10 +85,9 @@ export class DoctorsController {
     async addDoctorToInsurance(
       @Param('insuranceId') insuranceId: number,
       @Param('doctorId') doctorId: number,
-      @Res() res: Response
     ) {
       await this.doctorSrevice.addDoctorToInsuranceCompany(doctorId,insuranceId);
-      return res.status(200).json({message :'doctor added insurances successfully'});
+      return { message : 'doctor added insurances successfully'}
     }
 
 
@@ -151,9 +150,6 @@ export class DoctorsController {
       @Body(new ValidationPipe({ whitelist: true })) profileDetails: profileDetailsDto,
       @UploadedFile() file: Express.Multer.File,
       ) {
-      console.log(file)
-      console.log("=====================")
-      console.log(profileDetails)
 
       const doctorId = request.doctorId; // Accessing the doctorId from the request object
       this.doctorSrevice.updateprofile(doctorId,profileDetails,file);
@@ -398,7 +394,7 @@ export class DoctorsController {
      @Param('doctorId', new ParseIntPipe()) doctorId: number,
      @Param('clinicId', new ParseIntPipe()) clinicId: number,
    ){
-      const doctorClinicWorkTime = await this.doctorSrevice.getWorkTime(doctorId,clinicId);
+      const doctorClinicWorkTime = await this.doctorSrevice.getWorkTime(clinicId,doctorId);
       return {doctorClinicWorkTime : doctorClinicWorkTime}
   }
 
@@ -411,19 +407,19 @@ export class DoctorsController {
   ){
     workTimeFilterDto.validate(workTimeFilter); // Call the validate() method as a static method on CreateWorkTimeDto
 
-     const doctorClinicWorkTime = await this.doctorSrevice.getWorkTimeWithFilter(doctorId,clinicId,workTimeFilter);
+     const doctorClinicWorkTime = await this.doctorSrevice.getWorkTimeWithFilter(clinicId,doctorId,workTimeFilter);
      return {doctorClinicWorkTime : doctorClinicWorkTime}
  }
 
-  @Get('appoitment/:workTimeId')
-    @UseGuards(JWTAuthGuardPatient)
+  @Get('appoitment/patient/work-time/:workTimeId')
+    // @UseGuards(JWTAuthGuardPatient)
     async getAppoitments(
       @Param('workTimeId', new ParseIntPipe()) workTimeId: number,
     ){
       return this.doctorSrevice.getAppoitmentForPatient(workTimeId);
   }
 
-  @Post('appoitment/:id')
+  @Post('appoitment/patient/:id')
   @UseGuards(JWTAuthGuardPatient)
   async setAppitments(
     @Param('id', new ParseIntPipe()) id: number,

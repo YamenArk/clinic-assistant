@@ -5,14 +5,16 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule,ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Doctor } from 'src/typeorm/entities/doctors';
-import { AdminIsAdminJwtStrategy, AdminJwtStrategy, DoctorJwtStrategy, PatientJwtStrategy } from './jwt.strategy';
+import { AdminIsAdminJwtStrategy, AdminJwtStrategy, DoctorJwtStrategy, PatientJwtStrategy, SecretaryJwtStrategy } from './jwt.strategy';
 import { Patient } from 'src/typeorm/entities/patient';
+import { Secretary } from 'src/typeorm/entities/secretary';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Admin]),
     TypeOrmModule.forFeature([Doctor]),
     TypeOrmModule.forFeature([Patient]),
+    TypeOrmModule.forFeature([Secretary]),
   PassportModule,
   JwtModule.registerAsync({
     imports :[ConfigModule],
@@ -25,6 +27,6 @@ import { Patient } from 'src/typeorm/entities/patient';
   })
   ],
   controllers: [],
-  providers: [AdminJwtStrategy,DoctorJwtStrategy,AdminIsAdminJwtStrategy,PatientJwtStrategy]
+  providers: [AdminJwtStrategy,DoctorJwtStrategy,AdminIsAdminJwtStrategy,PatientJwtStrategy,SecretaryJwtStrategy]
 })
 export class AuthModule {}

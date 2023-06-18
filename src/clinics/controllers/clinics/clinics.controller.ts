@@ -41,11 +41,12 @@ export class ClinicsController {
       @Param('specialtyId') specialtyId: number,
       @Body(new ValidationPipe({ whitelist: true })) createSpecialtyDto: ClinicDto)
       {
-        ClinicDto.validate(createSpecialtyDto); // Call the validate() method as a static method on CreateWorkTimeDto
+        // ClinicDto.validate(createSpecialtyDto); // Call the validate() method as a static method on CreateWorkTimeDto
         // Check if areaId and specialtyId are numbers
         if (isNaN(+areaId) || isNaN(+specialtyId)) {
           throw new BadRequestException('Area ID and Specialty ID must be numbers');
         }
+        console.log("olaaa")
         await this.clinicSrevice.createClinic(createSpecialtyDto,areaId,specialtyId);
         return {message : 'clinic created successfully'}
     }
@@ -140,7 +141,7 @@ export class ClinicsController {
           throw new BadRequestException('doctor ID and clinic ID must be numbers');
         }
         await this.clinicSrevice.removeDoctorFromClinic(doctorId,clinicId);
-        return {message : 'doctor added to clinic successfully'}
+        return {message : 'doctor deleted to clinic successfully'}
       }
   
       @Get(':clinicId/doctors')

@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Put, UseGuards,ValidationPipe  } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post,Delete, Put,Req, UseGuards,ValidationPipe  } from '@nestjs/common';
 import { CreateAdminDto } from 'src/admins/dtos/CreateAdmin.dto';
 import { UpdateAdminDto } from 'src/admins/dtos/UpdateAdmin.dto';
 import { AuthLoginDto } from 'src/admins/dtos/auth-login.dto';
 import { AdminsService } from 'src/admins/services/admins/admins.service';
 import { filterNameDto } from 'src/doctors/dtos/filterName.dto';
-import { JWTAuthGuardAdminIsAdmin } from 'src/middleware/auth/jwt-auth.guard';
+import { JWTAuthGuardAdmin, JWTAuthGuardAdminIsAdmin } from 'src/middleware/auth/jwt-auth.guard';
 
 @Controller('admins')
 export class AdminsController {
@@ -23,7 +23,16 @@ export class AdminsController {
         await this.adminSrevice.createAdmin(createUserDto)
         return {message : 'admin has been created'}
     }
+
     
+    @Delete(':adminId')
+    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    async deleteAdmin(
+      @Param('adminId',ParseIntPipe) adminId: number,
+    ){
+        await this.adminSrevice.deleteAdmin(adminId)
+        return {message : 'admin has been deleted'}
+    }
 
       //filter admins
       @Post('filter-by-names')
@@ -60,5 +69,14 @@ export class AdminsController {
       await this.adminSrevice.resetPassword(adminId, code, newPassword);
     }
 
+    @Get('myAccount')
+    @UseGuards(JWTAuthGuardAdmin)
+    async myAccount(
+      @Req() request
+    ){
+      const adminId = request.adminId ;
+      const myAccount = await this.adminSrevice.getMyAccount(adminId)
+      return {myAccount : myAccount}
+    }
 
 }

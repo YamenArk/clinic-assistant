@@ -10,6 +10,7 @@ import { PassportModule } from '@nestjs/passport';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { Secretary } from 'src/typeorm/entities/secretary';
 import { Doctor } from 'src/typeorm/entities/doctors';
+import { JWTAuthGuardAdmin } from 'src/middleware/auth/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -27,6 +28,6 @@ import { Doctor } from 'src/typeorm/entities/doctors';
     })
     ],
   controllers: [AdminsController],
-  providers: [AdminsService,AdminJwtStrategy,MailService]
+  providers: [AdminsService,AdminJwtStrategy,MailService,JWTAuthGuardAdmin]
 })
 export class AdminsModule {}
