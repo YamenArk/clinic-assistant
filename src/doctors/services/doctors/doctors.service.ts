@@ -172,15 +172,7 @@ export class DoctorsService {
         if (!doctor ) {
             throw new HttpException(`doctor with id ${doctorId} not found`, HttpStatus.NOT_FOUND);
           }
-        // Create a new Doctor object with the updated properties
-        const updatedDoctor = this.doctorRepository.create({ ...doctor, ...doctorDetails });
-  
-        // Validate the updatedDoctor object using class-validator
-        const errors = await validate(updatedDoctor);
-        if (errors.length > 0) {
-          throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
-        }
-  
+
         // Update the doctor in the database
         await this.doctorRepository.update(doctorId, doctorDetails);
   
