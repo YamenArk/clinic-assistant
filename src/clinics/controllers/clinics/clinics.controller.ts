@@ -5,6 +5,7 @@ import { Response } from 'express';
 import { UpdateClinicDto } from 'src/clinics/dtos/updateClinic.dto';
 import { JWTAuthGuardAdmin } from 'src/middleware/auth/jwt-auth.guard';
 import { filterNameDto } from 'src/doctors/dtos/filterName.dto';
+import { LongitudeLatitudeDto } from 'src/clinics/dtos/LongitudeLatitude.dto';
 
 @Controller('clinics')
 export class ClinicsController {
@@ -25,7 +26,7 @@ export class ClinicsController {
 
     @Get('/location/:clinicId')
     async getLocation(
-      @Param('clinicId') clinicId: number,
+    @Param('clinicId', new ParseIntPipe()) clinicId: number,
     ){
         // Check if areaId and specialtyId are numbers
         if (isNaN(+clinicId)) {
@@ -37,8 +38,8 @@ export class ClinicsController {
     @Post(':areaId/:specialtyId') 
     @UseGuards(JWTAuthGuardAdmin)
     async createClinic(
-      @Param('areaId') areaId: number,
-      @Param('specialtyId') specialtyId: number,
+      @Param('areaId', new ParseIntPipe()) areaId: number,
+      @Param('specialtyId', new ParseIntPipe()) specialtyId: number,      
       @Body(new ValidationPipe({ whitelist: true })) createSpecialtyDto: ClinicDto)
       {
         // ClinicDto.validate(createSpecialtyDto); // Call the validate() method as a static method on CreateWorkTimeDto
@@ -54,8 +55,7 @@ export class ClinicsController {
     @Delete(':clinicId')
     @UseGuards(JWTAuthGuardAdmin)
     async  deleteClinic(
-      @Param('clinicId') 
-      clinicId: number,
+      @Param('clinicId', new ParseIntPipe()) clinicId: number,
       ){
          // Check if areaId and specialtyId are numbers
          if (isNaN(+clinicId)) {
@@ -68,7 +68,7 @@ export class ClinicsController {
     @Put(':clinicId')
     @UseGuards(JWTAuthGuardAdmin)
     async updateClinic(
-      @Param('clinicId') clinicId: number,
+      @Param('clinicId', new ParseIntPipe()) clinicId: number,
       @Body(new ValidationPipe({ whitelist: true })) newData: UpdateClinicDto
     ){
        // Check if areaId and specialtyId are numbers
@@ -83,8 +83,8 @@ export class ClinicsController {
     @Put(':clinicId/:areaId')
     @UseGuards(JWTAuthGuardAdmin)
     async updateClinicArea(
-      @Param('clinicId') clinicId: number,
-      @Param('areaId') areaId: number
+      @Param('clinicId', new ParseIntPipe()) clinicId: number,
+      @Param('areaId', new ParseIntPipe()) areaId: number,
     ){
        // Check if areaId and specialtyId are numbers
        if (isNaN(+areaId) || isNaN(+clinicId)) {
@@ -101,8 +101,8 @@ export class ClinicsController {
     @Put(':clinicId/specialties/:specialtyId')
     @UseGuards(JWTAuthGuardAdmin)
     async updateClinicspecialty(
-      @Param('clinicId') clinicId: number,
-      @Param('specialtyId') specialtyId: number
+      @Param('clinicId', new ParseIntPipe()) clinicId: number,
+      @Param('specialtyId', new ParseIntPipe()) specialtyId: number,
     ){
        // Check if areaId and specialtyId are numbers
        if (isNaN(+specialtyId) || isNaN(+clinicId)) {
@@ -119,8 +119,8 @@ export class ClinicsController {
       @Post(':clinicId/doctors/:doctorId')
       @UseGuards(JWTAuthGuardAdmin)
       async addDoctorToClinic(
-        @Param('clinicId') clinicId: number,
-        @Param('doctorId') doctorId: number
+        @Param('clinicId', new ParseIntPipe()) clinicId: number,
+        @Param('doctorId', new ParseIntPipe()) doctorId: number,
               ) {
               // Check if areaId and specialtyId are numbers
             if (isNaN(+doctorId) || isNaN(+clinicId)) {
@@ -133,8 +133,9 @@ export class ClinicsController {
       @Delete(':clinicId/doctors/:doctorId')
       @UseGuards(JWTAuthGuardAdmin)
       async deleteDoctorfromInsurance(
-        @Param('clinicId') clinicId: number,
-        @Param('doctorId') doctorId: number,
+        @Param('clinicId', new ParseIntPipe()) clinicId: number,
+        @Param('doctorId', new ParseIntPipe()) doctorId: number,
+
       ){
          // Check if areaId and specialtyId are numbers
          if (isNaN(+doctorId) || isNaN(+clinicId)) {
@@ -147,7 +148,8 @@ export class ClinicsController {
       @Get(':clinicId/doctors')
       @UseGuards(JWTAuthGuardAdmin)
       async getDoctorsForClinic( 
-        @Param('clinicId') clinicId: number,
+        @Param('clinicId', new ParseIntPipe()) clinicId: number,
+
         ){
           // Check if areaId and specialtyId are numbers
           if (isNaN(+clinicId)) {
@@ -168,4 +170,33 @@ export class ClinicsController {
         }
           return this.clinicSrevice.getclinicForpatient(clinicId)
       }
+
+      @Get('area/:areaId/:specialtyId')
+      async getclinicsInArea( 
+        @Param('areaId', new ParseIntPipe()) areaId: number,
+        @Param('specialtyId', new ParseIntPipe()) specialtyId: number,
+        ){
+          // Check if areaId and specialtyId are numbers
+         if (isNaN(+areaId)) {
+          throw new BadRequestException('areaId must be numbers');
+        }    // Check if areaId and specialtyId are numbers
+        if (isNaN(+specialtyId)) {
+         throw new BadRequestException('specialtyId must be numbers');
+       }
+          return this.clinicSrevice.getclinicsInArea(areaId,specialtyId)
+      }
+
+      @Post('longitude-latitude/specialty/:specialtyId')
+      async getclinicsFromLongitudeLatitude( 
+         @Body(new ValidationPipe({ whitelist: true })) longitudeLatitudeDto: LongitudeLatitudeDto,
+        @Param('specialtyId', new ParseIntPipe()) specialtyId: number,
+        ){
+          console.log("=123")
+          if (isNaN(+specialtyId)) {
+            throw new BadRequestException('specialtyId must be numbers');
+          }
+          return this.clinicSrevice.getClosestClinics(longitudeLatitudeDto,specialtyId)
+      }
+
+
 }

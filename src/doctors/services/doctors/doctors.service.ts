@@ -529,8 +529,6 @@ export class DoctorsService {
             let appointment  = new Appointment();
             appointment.startingTime = appointments[j].startTime;
             appointment.finishingTime = appointments[j].endTime;
-            appointment.day = workTime.day;
-            appointment.date =  workTime.date;
             appointment.workTime = workTime;
             this.appointmentRepository.save(appointment)
             j++;
@@ -559,7 +557,6 @@ export class DoctorsService {
         const doctorClinic = await this.doctorClinicRepository.findOne({
           where: { doctor: { doctorId }, clinic: { clinicId } },
         });
-
         if (!doctorClinic ) {
           throw new NotFoundException(
             `No doctorClinic entity found for doctor ${doctor.doctorId} and clinic ${clinic.clinicId}`
@@ -603,6 +600,7 @@ export class DoctorsService {
             },
             relations: ['patient'],
           });
+
           if(appointment)
           {
             workTime.haveAppointments = true
@@ -616,6 +614,8 @@ export class DoctorsService {
          };
       }
     
+
+
       
       async getAppoitment(workTimeId : number,doctorId : number){
         if (!doctorId) {
@@ -774,7 +774,6 @@ export class DoctorsService {
         const code = Math.floor(10000 + Math.random() * 90000);
         const message = `Please reset your password using this code: ${code}`;
         await this.mailService.sendMail(doctor.email , 'Password reset', message);
-      
         // Cache the generated code for 5 minutes
         const cacheKey = `resetCode-${doctor.doctorId}`;
         await this.cacheManager.set(cacheKey, code, { ttl: 300 });
@@ -1361,7 +1360,9 @@ export class DoctorsService {
         const appointment = await this.appointmentRepository.findOne({
           where : {
            id : appointmentId
-          }})
+          },
+        relations : ['workTime']
+      })
         if(!appointment)
         {
           throw new NotFoundException(
@@ -1374,20 +1375,20 @@ export class DoctorsService {
         const currentHour = Number(moment().tz(syriaTimezone).format('H'));
         const currentMinute = now.getUTCMinutes();
         const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-        const date = new Date(appointment.date);
+        const date = new Date(appointment.workTime.date);
         const startingTime = appointment.startingTime.split(':').map(Number);
         
         if (date.getTime() === today.getTime()) {
           if (currentHour === startingTime[0]) {
             const timeDiffMinutes = currentMinute - startingTime[1];
-            return { message: `الفرق الزمني ${timeDiffMinutes} دقائق` };
+            return { message: `${timeDiffMinutes} دقائق` };
           } else {
             const timeDiffHours = currentHour - startingTime[0];
-            return { message: `الفرق الزمني ${timeDiffHours} ساعات` };
+            return { message: `${timeDiffHours} ساعات` };
           }
         } else {
           const timeDiffDays = Math.round((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-          return { message: `الفرق الزمني ${timeDiffDays} أيام` };
+          return { message: `${timeDiffDays} أيام` };
         }
       }
     }    

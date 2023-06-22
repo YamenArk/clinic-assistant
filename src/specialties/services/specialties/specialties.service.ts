@@ -26,7 +26,7 @@ export class SpecialtiesService {
               }
               return specialties;
         }
-        async createspecialty(specialtyDetails : SpecialtyParams): Promise<Specialty>{
+        async createspecialty(specialtyDetails : SpecialtyParams): Promise<void>{
 
           const specialty = await this.specialtyRepository.findOne({where : {specialtyName : specialtyDetails.specialtyName}});
           if (specialty) {
@@ -41,7 +41,22 @@ export class SpecialtiesService {
             if (errors.length > 0) {
               throw new HttpException(`Validation failed: ${errors.join(', ')}`, HttpStatus.BAD_REQUEST);
             }
-            return this.specialtyRepository.save(newSpecialty);
+
+            await this.specialtyRepository.save(newSpecialty);
+
+            const newSubSpecialty = this.subSpecialtyRepository.create({
+              subSpecialtyName : 'عام',
+            });
+
+
+               // Validate the updatedDoctor object using class-validator
+               const errorsSub = await validate(newSubSpecialty);
+               if (errorsSub.length > 0) {
+                 throw new HttpException(`Validation failed: ${errorsSub.join(', ')}`, HttpStatus.BAD_REQUEST);
+               }
+
+            newSubSpecialty.specialty = newSpecialty;
+            await this.subSpecialtyRepository.save(newSubSpecialty);
         }
 
 

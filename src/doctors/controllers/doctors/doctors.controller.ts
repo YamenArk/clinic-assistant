@@ -194,6 +194,7 @@ export class DoctorsController {
     ) {
       CreateWorkTimeDto.validate(workTimeDetails); // Call the validate() method as a static method on CreateWorkTimeDto
       const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      console.log("=123123")
       await this.doctorSrevice.createWorkTime(workTimeDetails,clinicId,doctorId);
       return {message : "work time and appoitments added successfully"}
     }
@@ -208,7 +209,8 @@ export class DoctorsController {
     @Get('appoitment/:workTimeId')
     @UseGuards(JWTAuthGuardDoctor)
     async getAppoitment(@Param('workTimeId') workTimeId: number, @Req() request) {
-      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      // const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      const doctorId = 1; // Accessing the doctorId from the request object
       return this.doctorSrevice.getAppoitment(workTimeId, doctorId);
     }
   
@@ -412,7 +414,7 @@ export class DoctorsController {
  }
 
   @Get('appoitment/patient/work-time/:workTimeId')
-    // @UseGuards(JWTAuthGuardPatient)
+    @UseGuards(JWTAuthGuardPatient)
     async getAppoitments(
       @Param('workTimeId', new ParseIntPipe()) workTimeId: number,
     ){
@@ -431,7 +433,6 @@ export class DoctorsController {
       return {mesaage : 'you have been booked successfully'}
   }
   @Get('appoitment/patient/:id')
-  // @UseGuards(JWTAuthGuardPatient)
   async getTimeBetweenTodayAndTheAppoitment(
     @Param('id', new ParseIntPipe()) id: number,
   ){

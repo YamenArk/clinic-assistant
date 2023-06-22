@@ -7,14 +7,18 @@ import { Clinic } from 'src/typeorm/entities/clinic';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Doctor } from 'src/typeorm/entities/doctors';
 import { Specialty } from 'src/typeorm/entities/specialty';
-import { ClinicParams, UpdateClinicParams, filterNameParams } from 'src/utils/types';
+import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
+import { ClinicParams, LongitudeLatitudeParam, UpdateClinicParams, filterNameParams } from 'src/utils/types';
 import { Repository } from 'typeorm';
+import * as geolib from 'geolib';
 
 @Injectable()
 export class ClinicsService {
     constructor (
       @InjectRepository(Specialty) private specialtyRepository : 
       Repository<Specialty>,
+      @InjectRepository(SubSpecialty) private subSpecialtyRepository : 
+      Repository<SubSpecialty>,
        @InjectRepository(Area) private areaRepository : 
         Repository<Area>,
         @InjectRepository(Clinic) private clinicRepository : 
@@ -291,5 +295,64 @@ export class ClinicsService {
           doctors : doctors,
           doctorWorkingNow : doctorWorkingNow
         }
+      }
+
+
+      async getclinicsInArea(areaId : number,specialtyId : number){
+        const area = await this.areaRepository.findOne({
+          where : { areaId}
+        })
+        if (!area) {
+          throw new HttpException('area not found', HttpStatus.NOT_FOUND);
+        }
+        const specialty = await this.specialtyRepository.findOne({
+          where : { specialtyId}
+        })
+        if (!specialty) {
+          throw new HttpException('specialty not found', HttpStatus.NOT_FOUND);
+        }
+        const clinics = await this.clinicRepository.find({
+          where : {
+            area : area,
+            specialty : specialty
+          }
+        })
+        if(clinics.length == 0 )
+        {
+          throw new HttpException('thier are no clinics in the area', HttpStatus.NOT_FOUND);
+        }
+        return {clinics : clinics}
+      }
+
+
+        async getClosestClinics(longitudeLatitudeDto : LongitudeLatitudeParam,specialtyId : number){
+          const specialty = await this.specialtyRepository.findOne({
+            where : { specialtyId}
+          })
+          if (!specialty) {
+            throw new HttpException('specialty not found', HttpStatus.NOT_FOUND);
+          }
+          const clinics = await this.clinicRepository.find({ where :{
+            specialty : specialty
+          }})
+          if(clinics.length == 0)
+          {
+          throw new HttpException('thier are no clinics in the specialty', HttpStatus.NOT_FOUND);
+          }
+      // Calculate distances between user and each clinic
+      const distances = clinics.map((clinic) => {
+        const distance = geolib.getDistance(
+          { latitude: longitudeLatitudeDto.Latitude, longitude: longitudeLatitudeDto.Longitude },
+          { latitude: clinic.Latitude, longitude: clinic.Longitude },
+        );
+        return { clinic, distance };
+      });
+      if(distances.length == 0)
+      {
+        throw new HttpException('thier are no clinics in the area', HttpStatus.NOT_FOUND);
+      }
+      // Sort clinics by distance and return the closest 10
+      distances.sort((a, b) => a.distance - b.distance);
+      return {clinics : distances.slice(0, 10).map((d) => d.clinic)}
       }
     }

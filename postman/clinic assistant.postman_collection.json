@@ -95,6 +95,75 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "filter by area",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/clinics/area/:areaId/:specialtyId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"clinics",
+										"area",
+										":areaId",
+										":specialtyId"
+									],
+									"variable": [
+										{
+											"key": "areaId",
+											"value": "1"
+										},
+										{
+											"key": "specialtyId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "filter by long lat",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Latitude\" : 34.123456789127600,\r\n    \"Longitude\" : 38.123456789922600\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/clinics/longitude-latitude/specialty/:specialtyId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"clinics",
+										"longitude-latitude",
+										"specialty",
+										":specialtyId"
+									],
+									"variable": [
+										{
+											"key": "specialtyId",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -316,7 +385,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"phoneNumber\":\"0932691632\",\r\n    \"password\":\"12313\"\r\n}",
+									"raw": "{\r\n    \"phoneNumber\":\"0932691631\",\r\n    \"password\":\"12313\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -374,7 +443,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"patientId\":\"8dc9c514-94e0-4be1-b9a2-bbd5b60106b4\",\r\n    \"code\":74750\r\n}",
+									"raw": "{\r\n    \"patientId\":\"be62a957-4159-4db3-bc98-8fd99d42369e\",\r\n    \"code\":39983\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -409,7 +478,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg2ODQxMDcyLCJleHAiOjE2ODY5Mjc0NzJ9.Y3afet-FV42n-tFD63q-lJoapjRlXOd3nD3R-z3G7VQ",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg3NDQ1OTM1LCJleHAiOjE2ODc1MzIzMzV9.JzwQbDG_QWmXUMJCAQF3rx_QGd_7vTvc8lqPBsRRQ-Q",
 											"type": "string"
 										}
 									]
@@ -451,7 +520,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg3MDc1MjI1LCJleHAiOjE2ODcxNjE2MjV9.Lu2ktyVjHTxWCvp_h9WqJVSMXZeQauW3GSnw947SfBM",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg3NDQ1OTM1LCJleHAiOjE2ODc1MzIzMzV9.JzwQbDG_QWmXUMJCAQF3rx_QGd_7vTvc8lqPBsRRQ-Q",
 											"type": "string"
 										}
 									]
@@ -474,7 +543,7 @@
 									"variable": [
 										{
 											"key": "doctorId",
-											"value": "6"
+											"value": "1"
 										},
 										{
 											"key": "clinicId",
@@ -529,6 +598,16 @@
 						{
 							"name": "get appotiments",
 							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg3NDQ1OTM1LCJleHAiOjE2ODc1MzIzMzV9.JzwQbDG_QWmXUMJCAQF3rx_QGd_7vTvc8lqPBsRRQ-Q",
+											"type": "string"
+										}
+									]
+								},
 								"method": "GET",
 								"header": [],
 								"url": {
@@ -548,7 +627,7 @@
 									"variable": [
 										{
 											"key": "workTimeId",
-											"value": "2"
+											"value": "1"
 										}
 									]
 								}
@@ -571,7 +650,7 @@
 								"method": "POST",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:3000/doctors/appoitment/:id",
+									"raw": "http://localhost:3000/doctors/appoitment/patient/:id",
 									"protocol": "http",
 									"host": [
 										"localhost"
@@ -580,6 +659,7 @@
 									"path": [
 										"doctors",
 										"appoitment",
+										"patient",
 										":id"
 									],
 									"variable": [
@@ -686,7 +766,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODYyMjE2MDYsImV4cCI6MTY4NjMwODAwNn0.MGbe7F2OLrGeSFP-BmTN0lntFhVMbowGm7Qr2DJpwLU",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc0NDU4MzMsImV4cCI6MTY4NzUzMjIzM30.Cncp5INwT-4_AZ_Ff-3_X12Ei-yyejcAlxpJe4uumPg",
 													"type": "string"
 												}
 											]
@@ -732,7 +812,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODYyMTc2MDUsImV4cCI6MTY4NjMwNDAwNX0.ry6FlSniaF6IsJjJ5x_WrUe01CBUH20hwd1IcQ66j5Y",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc0NDU4MzMsImV4cCI6MTY4NzUzMjIzM30.Cncp5INwT-4_AZ_Ff-3_X12Ei-yyejcAlxpJe4uumPg",
 													"type": "string"
 												}
 											]
@@ -769,7 +849,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJpYXQiOjE2ODUwMDIzMjMsImV4cCI6MTY4NTA4ODcyM30.9U7gqES3_wkn_2PCzfN7TysH2Gu7LCVDJx2RPwlwWJ8",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc0NDU4MzMsImV4cCI6MTY4NzUzMjIzM30.Cncp5INwT-4_AZ_Ff-3_X12Ei-yyejcAlxpJe4uumPg",
 													"type": "string"
 												}
 											]
@@ -791,7 +871,7 @@
 											"variable": [
 												{
 													"key": "workTimeId",
-													"value": "7"
+													"value": "1"
 												}
 											]
 										}
@@ -811,7 +891,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjYiLCJ0eXBlIjoyLCJpYXQiOjE2ODcwNzUxNDYsImV4cCI6MTY4NzE2MTU0Nn0.gBEN2B7b6zEvCAsG_zUpiL6lWI1QkaHF7GE-ylaY_qQ",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc0NDU4MzMsImV4cCI6MTY4NzUzMjIzM30.Cncp5INwT-4_AZ_Ff-3_X12Ei-yyejcAlxpJe4uumPg",
 													"type": "string"
 												}
 											]
@@ -820,7 +900,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"appointmentDuring\":30,\r\n    \"daysToSeeLastAppointment\":60,\r\n    \"checkupPrice\":10000\r\n}",
+											"raw": "{\r\n    \"appointmentDuring\":30,\r\n    \"daysToSeeLastAppointment\":60,\r\n    \"checkupPrice\":null\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -898,7 +978,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"email\":\"nabel@gmail.com\"\r\n}",
+											"raw": "{\r\n    \"email\":\"abdalkaderrahoof@gmail.com\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -927,7 +1007,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"doctorId\":1,\r\n    \"code\":38131,\r\n    \"newPassword\":\"38131\"\r\n}",
+											"raw": "{\r\n    \"doctorId\":1,\r\n    \"code\":18965,\r\n    \"newPassword\":\"123\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -956,7 +1036,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"email\":\"ya3me2e@gmail.com\",\r\n    \"password\":\"123\"\r\n    }",
+											"raw": "{\r\n    \"email\":\"321312312@gmail.com\",\r\n    \"password\":\"123\"\r\n    }",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1582,7 +1662,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMyIsInR5cGUiOjAsImlhdCI6MTY4NzEwNTUxNCwiZXhwIjoxNjg3MTkxOTE0fQ.qVNUl5Ki04m37AogBbSxEGt8oI8GtC-DZCyZVIokbpU",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzQ0NTczOCwiZXhwIjoxNjg3NTMyMTM4fQ.DDjpuxWUcIOoeGEwA5fFZd32fZ7qrL3SbT-dNOExPlU",
 													"type": "string"
 												}
 											]
@@ -1591,7 +1671,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"email\" : \"321312312@gmail.com\",\r\n    \"phonenumberForAdmin\" : \"0932691312\",\r\n    \"gender\" : \"male\",\r\n    \"firstname\" :\"yamen mahmoud\",\r\n    \"lastname\" : \"arksose\",\r\n    \"clinics\": [ \r\n    {\"clinicId\":\"1\"}, {\"clinicId\":\"2\"} \r\n    ],\r\n    \"subSpecialties\": [ \r\n        {\"subSpecialtyId\":\"1\"}, {\"subSpecialtyId\":\"2\"} \r\n    ],\r\n    \"insurances\": [ \r\n        {\"insuranceId\":\"1\"}, {\"insuranceId\":\"2\"} \r\n    ]\r\n}",
+											"raw": "{\r\n    \"email\" : \"321312312@gmail.com\",\r\n    \"phonenumberForAdmin\" : \"0932691312\",\r\n    \"gender\" : \"male\",\r\n    \"firstname\" :\"yamen mahmoud\",\r\n    \"lastname\" : \"arksose\",\r\n    \"clinics\": [ \r\n    {\"clinicId\":\"1\"}, {\"clinicId\":\"2\"} \r\n    ],\r\n    \"subSpecialties\": [ \r\n        {\"subSpecialtyId\":\"3\"}, {\"subSpecialtyId\":\"2\"} \r\n    ],\r\n    \"insurances\": [ \r\n        {\"insuranceId\":\"1\"}, {\"insuranceId\":\"2\"} \r\n    ]\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2223,7 +2303,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NTM1ODUwOCwiZXhwIjoxNjg1NDQ0OTA4fQ.fSNV4GpgV4DasST0_Havx7ibVUaiQ3dUFHq7BrY2nmE",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzI1ODY3NywiZXhwIjoxNjg3MzQ1MDc3fQ.E3elm-Cb2cA23JKkHODQXObRnS1DuL6F2ub7T6nJJt0",
 													"type": "string"
 												}
 											]
@@ -2265,7 +2345,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMyIsInR5cGUiOjAsImlhdCI6MTY4NTY5Mzg3MCwiZXhwIjoxNjg1NzgwMjcwfQ.VukUZvJduoKTNH01gdiZ0JQ911VuBZr1smOHvQf8944",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzQ0NTczOCwiZXhwIjoxNjg3NTMyMTM4fQ.DDjpuxWUcIOoeGEwA5fFZd32fZ7qrL3SbT-dNOExPlU",
 													"type": "string"
 												}
 											]
@@ -2274,7 +2354,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"subSpecialtyName\":\"e21e\"\r\n}",
+											"raw": "{\r\n    \"subSpecialtyName\":\"e2e\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2295,7 +2375,7 @@
 											"variable": [
 												{
 													"key": "specialtyId",
-													"value": "3"
+													"value": "1"
 												}
 											]
 										}
@@ -2442,7 +2522,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMyIsInR5cGUiOjAsImlhdCI6MTY4NzA5NDYwMywiZXhwIjoxNjg3MTgxMDAzfQ.DBZKkmCSuIyYh05lmbjQFjsOhI69eJ4GyhxkclNHcNE",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzQ0NTczOCwiZXhwIjoxNjg3NTMyMTM4fQ.DDjpuxWUcIOoeGEwA5fFZd32fZ7qrL3SbT-dNOExPlU",
 													"type": "string"
 												}
 											]
@@ -2793,7 +2873,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NTM1ODIwNCwiZXhwIjoxNjg1NDQ0NjA0fQ.XU8d2dHO8WQH4M5gOs5fCO0-a1nyCGvJlezOfGtgZI4",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzQ0NTczOCwiZXhwIjoxNjg3NTMyMTM4fQ.DDjpuxWUcIOoeGEwA5fFZd32fZ7qrL3SbT-dNOExPlU",
 													"type": "string"
 												}
 											]
@@ -2802,7 +2882,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"companyName\":\"NabelqCompny\"\r\n}",
+											"raw": "{\r\n    \"companyName\":\"NabelCompny\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"

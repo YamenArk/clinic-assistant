@@ -4,22 +4,11 @@ import {
     ManyToOne,
     PrimaryGeneratedColumn,
   } from 'typeorm';
-import { Doctor } from './doctors';
-import { Clinic } from './clinic';
 import { Transform} from 'class-transformer';
 import { Patient } from './patient';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty } from 'class-validator';
 import { WorkTime } from './work-time';
 
-enum Day {
-  الأحد = 'الأحد',
-  الإثنين = 'الإثنين',
-  الثلاثاء = 'الثلاثاء',
-  الأربعاء = 'الأربعاء',
-  الخميس = 'الخميس',
-  الجمعة = 'الجمعة',
-  السبت = 'السبت',
-}
 
 @Entity({ name: 'appointments' })
 export class Appointment {
@@ -36,15 +25,12 @@ export class Appointment {
     @Transform(({ value }) => value.toTimeString().slice(0, 5))
     finishingTime: string;
 
+    @Column({default : false})
+    @IsBoolean()
+    missedAppointment: boolean;
 
-    @Column({ type: 'enum', enum: Day, nullable: false })
-    @IsNotEmpty()
-    @IsEnum(Day)
-    day: Day;
 
-    @Column({ type: 'date', nullable: false })
-    @IsNotEmpty()
-    date: string;
+
 
     @ManyToOne(() => WorkTime, (workTime) => workTime.appointment)
     public workTime: WorkTime

@@ -14,7 +14,8 @@ export class SpecialtiesController {
     @Post()
     @UseGuards(JWTAuthGuardAdmin)
     async createSpecialty(@Body(new ValidationPipe({ whitelist: true })) createSpecialtyDto: SpecialtyDto) {
-        return  await this.specialtySrevice.createspecialty(createSpecialtyDto);
+        await this.specialtySrevice.createspecialty(createSpecialtyDto);
+        return { message : 'Specialty created sucessfully'}
     }
 
 

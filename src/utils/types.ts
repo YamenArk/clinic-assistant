@@ -176,3 +176,9 @@ export type workTimeFilterParams = {
   year: string;
 
 }
+
+export type LongitudeLatitudeParam = {
+  Latitude:number;
+  Longitude:number;
+
+}
