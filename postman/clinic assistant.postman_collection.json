@@ -443,7 +443,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"patientId\":\"be62a957-4159-4db3-bc98-8fd99d42369e\",\r\n    \"code\":39983\r\n}",
+									"raw": "{\r\n    \"patientId\":\"ef5dd05e-7fb9-4a3a-a200-18fe557557c1\",\r\n    \"code\":43882\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -520,7 +520,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg3NDQ1OTM1LCJleHAiOjE2ODc1MzIzMzV9.JzwQbDG_QWmXUMJCAQF3rx_QGd_7vTvc8lqPBsRRQ-Q",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg3NTg4MDM5LCJleHAiOjE2ODc2NzQ0Mzl9.2PH1qxOa0eh4WFFVLSK6vNlQpUtWjqQG21VveQrNz_4",
 											"type": "string"
 										}
 									]
@@ -603,7 +603,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg3NDQ1OTM1LCJleHAiOjE2ODc1MzIzMzV9.JzwQbDG_QWmXUMJCAQF3rx_QGd_7vTvc8lqPBsRRQ-Q",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg3NTg4MDM5LCJleHAiOjE2ODc2NzQ0Mzl9.2PH1qxOa0eh4WFFVLSK6vNlQpUtWjqQG21VveQrNz_4",
 											"type": "string"
 										}
 									]
@@ -642,7 +642,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg2MjI4MzUwLCJleHAiOjE2ODYzMTQ3NTB9.JkzKoQxS26QSlhJpV6p8k4Eq6osZ4C--tjVCYMRg86c",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg3NTk3MjUxLCJleHAiOjE2ODc2ODM2NTF9.Spirk7DzBGAuoYvjqaszJzP5MCk0kKc_Z4IiA1aSN3M",
 											"type": "string"
 										}
 									]
@@ -665,7 +665,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "2"
+											"value": "69"
 										}
 									]
 								}
@@ -746,6 +746,196 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "governorate Areas",
+					"item": [
+						{
+							"name": "get governorate",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/governorates",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"governorates"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ger areas",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/governorates/:governorateId/areas",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"governorates",
+										":governorateId",
+										"areas"
+									],
+									"variable": [
+										{
+											"key": "governorateId",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "my appoitments",
+					"item": [
+						{
+							"name": "current appoitments",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg4MjEzODA1LCJleHAiOjE2ODgzMDAyMDV9.nBwt5WZAeCAxDQcnz2vJ3JiGBMB6i8jA8k516cRFD3s",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/patients/my-current-appointment",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"patients",
+										"my-current-appointment"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "previes appointment",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg4MjEzODA1LCJleHAiOjE2ODgzMDAyMDV9.nBwt5WZAeCAxDQcnz2vJ3JiGBMB6i8jA8k516cRFD3s",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/patients/my-previes-appointment",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"patients",
+										"my-previes-appointment"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "cancel appoitments",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg4MjEzODA1LCJleHAiOjE2ODgzMDAyMDV9.nBwt5WZAeCAxDQcnz2vJ3JiGBMB6i8jA8k516cRFD3s",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/patients/cancel-appointment/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"patients",
+										"cancel-appointment",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "804"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "24hour to appointment",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg4MjEzODA1LCJleHAiOjE2ODgzMDAyMDV9.nBwt5WZAeCAxDQcnz2vJ3JiGBMB6i8jA8k516cRFD3s",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/patients/24hour-to-appointment/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"patients",
+										"24hour-to-appointment",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "783"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},
@@ -766,7 +956,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc0NDU4MzMsImV4cCI6MTY4NzUzMjIzM30.Cncp5INwT-4_AZ_Ff-3_X12Ei-yyejcAlxpJe4uumPg",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc1OTQ2NDQsImV4cCI6MTY4NzY4MTA0NH0.So4Qx6hIFf4vuqNMGP0F_SnvDBkXzCSOAMGnc9r7Zc0",
 													"type": "string"
 												}
 											]
@@ -775,7 +965,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"startingTime\":\"03:00\",\r\n    \"finishingTime\":\"05:00\",\r\n    \"days\":[\"الخميس\"],\r\n    \"startDate\":\"2023-07-01\",\r\n    \"endDate\": \"2023-11-01\"\r\n}",
+											"raw": "{\r\n    \"startingTime\":\"11:00\",\r\n    \"finishingTime\":\"13:00\",\r\n    \"days\":[\"الأحد\",\"السبت\",\"الخميس\"],\r\n    \"startDate\":\"2023-07-01\",\r\n    \"endDate\": \"2023-07-10\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -812,7 +1002,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc0NDU4MzMsImV4cCI6MTY4NzUzMjIzM30.Cncp5INwT-4_AZ_Ff-3_X12Ei-yyejcAlxpJe4uumPg",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODgyMTUxMzcsImV4cCI6MTY4ODMwMTUzN30.POSLR51U0KJGMhrs62zBgAMnMI_cogbBZTgoeubqus4",
 													"type": "string"
 												}
 											]
@@ -849,7 +1039,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc0NDU4MzMsImV4cCI6MTY4NzUzMjIzM30.Cncp5INwT-4_AZ_Ff-3_X12Ei-yyejcAlxpJe4uumPg",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc1ODc0MDYsImV4cCI6MTY4NzY3MzgwNn0.2yHcidzsuFf1SI-zcqwLV4j_-X-Hp83U2NV0Qu0KDgY",
 													"type": "string"
 												}
 											]
@@ -871,7 +1061,7 @@
 											"variable": [
 												{
 													"key": "workTimeId",
-													"value": "1"
+													"value": "35"
 												}
 											]
 										}
@@ -891,7 +1081,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc0NDU4MzMsImV4cCI6MTY4NzUzMjIzM30.Cncp5INwT-4_AZ_Ff-3_X12Ei-yyejcAlxpJe4uumPg",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc1OTQ2NDQsImV4cCI6MTY4NzY4MTA0NH0.So4Qx6hIFf4vuqNMGP0F_SnvDBkXzCSOAMGnc9r7Zc0",
 													"type": "string"
 												}
 											]
@@ -1422,6 +1612,261 @@
 									"response": []
 								}
 							]
+						},
+						{
+							"name": "additional work time",
+							"item": [
+								{
+									"name": "update missedAppointment",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc1OTQ2NDQsImV4cCI6MTY4NzY4MTA0NH0.So4Qx6hIFf4vuqNMGP0F_SnvDBkXzCSOAMGnc9r7Zc0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/appoitment/:id/:patientId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"appoitment",
+												":id",
+												":patientId"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "1"
+												},
+												{
+													"key": "patientId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "delete worktimes",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc1OTQ2NDQsImV4cCI6MTY4NzY4MTA0NH0.So4Qx6hIFf4vuqNMGP0F_SnvDBkXzCSOAMGnc9r7Zc0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"startDate\":\"2023-07-01\",\r\n    \"endDate\": \"2023-11-01\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://localhost:3000/doctors/delete-work-time/:clinicId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"delete-work-time",
+												":clinicId"
+											],
+											"variable": [
+												{
+													"key": "clinicId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "setAppointment",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc1OTQ2NDQsImV4cCI6MTY4NzY4MTA0NH0.So4Qx6hIFf4vuqNMGP0F_SnvDBkXzCSOAMGnc9r7Zc0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/setAppointment/:id/:patientId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"setAppointment",
+												":id",
+												":patientId"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "137"
+												},
+												{
+													"key": "patientId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get patient Histories",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc1OTQ2NDQsImV4cCI6MTY4NzY4MTA0NH0.So4Qx6hIFf4vuqNMGP0F_SnvDBkXzCSOAMGnc9r7Zc0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/patient-histories/:patientId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"patient-histories",
+												":patientId"
+											],
+											"variable": [
+												{
+													"key": "patientId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "delete one work time",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjIiLCJ0eXBlIjoyLCJpYXQiOjE2ODc2NzYyMjgsImV4cCI6MTY4Nzc2MjYyOH0.OawT8ou5JIhZYOyEaernWuKzuyTmzRxw30LKKJjz1XM",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/delete-one-work-time/:workTimeId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"delete-one-work-time",
+												":workTimeId"
+											],
+											"variable": [
+												{
+													"key": "workTimeId",
+													"value": "36"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "shift worktimes",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjIiLCJ0eXBlIjoyLCJpYXQiOjE2ODc2NzYyMjgsImV4cCI6MTY4Nzc2MjYyOH0.OawT8ou5JIhZYOyEaernWuKzuyTmzRxw30LKKJjz1XM",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"shiftValue\":1\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://localhost:3000/doctors/shiftWorkTimes/:clinicId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"shiftWorkTimes",
+												":clinicId"
+											],
+											"variable": [
+												{
+													"key": "clinicId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
 						}
 					]
 				},
@@ -1662,7 +2107,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzQ0NTczOCwiZXhwIjoxNjg3NTMyMTM4fQ.DDjpuxWUcIOoeGEwA5fFZd32fZ7qrL3SbT-dNOExPlU",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzU5NDU1OCwiZXhwIjoxNjg3NjgwOTU4fQ.denX9virqTFlCYFPwpxPuoN8rpWJtGKeB7JV79kW1hs",
 													"type": "string"
 												}
 											]
@@ -1671,7 +2116,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"email\" : \"321312312@gmail.com\",\r\n    \"phonenumberForAdmin\" : \"0932691312\",\r\n    \"gender\" : \"male\",\r\n    \"firstname\" :\"yamen mahmoud\",\r\n    \"lastname\" : \"arksose\",\r\n    \"clinics\": [ \r\n    {\"clinicId\":\"1\"}, {\"clinicId\":\"2\"} \r\n    ],\r\n    \"subSpecialties\": [ \r\n        {\"subSpecialtyId\":\"3\"}, {\"subSpecialtyId\":\"2\"} \r\n    ],\r\n    \"insurances\": [ \r\n        {\"insuranceId\":\"1\"}, {\"insuranceId\":\"2\"} \r\n    ]\r\n}",
+											"raw": "{\r\n    \"email\" : \"yamen@gmail.com\",\r\n    \"phonenumberForAdmin\" : \"0932691312\",\r\n    \"gender\" : \"male\",\r\n    \"firstname\" :\"yamen mahmoud\",\r\n    \"lastname\" : \"arksose\",\r\n    \"clinics\": [ \r\n    {\"clinicId\":\"1\"}, {\"clinicId\":\"2\"} \r\n    ],\r\n    \"subSpecialties\": [ \r\n        {\"subSpecialtyId\":\"1\"}, {\"subSpecialtyId\":\"2\"} \r\n    ],\r\n    \"insurances\": [ \r\n        {\"insuranceId\":\"1\"}, {\"insuranceId\":\"2\"} \r\n    ]\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2116,7 +2561,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMyIsInR5cGUiOjAsImlhdCI6MTY4NTY5Mzg3MCwiZXhwIjoxNjg1NzgwMjcwfQ.VukUZvJduoKTNH01gdiZ0JQ911VuBZr1smOHvQf8944",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzU5NDU1OCwiZXhwIjoxNjg3NjgwOTU4fQ.denX9virqTFlCYFPwpxPuoN8rpWJtGKeB7JV79kW1hs",
 													"type": "string"
 												}
 											]
@@ -2125,7 +2570,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"specialtyName\":\"herat\"\r\n}",
+											"raw": "{\r\n    \"specialtyName\":\"عين1ية\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2345,7 +2790,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzQ0NTczOCwiZXhwIjoxNjg3NTMyMTM4fQ.DDjpuxWUcIOoeGEwA5fFZd32fZ7qrL3SbT-dNOExPlU",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzU5NDU1OCwiZXhwIjoxNjg3NjgwOTU4fQ.denX9virqTFlCYFPwpxPuoN8rpWJtGKeB7JV79kW1hs",
 													"type": "string"
 												}
 											]
@@ -2354,7 +2799,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"subSpecialtyName\":\"e2e\"\r\n}",
+											"raw": "{\r\n    \"subSpecialtyName\":\"eseeee\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2522,7 +2967,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzQ0NTczOCwiZXhwIjoxNjg3NTMyMTM4fQ.DDjpuxWUcIOoeGEwA5fFZd32fZ7qrL3SbT-dNOExPlU",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzU5NDU1OCwiZXhwIjoxNjg3NjgwOTU4fQ.denX9virqTFlCYFPwpxPuoN8rpWJtGKeB7JV79kW1hs",
 													"type": "string"
 												}
 											]
@@ -2873,7 +3318,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzQ0NTczOCwiZXhwIjoxNjg3NTMyMTM4fQ.DDjpuxWUcIOoeGEwA5fFZd32fZ7qrL3SbT-dNOExPlU",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NzU5NDU1OCwiZXhwIjoxNjg3NjgwOTU4fQ.denX9virqTFlCYFPwpxPuoN8rpWJtGKeB7JV79kW1hs",
 													"type": "string"
 												}
 											]
@@ -2882,7 +3327,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"companyName\":\"NabelCompny\"\r\n}",
+											"raw": "{\r\n    \"companyName\":\"NabelCompfny\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"

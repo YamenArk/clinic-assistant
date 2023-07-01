@@ -25,17 +25,20 @@ export class Appointment {
     @Transform(({ value }) => value.toTimeString().slice(0, 5))
     finishingTime: string;
 
-    @Column({default : false})
+    @Column({
+      type: 'enum',
+      enum: ['true', 'false'],
+      default: 'false'
+    })
     @IsBoolean()
     missedAppointment: boolean;
 
 
 
 
-    @ManyToOne(() => WorkTime, (workTime) => workTime.appointment)
-    public workTime: WorkTime
-
-
+    @ManyToOne(() => WorkTime, (workTime) => workTime.appointment, { onDelete: 'CASCADE' })
+    public workTime: WorkTime;
+    
     @ManyToOne(() => Patient, (patient) => patient.appointment)
     public patient: Patient
 

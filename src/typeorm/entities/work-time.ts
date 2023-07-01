@@ -58,8 +58,8 @@ export class WorkTime {
 
     @ManyToOne(() => Clinic, (clinic) => clinic.workTime)
     public clinic: Clinic
- 
-    @OneToMany(() => Appointment, appointment => appointment.workTime)
+    
+    @OneToMany(() => Appointment, appointment => appointment.workTime, { onDelete: 'CASCADE' })
     public appointment: Appointment[];
 
 

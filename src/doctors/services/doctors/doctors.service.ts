@@ -6,8 +6,8 @@ import { CACHE_MANAGER, CacheInterceptor, CacheModule } from '@nestjs/common'; /
 import { Doctor } from 'src/typeorm/entities/doctors';
 import { Insurance } from 'src/typeorm/entities/insurance';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
-import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, evaluateDoctorParams, filterDocrotsParams, filterNameParams, profileDetailsParams, secondFilterDocrotsParams,WorkTimeWithAppointments, workTimeFilterParams,appointmentwithBooked } from 'src/utils/types';
-import { Between, In, IsNull, Like, MoreThanOrEqual, Not, Repository } from 'typeorm';
+import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, evaluateDoctorParams, filterDocrotsParams, filterNameParams, profileDetailsParams, secondFilterDocrotsParams,WorkTimeWithAppointments, workTimeFilterParams,appointmentwithBooked, DeleteWorkTimeParams } from 'src/utils/types';
+import { Between, In, IsNull, Like, MoreThanOrEqual, Not, Repository,LessThanOrEqual, MoreThan } from 'typeorm';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { Inject } from '@nestjs/common';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
@@ -430,7 +430,7 @@ export class DoctorsService {
 
       async createWorkTime(workTimeDetails : CreateWorkTimeParams,clinicId : number,doctorId : number)
       {
-        const weekDays = ['الخميس', 'الجمعة', 'السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء'];
+        const weekDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء','الخميس', 'الجمعة', 'السبت'];
         const weekdayMap = {
           [weekDays[0]]: 0,
           [weekDays[1]]: 1,
@@ -500,6 +500,7 @@ export class DoctorsService {
 
         for (let date = startDate; date <= endDate; date.setDate(date.getDate() + 1)) {
           const dayOfWeek = days[weekdayMap[date.toLocaleDateString('ar-EG', { weekday: 'long' })]];
+          console.log(dayOfWeek)
           if (dayOfWeek) {
             result.push({ day: dayOfWeek, date: formatDate(date) });
           }
@@ -509,6 +510,8 @@ export class DoctorsService {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
+            console.log("next one")
+            console.log(day)
             return `${year}/${month}/${day}`;
             }
         
@@ -530,16 +533,113 @@ export class DoctorsService {
             appointment.startingTime = appointments[j].startTime;
             appointment.finishingTime = appointments[j].endTime;
             appointment.workTime = workTime;
-            this.appointmentRepository.save(appointment)
+            appointment.missedAppointment = false;
+            await this.appointmentRepository.save(appointment)
             j++;
           }
           i++
         }
           
       }
+      async deleteWorkTimes(workTimeDetails : DeleteWorkTimeParams,clinicId : number,doctorId : number){
+        if (!doctorId) {
+          throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
+        }
+        const doctor = await this.doctorRepository.findOne({where : {doctorId : doctorId}});
+        if (!doctor ) {
+          throw new HttpException(`doctor with id ${doctorId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const clinic = await this.clinicRepository.findOne({where : {clinicId : clinicId}});
+        if (!clinic ) {
+          throw new HttpException(`clinic with id ${clinicId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const doctorClinic = await this.doctorClinicRepository.findOne({
+          where: { doctor: { doctorId }, clinic: { clinicId } },
+        });
+        if (!doctorClinic ) {
+          throw new NotFoundException(
+            `No doctorClinic entity found for doctor ${doctor.doctorId} and clinic ${clinic.clinicId}`
+          );
+        }
+        //get all Work days
+        const startDate = new Date(workTimeDetails.startDate);
+        const endDate = new Date(workTimeDetails.endDate);
+        // Convert the start and end dates to ISO strings
+        const startDateISO = startDate.toISOString();
+        const endDateISO = endDate.toISOString();
 
+        // Find all work times that fall between the start and end dates
+        const workTimesToDelete = await this.workTimeRepository.find({
+          where: {
+            doctor: { doctorId },
+            clinic: { clinicId },
+            date: Between(startDateISO, endDateISO)
+          }
+        });
 
-      async getWorkTime(clinicId : number,doctorId : number): Promise<{ workTimes: WorkTimeWithAppointments[],startingDate :string, finishingDate : string }> {
+        // Delete the work times
+        await this.workTimeRepository.remove(workTimesToDelete);
+      }
+
+      async deleteWorkTime(workTimeId : number,doctorId : number){
+        if (!doctorId) {
+          throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
+        }
+        const doctor = await this.doctorRepository.findOne({where : {doctorId : doctorId}});
+        if (!doctor ) {
+          throw new HttpException(`doctor with id ${doctorId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const workTime = await this.workTimeRepository.findOne({where : {workTimeId : workTimeId},relations : ['doctor']});
+        if (!workTime ) {
+          throw new HttpException(`workTime with id ${workTimeId} not found`, HttpStatus.NOT_FOUND);
+        }
+        if(workTime.doctor.doctorId != doctorId)
+        {
+          throw new BadRequestException('you can only delete your worktime')
+        }
+        await this.workTimeRepository.remove(workTime);
+      }
+
+      async shiftWorkTimes(shiftValue : number,doctorId : number,clinicId : number){
+
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const workTimes = await this.workTimeRepository.find({
+          where : {
+            date: MoreThan(today.toDateString()),
+            doctor :{
+              doctorId : doctorId
+            },
+            clinic : {
+              clinicId : clinicId
+            }
+          },
+          relations: ['appointment','doctor','clinic'],
+          order: { date: 'ASC', startingTime: 'ASC' },
+        });
+    
+        // Loop through each work time and update the appointments
+        for (let i = 0; i < workTimes.length; i++) {
+          const currentWorkTime = workTimes[i];
+          const nextWorkTime = workTimes[i + shiftValue];
+    
+          // If it's the last work time, delete all the appointments
+          if (!nextWorkTime) {
+            await this.appointmentRepository.delete({
+              workTime: currentWorkTime,
+            });
+          } else {
+            // Update the appointments to the next work time
+            const appointmentsToUpdate = currentWorkTime.appointment;
+            for (const appointment of appointmentsToUpdate) {
+              appointment.workTime = nextWorkTime;
+              await this.appointmentRepository.save(appointment);
+            }
+          }
+        }
+      }
+
+      async getWorkTimeForDoctor(clinicId : number,doctorId : number){
 
         if (!doctorId) {
           throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
@@ -566,13 +666,11 @@ export class DoctorsService {
          const now = new Date();
         const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
-        const lastAppointment = new Date(today);
-        lastAppointment.setDate(today.getDate() + doctorClinic.daysToSeeLastAppointment);
         const workTime = await this.workTimeRepository.find({
           where: {
-              doctor: { doctorId },
-              clinic: { clinicId },
-              date: Between(today.toISOString(), lastAppointment.toISOString())
+            doctor: { doctorId },
+            clinic: { clinicId },
+            date: MoreThanOrEqual(today.toISOString())
           }
         });
         if(workTime.length == 0)
@@ -581,41 +679,10 @@ export class DoctorsService {
             `you have no set any worktime in this clinic clinic ${clinic.clinicId}`
           );
         }
-        
-        
-        
-        const workTimeWithAppointments = await Promise.all(workTime.map(async result => {
-          const workTime = {
-              workTimeId: result.workTimeId,
-              startingTime: result.startingTime,
-              finishingTime: result.finishingTime,
-              day: result.day,
-              date: result.date,
-              haveAppointments : false
-          };
-          const appointment = await this.appointmentRepository.findOne({
-            where: {
-              workTime: result,
-              patient: IsNull(),
-            },
-            relations: ['patient'],
-          });
-
-          if(appointment)
-          {
-            workTime.haveAppointments = true
-          }      
-          return workTime;
-          }));
+      
         // return {worktimes : workTimeWithAppointments};
-        return { workTimes: workTimeWithAppointments,
-                  startingDate : workTime[0].date,
-                  finishingDate :  workTime[workTime.length-1].date
-         };
+        return {workTimes : workTime}
       }
-    
-
-
       
       async getAppoitment(workTimeId : number,doctorId : number){
         if (!doctorId) {
@@ -627,21 +694,213 @@ export class DoctorsService {
         }
         const workTime = await this.workTimeRepository.findOne({where : {workTimeId : workTimeId}});
         if (!workTime ) {
-          throw new HttpException(`clinic with id ${workTimeId} not found`, HttpStatus.NOT_FOUND);
+          throw new HttpException(`workTime with id ${workTimeId} not found`, HttpStatus.NOT_FOUND);
         }
-     
-        const appointment = await this.appointmentRepository.find({where : {workTime : {workTimeId}}, relations: ['patient'] });
+ 
+
+        let appointment
+        const workTimeDate = new Date(workTime.date);
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        
+
+        if(workTimeDate.toDateString() === today.toDateString())
+        {
+          appointment = await this.appointmentRepository.find({
+            where: { workTime: { workTimeId } },
+            relations: ['patient'],
+            select: {
+              id: true,
+              startingTime: true,
+              finishingTime: true,
+              missedAppointment : true,
+              patient: {
+                patientId: true,
+                firstname: true,
+                lastname: true,
+                phoneNumber : true,
+                birthDate : true,
+                profilePicture : true,
+                gender : true
+              }
+            }
+          });
+        }
+        else
+        {
+           appointment = await this.appointmentRepository.find({
+            where: { workTime: { workTimeId } },
+            relations: ['patient'],
+            select: {
+              id: true,
+              startingTime: true,
+              finishingTime: true,
+              patient: {
+                patientId: true,
+                firstname: true,
+                lastname: true,
+                phoneNumber : true,
+                birthDate : true,
+                profilePicture : true,
+                gender : true
+              }
+            }
+          });
+        }
         if(appointment.length == 0)
         {
           throw new NotFoundException(
             `you have not set any appointment in this wotk time ${workTimeId}`
           );
         }
-        
         return {appointment : appointment};
       }
 
+      async missedAppointment(id : number,patientId : number,doctorId : number){
+        if (!doctorId) {
+          throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
+        }
+        const doctor = await this.doctorRepository.findOne({where : {doctorId : doctorId}});
+        if (!doctor ) {
+          throw new HttpException(`doctor with id ${doctorId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const appointment = await this.appointmentRepository.findOne({where : { id },relations : ['patient']})
+        if(!appointment)
+        {
+            throw new HttpException(`appointment with id ${id} not found`, HttpStatus.NOT_FOUND);
+        }
+        const patient = await this.PatientRepository.findOne({where : {patientId}});
+        if (!patient ) {
+          throw new HttpException(`patient with id ${patientId} not found`, HttpStatus.NOT_FOUND);
+        }
+        if(appointment.patient.patientId != patient.patientId)
+        {
+          throw new BadRequestException('this appoitments is not for this patient')
+        }
+        const workTime = await this.workTimeRepository.findOne({where : {
+          appointment : appointment,
+        },
+        relations : ['doctor']
+         })
+        if (!workTime ) {
+          throw new HttpException(`workTime with id ${id} not found`, HttpStatus.NOT_FOUND);
+        }
+        const workTimeDate = new Date(workTime.date);
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        if(workTime.doctor.doctorId!= doctor.doctorId)
+        {
+          throw new BadRequestException('you are only allowed to update your appoitments')
+        }
+        if(workTimeDate.toDateString() === today.toDateString())
+        {
+          throw new BadRequestException('you can only update the appoitments of today')
+        }
 
+
+
+        if( appointment.missedAppointment == true)
+        {
+
+          if(patient.numberOfMissAppointment == 3)
+          {
+          patient.active = true;
+          }
+          patient.numberOfMissAppointment --
+          appointment.missedAppointment = false;
+        }
+        else
+        {
+          if(patient.numberOfMissAppointment == 2)
+          {
+          patient.active = false;
+          }
+          patient.numberOfMissAppointment ++;
+          appointment.missedAppointment = true;
+        }
+        await this.PatientRepository.save(patient)
+        await this.appointmentRepository.save(appointment)
+      }
+      async setAppointment(id : number,patientId : number,doctorId : number){
+        if (!doctorId) {
+          throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
+        }
+        const doctor = await this.doctorRepository.findOne({where : {doctorId : doctorId}});
+        if (!doctor ) {
+          throw new HttpException(`doctor with id ${doctorId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const appointment = await this.appointmentRepository.findOne({where : { id },relations : ['patient']})
+        if(!appointment)
+        {
+            throw new HttpException(`appointment with id ${id} not found`, HttpStatus.NOT_FOUND);
+        }
+        if(appointment.patient)
+        {
+          throw new BadRequestException('you can not book an booked appoitments')
+        }
+        const patient = await this.PatientRepository.findOne({where : {patientId}});
+        if (!patient ) {
+          throw new HttpException(`patient with id ${patientId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const workTime = await this.workTimeRepository.findOne({where : {
+          appointment : appointment,
+        },
+        relations : ['doctor']
+         })
+        if (!workTime ) {
+          throw new HttpException(`workTime with id ${id} not found`, HttpStatus.NOT_FOUND);
+        }
+        if(workTime.doctor.doctorId!= doctor.doctorId)
+        {
+          throw new BadRequestException('you are only allowed to update your appoitments')
+        }
+        appointment.patient = patient;
+        await this.appointmentRepository.save(appointment);
+      }
+      async patientHistories(patientId : number,doctorId : number){
+        if (!doctorId) {
+          throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
+        }
+        const doctor = await this.doctorRepository.findOne({where : {doctorId : doctorId}});
+        if (!doctor ) {
+          throw new HttpException(`doctor with id ${doctorId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const patient = await this.PatientRepository.findOne({where : {patientId}});
+        if (!patient ) {
+          throw new HttpException(`patient with id ${patientId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const appointments = await this.appointmentRepository.find({where :{
+          patient : patient,
+          workTime : {
+            date: LessThanOrEqual(today.toISOString()),
+            doctor : {
+              doctorId : doctorId
+            }
+          }
+        },
+        relations : ['workTime'],
+        select : {
+          id : true,
+          startingTime : true,
+          finishingTime : true,
+          missedAppointment : true,
+          workTime : {
+            date :true,
+            day : true
+          }
+        }
+      })
+      if(appointments.length == 0 )
+      {
+        throw new BadRequestException("You don't have any appointments with this patient")
+      }
+      return { appointments : appointments}
+      }
+
+      
+      
       async updateDoctoeClinicDetails(doctorClinicDetails : UpdateDoctoeClinicParams,clinicId : number,doctorId:number){
           if (!doctorId) {
             throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
@@ -1334,7 +1593,8 @@ export class DoctorsService {
         const appointment = await this.appointmentRepository.findOne({
           where : {
            id : appointmentId
-          }})
+          },
+        relations: ['patient']})
         if(!appointment)
         {
           throw new NotFoundException(
@@ -1391,4 +1651,80 @@ export class DoctorsService {
           return { message: `${timeDiffDays} أيام` };
         }
       }
+
+      async getWorkTime(clinicId : number,doctorId : number): Promise<{ workTimes: WorkTimeWithAppointments[],startingDate :string, finishingDate : string }> {
+
+        if (!doctorId) {
+          throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
+        }
+        const doctor = await this.doctorRepository.findOne({where : {doctorId : doctorId}});
+        if (!doctor ) {
+          throw new HttpException(`doctor with id ${doctorId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const clinic = await this.clinicRepository.findOne({where : {clinicId : clinicId}});
+        if (!clinic ) {
+          throw new HttpException(`clinic with id ${clinicId} not found`, HttpStatus.NOT_FOUND);
+        }
+
+        //see the connection 
+        const doctorClinic = await this.doctorClinicRepository.findOne({
+          where: { doctor: { doctorId }, clinic: { clinicId } },
+        });
+        if (!doctorClinic ) {
+          throw new NotFoundException(
+            `No doctorClinic entity found for doctor ${doctor.doctorId} and clinic ${clinic.clinicId}`
+          );
+        }
+
+         const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+        const lastAppointment = new Date(today);
+        lastAppointment.setDate(today.getDate() + doctorClinic.daysToSeeLastAppointment);
+        const workTime = await this.workTimeRepository.find({
+          where: {
+              doctor: { doctorId },
+              clinic: { clinicId },
+              date: Between(today.toISOString(), lastAppointment.toISOString())
+          }
+        });
+        if(workTime.length == 0)
+        {
+          throw new NotFoundException(
+            `you have no set any worktime in this clinic clinic ${clinic.clinicId}`
+          );
+        }
+        
+        
+        
+        const workTimeWithAppointments = await Promise.all(workTime.map(async result => {
+          const workTime = {
+              workTimeId: result.workTimeId,
+              startingTime: result.startingTime,
+              finishingTime: result.finishingTime,
+              day: result.day,
+              date: result.date,
+              haveAppointments : false
+          };
+          const appointment = await this.appointmentRepository.findOne({
+            where: {
+              workTime: result,
+              patient: IsNull(),
+            },
+            relations: ['patient'],
+          });
+
+          if(appointment)
+          {
+            workTime.haveAppointments = true
+          }      
+          return workTime;
+          }));
+        // return {worktimes : workTimeWithAppointments};
+        return { workTimes: workTimeWithAppointments,
+                  startingDate : workTime[0].date,
+                  finishingDate :  workTime[workTime.length-1].date
+         };
+      }
+
     }    

@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsNumberString, IsString, Matches } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsNumberString, IsString, Matches } from 'class-validator';
 import {
     Column,
     Entity,
@@ -38,10 +38,11 @@ export class Patient {
     @IsString()
     lastname: string;
 
-    // //accepte null
-    // @Column({ nullable: true })
-    // @IsNumber()
-    // age: number;
+    
+    @Column({default : true})
+    @IsBoolean()
+    active: boolean;
+
 
     //accepte null
     @Column({ nullable: true })

@@ -21,6 +21,9 @@ import * as jwt from 'jsonwebtoken';
 import { JwtPayload } from 'jsonwebtoken';
 import { evaluateDto } from 'src/doctors/dtos/evaluate.dto';
 import { workTimeFilterDto } from 'src/doctors/dtos/workTimeFilter.dto';
+import TrusthubBase from 'twilio/lib/rest/TrusthubBase';
+import { DeleteWorkTimeDto } from 'src/doctors/dtos/DeleteWorkTime.dto';
+import { shiftDto } from 'src/doctors/dtos/shift.dto';
 @Controller('doctors')
 export class DoctorsController {
 
@@ -194,26 +197,98 @@ export class DoctorsController {
     ) {
       CreateWorkTimeDto.validate(workTimeDetails); // Call the validate() method as a static method on CreateWorkTimeDto
       const doctorId = request.doctorId; // Accessing the doctorId from the request object
-      console.log("=123123")
       await this.doctorSrevice.createWorkTime(workTimeDetails,clinicId,doctorId);
       return {message : "work time and appoitments added successfully"}
     }
+
+    //delete work times
+    @Delete('delete-work-time/:clinicId')
+    @UseGuards(JWTAuthGuardDoctor)
+    async deleteWorkTimes(
+      @Body( new ValidationPipe({ whitelist: true }))workTimeDetails: DeleteWorkTimeDto,
+      @Param('clinicId') clinicId: number,
+      @Req() request
+    ) {
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      await this.doctorSrevice.deleteWorkTimes(workTimeDetails,clinicId,doctorId);
+      return {message : "work time and appoitments deleted successfully"}
+    }
+    
+    //create work times
+    @Delete('delete-one-work-time/:workTimeId')
+    @UseGuards(JWTAuthGuardDoctor)
+    async deleteWorkTime(
+      @Param('workTimeId') workTimeId: number,
+      @Req() request
+    ) {
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      await this.doctorSrevice.deleteWorkTime(workTimeId,doctorId);
+      return {message : "work time and appoitments deleted successfully"}
+    }
+
+    @Post('shiftWorkTimes/:clinicId')
+    @UseGuards(JWTAuthGuardDoctor)
+    async shiftWorkTimes(
+      @Body( new ValidationPipe({ whitelist: true }))shift: shiftDto,
+      @Param('clinicId') clinicId: number,
+      @Req() request
+    ) {
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      await this.doctorSrevice.shiftWorkTimes(shift.shiftValue,doctorId,clinicId);
+      return {message : "work time and appoitments shifted successfully"}
+    }
+        
 
     @Get('work-time/:clinicId')
     @UseGuards(JWTAuthGuardDoctor)
     async getWotkTime(@Param('clinicId') clinicId: number, @Req() request) {
       const doctorId = request.doctorId; // Accessing the doctorId from the request object
-      return this.doctorSrevice.getWorkTime(clinicId, doctorId);
+      return this.doctorSrevice.getWorkTimeForDoctor(clinicId, doctorId);
     }
   
     @Get('appoitment/:workTimeId')
     @UseGuards(JWTAuthGuardDoctor)
     async getAppoitment(@Param('workTimeId') workTimeId: number, @Req() request) {
-      // const doctorId = request.doctorId; // Accessing the doctorId from the request object
-      const doctorId = 1; // Accessing the doctorId from the request object
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
       return this.doctorSrevice.getAppoitment(workTimeId, doctorId);
     }
-  
+
+    @Put('appoitment/:id/:patientId')
+    @UseGuards(JWTAuthGuardDoctor)
+    async missedAppointment(
+      @Param('id', new ParseIntPipe()) id: number,
+      @Param('patientId', new ParseIntPipe()) patientId: number,
+      @Req() request
+    ){
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      await this.doctorSrevice.missedAppointment(id,patientId,doctorId)
+      return {message : 'it has been updaed sucessfully'}
+    }
+
+    
+    @Put('setAppointment/:id/:patientId')
+    @UseGuards(JWTAuthGuardDoctor)
+    async setAppointment(
+      @Param('id', new ParseIntPipe()) id: number,
+      @Param('patientId', new ParseIntPipe()) patientId: number,
+      @Req() request
+    ){
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      await this.doctorSrevice.setAppointment(id,patientId,doctorId)
+      return {message : 'the appoitment has been booked sucessfully'}
+    }
+
+    @Get('patient-histories/:patientId')
+    @UseGuards(JWTAuthGuardDoctor)
+    async patientHistories(
+      @Param('patientId', new ParseIntPipe()) patientId: number,
+      @Req() request
+    ){
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      return this.doctorSrevice.patientHistories(patientId,doctorId)
+      // return {message : 'the appoitment has been booked sucessfully'}
+    }
+
 
     //update checkupPrice ,daysToSeeLastAppointment,appointmentDuring
     @Put('updateDoctoeClinicDetails/:clinicId')
@@ -432,6 +507,8 @@ export class DoctorsController {
       await this.doctorSrevice.setAppitments(id,patientId);
       return {mesaage : 'you have been booked successfully'}
   }
+
+
   @Get('appoitment/patient/:id')
   async getTimeBetweenTodayAndTheAppoitment(
     @Param('id', new ParseIntPipe()) id: number,

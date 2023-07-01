@@ -32,6 +32,13 @@ export interface CreateAdminParams {
     endDate: string;
   }
 
+  
+  export interface DeleteWorkTimeParams {
+    startDate: string;
+    endDate: string;
+  }
+
+
   export interface UpdateDoctoeClinicParams {
     appointmentDuring ?: number;
     daysToSeeLastAppointment ?: number;
