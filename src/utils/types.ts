@@ -1,6 +1,6 @@
 enum Day {
   الأحد = 'الأحد',
-  الإثنين = 'الإثنين',
+  الاثنين = 'الاثنين',
   الثلاثاء = 'الثلاثاء',
   الأربعاء = 'الأربعاء',
   الخميس = 'الخميس',
@@ -187,5 +187,10 @@ export type workTimeFilterParams = {
 export type LongitudeLatitudeParam = {
   Latitude:number;
   Longitude:number;
+}
 
+
+export type AmountCollectedByAdminParams = {
+  month: string;
+  year: string;
 }

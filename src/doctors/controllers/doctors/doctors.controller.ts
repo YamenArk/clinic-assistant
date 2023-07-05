@@ -142,6 +142,29 @@ export class DoctorsController {
       return this.doctorSrevice.getprofile(doctorId);
     }
 
+   // Pay in advance
+   
+    // transction
+
+    //my payment
+    @UseGuards(JWTAuthGuardDoctor)
+    @Get('pay-in-advance')
+    async payInAdvance(@Req() request) {
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      const mypayment = await this.doctorSrevice.payInAdvance(doctorId);
+      return {mypayment : mypayment}
+    }
+
+
+
+    @UseGuards(JWTAuthGuardDoctor)
+    @Get('my-transctions')
+    async gettransctions(@Req() request) {
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      const mytransctions = await this.doctorSrevice.gettransctions(doctorId);
+      return {mytransctions : mytransctions}
+    }
+
        
 
 

@@ -25,14 +25,9 @@ export class Appointment {
     @Transform(({ value }) => value.toTimeString().slice(0, 5))
     finishingTime: string;
 
-    @Column({
-      type: 'enum',
-      enum: ['true', 'false'],
-      default: 'false'
-    })
+    @Column({ type: 'boolean', default: false })
     @IsBoolean()
     missedAppointment: boolean;
-
 
 
 

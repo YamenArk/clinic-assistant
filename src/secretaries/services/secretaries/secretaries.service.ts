@@ -185,27 +185,6 @@ export class SecretariesService {
 
 
     
-
-    async sendResetEmail(email: string): Promise<number> {
-        const secretary = await this.secretaryRepository.findOne({where: {email : email}});
-
-        if (!secretary) {
-          throw new HttpException(
-            `secretary not found`,
-            HttpStatus.NOT_FOUND,
-          );
-        }    
-        const code = Math.floor(10000 + Math.random() * 90000);
-        const message = `Please reset your password using this code: ${code}`;
-        await this.mailService.sendMail(secretary.email , 'Password reset', message);
-      
-        // Cache the generated code for 5 minutes
-        const cacheKey = `resetCode-${secretary.secretaryId}`;
-        await this.cacheManager.set(cacheKey, code, { ttl: 300 });
-      
-        return secretary.secretaryId;
-      }
- 
     
       async resetPassword(secretaryId: number, code: number, newPassword: string): Promise<void> {
         const secretary = await this.secretaryRepository.findOne({where: {secretaryId : secretaryId}});

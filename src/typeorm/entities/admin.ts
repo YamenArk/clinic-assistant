@@ -2,8 +2,11 @@ import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-vali
 import {
     Column,
     Entity,
+    OneToMany,
     PrimaryGeneratedColumn,
   } from 'typeorm';
+import { PayInAdvance } from './pay-in-advance';
+import { Transctions } from './transctions';
 
 @Entity({ name: 'admins' })
 export class Admin {
@@ -40,12 +43,18 @@ export class Admin {
     @IsString()
     lastname: string;
     
-    @Column({default : true})
+    @Column({ type: 'boolean', default: false })
     @IsBoolean()
     active: boolean;
 
-
     @Column()
     createdAt: Date;
-  
+ 
+    @OneToMany(() => PayInAdvance, payInAdvance => payInAdvance.admin)
+    public payInAdvance: PayInAdvance[];
+
+    @OneToMany(() => Transctions, transctions => transctions.admin)
+    public transctions: Transctions[];
+
+
 }

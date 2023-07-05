@@ -38,8 +38,7 @@ export class Patient {
     @IsString()
     lastname: string;
 
-    
-    @Column({default : true})
+    @Column({ type: 'boolean', default: false })
     @IsBoolean()
     active: boolean;
 

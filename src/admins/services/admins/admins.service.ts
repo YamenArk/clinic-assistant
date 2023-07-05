@@ -2,16 +2,19 @@ import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundExc
 import { InjectRepository } from '@nestjs/typeorm';
 import { validate } from 'class-validator';
 import { Admin } from 'src/typeorm/entities/admin';
-import { CreateAdminParams, filterNameParams, updateAdminParams } from 'src/utils/types';
+import { AmountCollectedByAdminParams, CreateAdminParams, filterNameParams, updateAdminParams } from 'src/utils/types';
 import { AuthLoginDto } from 'src/admins/dtos/auth-login.dto';
 import * as bcrypt from 'bcryptjs'
-import { Repository } from 'typeorm';
+import { Between, Equal, In, NumericType, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { CACHE_MANAGER } from '@nestjs/common'; // import CACHE_MANAGER
 import { Inject } from '@nestjs/common';
 import { Doctor } from 'src/typeorm/entities/doctors';
 import { Secretary } from 'src/typeorm/entities/secretary';
+import { MonthlySubscription } from 'src/typeorm/entities/monthly-subscription';
+import { Transctions } from 'src/typeorm/entities/transctions';
+import { PayInAdvance } from 'src/typeorm/entities/pay-in-advance';
 
 @Injectable()
 export class AdminsService {
@@ -23,6 +26,12 @@ export class AdminsService {
         private secretaryRepository : Repository<Secretary>,
         @InjectRepository(Admin) 
         private adminRepository : Repository<Admin>,
+        @InjectRepository(PayInAdvance) 
+        private payInAdvanceRepository : Repository<PayInAdvance>,
+        @InjectRepository(Transctions) 
+        private transctionsRepository : Repository<Transctions>,
+        @InjectRepository(MonthlySubscription) 
+        private monthlySubscriptionRepository : Repository<MonthlySubscription>,
         private readonly mailService: MailService,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: any, // update the type of cacheManager to any
@@ -125,26 +134,6 @@ export class AdminsService {
     }
 
 
-
-      async sendResetEmail(email: string) {
-        const admin = await this.adminRepository.findOne({where: {email : email}});
-
-        if (!admin) {
-          throw new HttpException(
-            `admin not found`,
-            HttpStatus.NOT_FOUND,
-          );
-        }    
-        const code = Math.floor(10000 + Math.random() * 90000);
-        const message = `Please reset your password using this code: ${code}`;
-        await this.mailService.sendMail(admin.email , 'Password reset', message);
-      
-        // Cache the generated code for 5 minutes
-        const cacheKey = `resetCodeForAdmin-${admin.adminId}`;
-        await this.cacheManager.set(cacheKey, code, { ttl: 300 });
-        return admin.adminId;
-      }
-    
       async resetPassword(adminId: number, code: number, newPassword: string): Promise<void> {
         const admin = await this.adminRepository.findOne({where: {adminId : adminId}});
         
@@ -187,4 +176,290 @@ export class AdminsService {
         }
         return admin;
       } 
+
+      async MonthlySubscription(){
+        const monthlySubscription = await this.monthlySubscriptionRepository.findOne({
+          where :{
+            id : 1
+          }
+        })
+        if(!monthlySubscription)
+        {
+          throw new BadRequestException ('thier is something wrong');
+        }
+        return monthlySubscription.amountOfMoney
+      }
+
+      async changeMonthlySubscription(amountOfMoney : number){
+        const monthlySubscription = await this.monthlySubscriptionRepository.findOne({
+          where :{
+            id : 1
+          }
+        })
+        if(!monthlySubscription)
+        {
+          throw new BadRequestException ('thier is something wrong');
+        }
+        monthlySubscription.amountOfMoney = amountOfMoney;
+        await this.monthlySubscriptionRepository.save(monthlySubscription);
+      }
+
+      async addMoneyToMyAccount(adminId : number,doctorId : number,amountPaid : number){
+        const admin = await this.adminRepository.findOne({
+          where : {
+            adminId : adminId
+          }
+        })
+        if (!admin) {
+          throw new HttpException(
+            `admin with id ${adminId} not found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        const doctor = await this.doctorRepository.findOne({
+          where : {
+            doctorId : doctorId
+          }
+        })
+        if (!doctor) {
+          throw new HttpException(
+            `doctor with id ${doctorId} not found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        doctor.accountBalance = doctor.accountBalance + amountPaid;
+        await this.doctorRepository.save(doctor);
+
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const newpaid = this.payInAdvanceRepository.create({
+          admin : admin,
+          doctor : doctor,
+          amountPaid : amountPaid,
+          createdAt : today.toISOString()
+        });
+        await this.payInAdvanceRepository.save(newpaid);
+      }
+
+
+      async activeDoctor(doctorId : number,adminId : number){
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const nextMonth = now.getUTCMonth() + 1;
+        const nextYear = nextMonth > 11 ? now.getUTCFullYear() + 1 : now.getUTCFullYear();
+        const nextDate = new Date(Date.UTC(nextYear, nextMonth % 12, now.getUTCDate()));
+        const doctor = await this.doctorRepository.findOne({
+          where :{
+            doctorId : doctorId
+          }
+        })
+        if (!doctor) {
+          throw new HttpException(
+            `doctor with id ${doctorId} not found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        const admin = await this.adminRepository.findOne({
+          where :{
+            adminId : adminId
+          }
+        })
+        if (!admin) {
+          throw new HttpException(
+            `admin with id ${adminId} not found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        const isActive: boolean = doctor.active;
+        const isActiveString: string = isActive.toString();
+        if (isActiveString === 'true') {
+          throw new BadRequestException('This doctor is already active');
+        }
+        const monthlySubscription = await this.monthlySubscriptionRepository.findOne({where :{ id : 1}});
+        if(doctor.accountBalance < monthlySubscription.amountOfMoney)
+        {
+          throw new BadRequestException('this doctor does not have enough money to reactive his account')
+        }
+        else
+        {
+          const newPayment = await this.transctionsRepository.create({
+            amountPaid : monthlySubscription.amountOfMoney,
+            doctor : doctor,
+            admin : admin,
+            createdAt: today.toISOString()
+          });
+          await this.transctionsRepository.save(newPayment)
+          doctor.accountBalance = doctor.accountBalance - monthlySubscription.amountOfMoney;
+          doctor.dateToReactivate = nextDate.toISOString();
+          doctor.active = true;
+          await this.doctorRepository.save(doctor);
+        }
+      }
+
+
+      async MonthlySubscriptions(){
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const nextMonth = now.getUTCMonth() + 1;
+        const nextYear = nextMonth > 11 ? now.getUTCFullYear() + 1 : now.getUTCFullYear();
+        const nextDate = new Date(Date.UTC(nextYear, nextMonth % 12, now.getUTCDate()));
+        
+        // Use Intl.DateTimeFormat to format the date as "YYYY-MM-DD"
+        const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        const nextDateString = dateFormatter.format(nextDate); 
+        const activeValues = ['true'];
+        const doctor = await this.doctorRepository.find({
+          where : {
+            dateToReactivate  : Equal(today.toISOString()),
+            active: In(activeValues)
+          }
+        })
+        if(doctor.length == 0)
+        {
+          throw new HttpException(
+            `No doctos has to pay to Reactivate today`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        const monthlySubscription = await this.monthlySubscriptionRepository.findOne({where :{ id : 1}});
+        let i = 0;
+        while(doctor[i])
+        {
+          if(doctor[i].accountBalance < monthlySubscription.amountOfMoney)
+          {
+            doctor[i].active = false;
+            await this.doctorRepository.save(doctor);
+
+          }
+          else
+          {
+            const newPayment = await this.transctionsRepository.create({
+              amountPaid : monthlySubscription.amountOfMoney,
+              doctor : doctor[i],
+              createdAt: today.toISOString()
+            });
+            await this.transctionsRepository.save(newPayment)
+            doctor[i].accountBalance = doctor[i].accountBalance - monthlySubscription.amountOfMoney;
+            doctor[i].dateToReactivate = nextDateString;
+            await this.doctorRepository.save(doctor);
+          }
+          i++;
+        }
+
+      }
+
+      async AmountCollectedByAdmin(adminId : number,amountCollectedByAdmin : AmountCollectedByAdminParams){
+        const admin = await this.adminRepository.findOne({
+          where :{
+            adminId
+          }
+        })
+        if(!admin)
+        {
+          throw new HttpException(
+            `admin with id ${adminId} not found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        if(admin.isAdmin)
+        {
+          throw new HttpException(
+            `you are not allowed`,
+            HttpStatus.METHOD_NOT_ALLOWED,
+          );
+        }
+        //get date        
+        const month = parseInt(amountCollectedByAdmin.month, 10);
+        const year = parseInt(amountCollectedByAdmin.year, 10);
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+        const adminrows = await this.payInAdvanceRepository.find({
+          where :{
+            admin :{
+              adminId : adminId,
+            },
+            createdAt: Between(startDate.toISOString().slice(0, 10), endDate.toISOString().slice(0, 10)), 
+          }
+        })
+        if(adminrows.length == 0)
+        {
+          throw new BadRequestException('this admin did not get any money this month');
+        }
+        let amountOfMoney = 0;
+        let i = 0;
+        while(adminrows[i])
+        {
+          amountOfMoney = await amountOfMoney + adminrows[i].amountPaid;
+          i++;
+        }
+        return {
+          Details  : adminrows ,
+          amountOfMoney : amountOfMoney
+        }
+      }
+      async doctorsactivatedByAdmin(adminId : number,amountCollectedByAdmin : AmountCollectedByAdminParams){
+        const admin = await this.adminRepository.findOne({
+          where :{
+            adminId
+          }
+        })
+        if(!admin)
+        {
+          throw new HttpException(
+            `admin with id ${adminId} not found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        if(admin.isAdmin)
+        {
+          throw new HttpException(
+            `you are not allowed`,
+            HttpStatus.METHOD_NOT_ALLOWED,
+          );
+        }
+        //get date        
+        const month = parseInt(amountCollectedByAdmin.month, 10);
+        const year = parseInt(amountCollectedByAdmin.year, 10);
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+        const adminrows = await this.transctionsRepository.find({
+          relations : ['doctor'],
+          where :{
+            admin :{
+              adminId : adminId,
+            },
+            createdAt: Between(startDate.toISOString().slice(0, 10), endDate.toISOString().slice(0, 10)), 
+          },
+          select :{
+            id : true,
+            createdAt : true,
+            doctor :{
+              doctorId : true,
+              firstname : true,
+              lastname : true
+            }
+          }
+        })
+        if(adminrows.length == 0)
+        {
+          throw new BadRequestException('this admin did not active any account this month');
+        }
+        return {
+          Details  : adminrows ,
+        }
+      }
+      
+      async filterDoctorsByPhoneNumber(phonenumberForAdmin : number){
+        console.log("whyyyyyy")
+        const query =  this.doctorRepository.createQueryBuilder('doctor')
+        .where('phonenumberForAdmin LIKE :phonenumberForAdmin', {
+          phonenumberForAdmin: `%${phonenumberForAdmin}%`,
+        });
+        const doctors = await query.getMany();
+        if(doctors.length === 0)
+        {
+            throw new HttpException(`No doctor met the conditions `, HttpStatus.NOT_FOUND);
+        }
+        return doctors;
+      }
 }

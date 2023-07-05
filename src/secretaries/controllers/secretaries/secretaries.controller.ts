@@ -88,12 +88,6 @@ export class SecretariesController {
 
 
 
-    @Post('send-email')
-    async sendResetEmail(@Body(new ValidationPipe({ whitelist: true })) email: emailDto) {
-    const secretaryId = await this.secretariesService.sendResetEmail(email.email);
-    return { message: 'message has been sent to your Email', secretaryId: secretaryId };
-  }
-
   @Post('reset-password')
   async resetPassword(
     @Body('secretaryId') secretaryId: number,

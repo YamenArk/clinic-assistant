@@ -1,10 +1,13 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post,Delete, Put,Req, UseGuards,ValidationPipe  } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post,Delete, Put,Req, UseGuards,ValidationPipe, BadRequestException  } from '@nestjs/common';
 import { CreateAdminDto } from 'src/admins/dtos/CreateAdmin.dto';
 import { UpdateAdminDto } from 'src/admins/dtos/UpdateAdmin.dto';
 import { AuthLoginDto } from 'src/admins/dtos/auth-login.dto';
 import { AdminsService } from 'src/admins/services/admins/admins.service';
 import { filterNameDto } from 'src/doctors/dtos/filterName.dto';
 import { JWTAuthGuardAdmin, JWTAuthGuardAdminIsAdmin } from 'src/middleware/auth/jwt-auth.guard';
+import { Cron, CronExpression } from 'node-cron';
+import { IsInt, Min, IsPositive } from 'class-validator';
+import { AmountCollectedByAdminDto } from 'src/admins/dtos/AmountCollectedByAdmin.dto';
 
 @Controller('admins')
 export class AdminsController {
@@ -54,11 +57,56 @@ export class AdminsController {
     }
 
 
-    @Post('send-email')
-    async sendResetEmail(@Body('email') email: string) {
-        const adminId = await this.adminSrevice.sendResetEmail(email);
-        return {message : 'message has been sent to your Email',adminId : adminId}
+    
+    @Put('amount-collected-by-admin/:adminId')
+    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    async AmountCollectedByAdmin(
+      @Param('adminId', new ParseIntPipe()) adminId: number,
+      @Body(new ValidationPipe({ whitelist: true })) amountCollectedByAdminDto : AmountCollectedByAdminDto,
+    ){
+
+      AmountCollectedByAdminDto.validate(amountCollectedByAdminDto); // Call the validate() method as a static method on CreateWorkTimeDto
+      return this.adminSrevice.AmountCollectedByAdmin(adminId,amountCollectedByAdminDto)
+   }
+
+    
+   @Put('doctors-activated-by-admin/:adminId')
+   @UseGuards(JWTAuthGuardAdminIsAdmin)
+   async doctorsactivatedByAdmin(
+     @Param('adminId', new ParseIntPipe()) adminId: number,
+     @Body(new ValidationPipe({ whitelist: true })) amountCollectedByAdminDto : AmountCollectedByAdminDto,
+   ){
+
+     AmountCollectedByAdminDto.validate(amountCollectedByAdminDto); // Call the validate() method as a static method on CreateWorkTimeDto
+     return this.adminSrevice.doctorsactivatedByAdmin(adminId,amountCollectedByAdminDto)
+  }
+
+  
+  
+
+    @Get('monthly-subscription')
+    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    async MonthlySubscription(
+    ){
+      const amountOfMoney = await this.adminSrevice.MonthlySubscription()
+      return {amountOfMoney : amountOfMoney}
     }
+
+
+    @Put('change-monthly-subscription')
+    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    async changeMonthlySubscription(
+      @Body('amountOfMoney') amountOfMoney: string,
+    ){
+      const amount = parseInt(amountOfMoney);
+      if (!Number.isInteger(amount) || amount < 1000 || amountOfMoney.includes('.')) {
+        throw new BadRequestException('monthlySubscription must be a positive integer greater than or equal to 1000 and cannot contain a decimal point.');
+      }
+      await this.adminSrevice.changeMonthlySubscription(amount)
+      return {message : 'monthly subscription changed sucessfully'}
+    }
+
+
   
     @Post('reset-password')
     async resetPassword(
@@ -78,5 +126,67 @@ export class AdminsController {
       const myAccount = await this.adminSrevice.getMyAccount(adminId)
       return {myAccount : myAccount}
     }
+
+    
+
+
+ 
+
+    @Put('add-money-to-my-account/:doctorId')
+    @UseGuards(JWTAuthGuardAdmin)
+    async addMoneyToMyAccount(
+      @Req() request,
+      @Param('doctorId',ParseIntPipe) doctorId: number,
+      @Body('amountPaid') amountPaid: string,
+    ){
+      const amount = parseInt(amountPaid);
+
+      if (!Number.isInteger(amount) || amount < 1000 || amountPaid.includes('.')) {
+        throw new BadRequestException('Amount must be a positive integer greater than or equal to 1000 and cannot contain a decimal point.');
+      }
+      const adminId = request.adminId ;
+      await this.adminSrevice.addMoneyToMyAccount(adminId,doctorId,amount)
+      return {message : 'money has been added to your account sucessfully'}
+    }
+
+
+    @Put('activeDoctor/:doctorId')
+    @UseGuards(JWTAuthGuardAdmin)
+    async activeDoctor(
+      @Req() request,
+      @Param('doctorId',ParseIntPipe) doctorId: number,
+    ){
+      const adminId = request.adminId ;
+      await this.adminSrevice.activeDoctor(doctorId,adminId);
+      return {message : "doctor activated sucessfully"};
+    }
+
+
+       
+   @Post('doctors/filter-doctors-by-phoneNumber')
+  //  @UseGuards(JWTAuthGuardAdmin)
+   async filterDoctorsByPhoneNumber(
+    @Body('phonenumberForAdmin') phonenumberForAdmin: string,
+   ){
+    console.log(phonenumberForAdmin)
+    const phoneNumber = parseInt(phonenumberForAdmin);
+    console.log(phoneNumber)
+    if (!Number.isInteger(phoneNumber)) {
+      throw new BadRequestException('phonenumberForAdmin must be a positive integer greater than or equal to 1000 and cannot contain a decimal point.');
+    }
+     const doctors = await this.adminSrevice.filterDoctorsByPhoneNumber(phoneNumber)
+     return {doctors : doctors}
+   }
+
+
+
+   @Put('MonthlySubscriptions')
+   // @Cron(CronExpression.EVERY_DAY_AT_0AM)
+   async MonthlySubscriptions(
+   ){
+     console.log("payment is working just fine")
+     await this.adminSrevice.MonthlySubscriptions();
+     return ;
+   }
 
 }

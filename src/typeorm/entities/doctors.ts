@@ -11,9 +11,10 @@ import { Insurance } from './insurance';
 import { SubSpecialty } from './sub-specialty';
 import { DoctorClinic } from './doctor-clinic';
 import { IsBoolean, IsEmail, IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
-import { Commission } from './commission';
 import { WorkTime } from './work-time';
 import { DoctorPatient } from './doctor-patient';
+import { PayInAdvance} from './pay-in-advance';
+import { Transctions } from './transctions';
 
 
 const decimalTransformer: ValueTransformer = {
@@ -42,13 +43,25 @@ export class Doctor {
     @IsNotEmpty()
     @IsString()
     phonenumberForAdmin: string ;
-
-
-    @Column({default : true})
+  
+    @Column({
+      type: 'enum',
+      enum: ['true', 'false'],
+      default: 'false'
+    })
     @IsBoolean()
     active: boolean;
 
-   
+
+    @Column({default : true})
+    @IsNotEmpty()
+    @IsNumber()
+    accountBalance: number;
+
+    @Column({ type: 'date', nullable: false })
+    dateToReactivate: string;
+
+
     @Column({ nullable: true })
     @IsString()
     @IsOptional()
@@ -113,10 +126,15 @@ export class Doctor {
     @OneToMany(() => DoctorPatient, doctorPatient => doctorPatient.doctor)
     public doctorPatient: DoctorPatient[];
 
+    @OneToMany(() => PayInAdvance, payInAdvance => payInAdvance.doctor)
+    public payInAdvance: PayInAdvance[];
+
+     
+    @OneToMany(() => Transctions, transctions => transctions.doctor)
+    public transctions: Transctions[];
+
+
+
     @OneToMany(() => WorkTime, workTime => workTime.doctor)
     public workTime: WorkTime[];
-
-    @OneToMany(() => Commission, (commission) => commission.doctor)
-    commission: Commission[]    
-    length: number;
-}
+  }

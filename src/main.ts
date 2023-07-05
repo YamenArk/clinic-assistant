@@ -6,6 +6,7 @@ import { CorsOptions } from 'cors';
 import * as cors from 'cors';
 import * as dotenv from 'dotenv';
 import { QueryService } from './middleware/sql/query/query.service';
+// import { CronService } from './cron.service';
 dotenv.config();
 
 const mysql = require("mysql2/promise"); // use the promise-based version of mysql2
@@ -32,6 +33,7 @@ async function bootstrap() {
   // Create the NestJS app
   const app = await NestFactory.create(AppModule);
 
+  // const cronService = app.get(CronService);
   // Configure the CORS options
   const corsOptions: CorsOptions = {
     origin: process.env.CORS_ORIGIN || '*',

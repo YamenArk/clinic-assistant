@@ -20,10 +20,12 @@ import { Specialty } from 'src/typeorm/entities/specialty';
 import { DoctorPatient } from 'src/typeorm/entities/doctor-patient';
 import { Patient } from 'src/typeorm/entities/patient';
 import { JWTAuthGuardPatient } from 'src/middleware/auth/jwt-auth.guard';
+import { Transctions } from 'src/typeorm/entities/transctions';
+import { PayInAdvance } from 'src/typeorm/entities/pay-in-advance';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Doctor, Insurance, SubSpecialty,DoctorClinic,Clinic,WorkTime,Appointment,Admin,Secretary,Specialty,DoctorPatient,Patient]),
+    TypeOrmModule.forFeature([Doctor, Insurance, SubSpecialty,DoctorClinic,Clinic,WorkTime,Appointment,Admin,Secretary,Specialty,DoctorPatient,Patient,Transctions,PayInAdvance]),
     CacheModule.register(), // add CacheModule here
     PassportModule,
     JwtModule.registerAsync({

@@ -55,6 +55,30 @@ export class QueryService {
             console.log('Error checking governorates table:', err);
           }
       
+          
+          // Check if MonthlySubscriptions table has zero records
+          try {
+            const [rows, fields] = await connection.execute(
+              'SELECT id FROM MonthlySubscriptions LIMIT 1'
+            );
+            if (rows.length === 0) {
+              await connection.execute(`
+              
+                INSERT INTO monthlySubscriptions (id,amountOfMoney) VALUES
+                (0,40000)
+                `);
+              }
+            } catch (err) {
+              console.log('Error checking areas table:', err);
+            }
+
+
+
+
+
+
+
+
           // Check if areas table has zero records
           try {
             const [rows, fields] = await connection.execute(

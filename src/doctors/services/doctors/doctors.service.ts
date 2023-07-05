@@ -7,7 +7,7 @@ import { Doctor } from 'src/typeorm/entities/doctors';
 import { Insurance } from 'src/typeorm/entities/insurance';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
 import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, evaluateDoctorParams, filterDocrotsParams, filterNameParams, profileDetailsParams, secondFilterDocrotsParams,WorkTimeWithAppointments, workTimeFilterParams,appointmentwithBooked, DeleteWorkTimeParams } from 'src/utils/types';
-import { Between, In, IsNull, Like, MoreThanOrEqual, Not, Repository,LessThanOrEqual, MoreThan } from 'typeorm';
+import { Between, In, IsNull, Like, MoreThanOrEqual, Not, Repository,LessThanOrEqual, MoreThan, LessThan } from 'typeorm';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { Inject } from '@nestjs/common';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
@@ -23,7 +23,9 @@ import { Specialty } from 'src/typeorm/entities/specialty';
 import { DoctorPatient } from 'src/typeorm/entities/doctor-patient';
 import { Patient } from 'src/typeorm/entities/patient';
 import { doc } from 'prettier';
-import { pairwise } from 'rxjs';
+import { min, pairwise } from 'rxjs';
+import { PayInAdvance } from 'src/typeorm/entities/pay-in-advance';
+import { Transctions } from 'src/typeorm/entities/transctions';
 @Injectable()
 @UseInterceptors(CacheInterceptor)
 export class DoctorsService {
@@ -53,6 +55,10 @@ export class DoctorsService {
         private insuranceRepository : Repository<Insurance>,
         @InjectRepository(SubSpecialty) 
         private subSpecialtyRepository : Repository<SubSpecialty>,
+        @InjectRepository(PayInAdvance) 
+        private payInAdvanceRepository : Repository<PayInAdvance>,
+        @InjectRepository(Transctions) 
+        private transctionsRepository : Repository<Transctions>,
         private readonly mailService: MailService,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: any, // update the type of cacheManager to any
@@ -70,6 +76,13 @@ export class DoctorsService {
             if (doctorDuplicates) {
               throw new BadRequestException(`"${email}" already exists"`);
             }
+
+        //doctor duplicates
+        const doctorDuplicatesInNumber = await this.doctorRepository.findOne({ where: { phonenumberForAdmin: phonenumberForAdmin } });
+        if (doctorDuplicatesInNumber) {
+          throw new BadRequestException(`"${phonenumberForAdmin}" already exists"`);
+        }
+
 
         //admin duplicates
         const adminDuplicates = await this.adminRepository.findOne({ where: { email: email } });
@@ -89,7 +102,7 @@ export class DoctorsService {
         doctor.gender = gender;
         doctor.firstname = firstname;
         doctor.lastname = lastname;
-    
+        doctor.accountBalance = 0;
         // retrieve Clinic, SubSpecialty, and Insurance entities from database using their IDs
         const clinicsArray = await Promise.all(clinics.map(async clinic => {
           const clinicEntity = await this.clinicRepository.findOne({ where: { clinicId: clinic.clinicId }, relations: ['doctorClinic'] });
@@ -126,6 +139,7 @@ export class DoctorsService {
         doctor.active = true
         doctor.evaluate = 3;
         doctor.numberOfPeopleWhoVoted = 0;
+        doctor.active = false;
          // Validate the updatedDoctor object using class-validator
          const errors = await validate(doctor);
          if (errors.length > 0) {
@@ -370,7 +384,7 @@ export class DoctorsService {
         const doctor = await this.doctorRepository.findOne({
 
           where: { doctorId },
-          select : ['doctorId','firstname','lastname','description','evaluate',"phonenumber","profilePicture"] 
+          select : ['doctorId','firstname','lastname','description','evaluate',"phonenumber","profilePicture","accountBalance","dateToReactivate"] 
         });
         if (!doctor) {
           throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
@@ -378,6 +392,59 @@ export class DoctorsService {
         return {doctor : doctor}
       }
 
+      async payInAdvance(doctorId : number){
+        const doctor = await this.doctorRepository.findOne({
+          where: { doctorId },
+        });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+        const payInAdvance = await this.payInAdvanceRepository.find({
+          relations :['admin'],
+          where :{
+            doctor :{
+              doctorId : doctorId
+            }
+          },
+          select : {
+            id : true,
+            amountPaid : true,
+            admin :{
+              adminId : true,
+              firstname : true,
+              lastname : true
+            },
+            createdAt : true
+          }
+        })
+        if(payInAdvance.length == 0)
+        {
+          throw new BadRequestException('you have not payed in advance any money yet')
+        }
+        return payInAdvance;
+      }
+
+      async gettransctions(doctorId : number){
+        const doctor = await this.doctorRepository.findOne({
+          where: { doctorId },
+        });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+        const mytransctions = await this.transctionsRepository.find({
+          where :{
+            doctor :{
+              doctorId: doctorId
+            }
+          },
+          select :{
+            id : true,
+            amountPaid : true,
+            createdAt : true
+          }
+        })
+        return mytransctions;
+      }
 
       async getClinicsForDoctor(doctorId : number){
         const doctor = await this.doctorRepository.findOne({ where: { doctorId } });
@@ -430,15 +497,14 @@ export class DoctorsService {
 
       async createWorkTime(workTimeDetails : CreateWorkTimeParams,clinicId : number,doctorId : number)
       {
-        const weekDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء','الخميس', 'الجمعة', 'السبت'];
-        const weekdayMap = {
-          [weekDays[0]]: 0,
-          [weekDays[1]]: 1,
-          [weekDays[2]]: 2,
-          [weekDays[3]]: 3,
-          [weekDays[4]]: 4,
-          [weekDays[5]]: 5,
-          [weekDays[6]]: 6
+        const weekdayMap =  {
+          'الأحد': 0,
+          'الاثنين': 1,
+          'الثلاثاء': 2,
+          'الأربعاء': 3,
+          'الخميس': 4,
+          'الجمعة': 5,
+          'السبت': 6
         };
         if (!doctorId) {
           throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
@@ -460,10 +526,45 @@ export class DoctorsService {
           );
         }
 
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
-
-         
-
+        const worktimeDuplicated = await this.workTimeRepository.find({
+          where: {
+            doctor: {
+              doctorId: doctorId
+            },
+            clinic: {
+              clinicId: clinicId
+            },
+            date: MoreThanOrEqual(today.toISOString())
+          },
+          order: {
+            date: 'ASC'
+          }
+        });
+        if(worktimeDuplicated.length != 0 )
+        {
+          const startDate1 = new Date(workTimeDetails.startDate);
+          const endDate1 = new Date(workTimeDetails.endDate);
+          
+          // Get the timestamps of the start and end dates
+          const startTimestamp = startDate1.getTime();
+          const endTimestamp = endDate1.getTime();  
+          
+          // Get the timestamps of the first and last elements in worktimeDuplicated
+          const firstDateTimestamp = new Date(worktimeDuplicated[0].date).getTime();
+          const lastDateTimestamp = new Date(worktimeDuplicated[worktimeDuplicated.length - 1].date).getTime();
+          if (startTimestamp >= firstDateTimestamp && startTimestamp <= lastDateTimestamp) {
+            throw new BadRequestException('you can not create a worktimes inside your work times')
+          } 
+          if(endTimestamp >= firstDateTimestamp && endTimestamp <= lastDateTimestamp)
+          {
+            throw new BadRequestException('you can not create a worktimes inside your work times')
+          }
+        }
+      
+     
         // get all Appointment
         const appointmentDuring = doctorClinic.appointmentDuring;
         if (!appointmentDuring || appointmentDuring < 5) {
@@ -493,25 +594,26 @@ export class DoctorsService {
 
 
         //get all Work days
+        type Day = 'الأحد' | 'الاثنين' | 'الثلاثاء' | 'الأربعاء' | 'الخميس' | 'الجمعة' | 'السبت';
+        const days = workTimeDetails.days as Day[];
+        const result = [];      
         const startDate = new Date(workTimeDetails.startDate);
         const endDate = new Date(workTimeDetails.endDate);
-        const days = workTimeDetails.days;
-        const result = [];      
 
+
+        const dateFormatter = new Intl.DateTimeFormat('ar-EG', { weekday: 'long' });
         for (let date = startDate; date <= endDate; date.setDate(date.getDate() + 1)) {
-          const dayOfWeek = days[weekdayMap[date.toLocaleDateString('ar-EG', { weekday: 'long' })]];
-          console.log(dayOfWeek)
-          if (dayOfWeek) {
-            result.push({ day: dayOfWeek, date: formatDate(date) });
+          const formattedDate = dateFormatter.format(date) as Day;
+          if (days.includes(formattedDate)) {
+            const dayOfWeek = weekdayMap[dateFormatter.format(date)];
+            result.push({ day: Object.keys(weekdayMap)[dayOfWeek], date: formatDate(date) });
           }
+          
         }
-
         function formatDate(date) {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
-            console.log("next one")
-            console.log(day)
             return `${year}/${month}/${day}`;
             }
         
@@ -614,28 +716,33 @@ export class DoctorsService {
               clinicId : clinicId
             }
           },
-          relations: ['appointment','doctor','clinic'],
+          relations: ['appointment'],
           order: { date: 'ASC', startingTime: 'ASC' },
         });
     
+        await this.appointmentRepository.delete({
+          workTime: workTimes[workTimes.length-1],
+        });
         // Loop through each work time and update the appointments
-        for (let i = 0; i < workTimes.length; i++) {
+        for (let i = 0; i < workTimes.length-1; i++) {
+          if(i === 1)
+          {
+            await this.workTimeRepository.delete({
+             workTimeId : workTimes[0].workTimeId
+            })
+          }
           const currentWorkTime = workTimes[i];
           const nextWorkTime = workTimes[i + shiftValue];
     
-          // If it's the last work time, delete all the appointments
-          if (!nextWorkTime) {
-            await this.appointmentRepository.delete({
-              workTime: currentWorkTime,
-            });
-          } else {
-            // Update the appointments to the next work time
-            const appointmentsToUpdate = currentWorkTime.appointment;
-            for (const appointment of appointmentsToUpdate) {
-              appointment.workTime = nextWorkTime;
-              await this.appointmentRepository.save(appointment);
-            }
+          // Update the appointments to the next work time
+          const appointmentsToUpdate = currentWorkTime.appointment;
+          // console.log("===========")
+          // console.log(currentWorkTime.appointment)
+          for (const appointment of appointmentsToUpdate) {
+            appointment.workTime = nextWorkTime;
+            await this.appointmentRepository.save(appointment);
           }
+        
         }
       }
 
@@ -1024,20 +1131,45 @@ export class DoctorsService {
       async sendResetEmail(email: string): Promise<number> {
         const doctor = await this.doctorRepository.findOne({where: {email : email}});
 
-        if (!doctor) {
-          throw new HttpException(
-            `Doctor not found`,
-            HttpStatus.NOT_FOUND,
-          );
+        if (doctor) {
+          const code = Math.floor(10000 + Math.random() * 90000);
+          const message = `Please reset your password using this code: ${code}`;
+          await this.mailService.sendMail(doctor.email , 'Password reset', message);
+          // Cache the generated code for 5 minutes
+          const cacheKey = `resetCode-${doctor.doctorId}`;
+          await this.cacheManager.set(cacheKey, code, { ttl: 300 });
+        
+          return doctor.doctorId;
         }    
-        const code = Math.floor(10000 + Math.random() * 90000);
-        const message = `Please reset your password using this code: ${code}`;
-        await this.mailService.sendMail(doctor.email , 'Password reset', message);
-        // Cache the generated code for 5 minutes
-        const cacheKey = `resetCode-${doctor.doctorId}`;
-        await this.cacheManager.set(cacheKey, code, { ttl: 300 });
-      
-        return doctor.doctorId;
+
+        const secretary = await this.secretaryRepository.findOne({where: {email : email}});
+
+        if (secretary) {
+          const code = Math.floor(10000 + Math.random() * 90000);
+          const message = `Please reset your password using this code: ${code}`;
+          await this.mailService.sendMail(secretary.email , 'Password reset', message);
+        
+          // Cache the generated code for 5 minutes
+          const cacheKey = `resetCode-${secretary.secretaryId}`;
+          await this.cacheManager.set(cacheKey, code, { ttl: 300 });
+        
+          return secretary.secretaryId;
+        }    
+       
+        const admin = await this.adminRepository.findOne({where: {email : email}});
+
+        if (admin) {
+          const code = Math.floor(10000 + Math.random() * 90000);
+          const message = `Please reset your password using this code: ${code}`;
+          await this.mailService.sendMail(admin.email , 'Password reset', message);
+        
+          // Cache the generated code for 5 minutes
+          const cacheKey = `resetCodeForAdmin-${admin.adminId}`;
+          await this.cacheManager.set(cacheKey, code, { ttl: 300 });
+          return admin.adminId;
+        }    
+        // If no matching user found, throw UnauthorizedException
+        throw new UnauthorizedException('Invalid credentials')
       }
  
     
@@ -1356,8 +1488,37 @@ export class DoctorsService {
           if (!patient) {
             throw new HttpException('patient not found', HttpStatus.NOT_FOUND);
           }
-          // console.log(doctor);
-          // console.log(patientId);
+     
+          const test = await this.appointmentRepository.find({
+            where :{
+              missedAppointment : false
+            }
+          })
+          console.log(test)
+
+
+         const now = new Date();
+         const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+          const visited = await this.workTimeRepository.findOne({
+            where:{
+              doctor :{
+                doctorId : doctorId
+              },
+              appointment :{
+                patient :{
+                  patientId : patientId
+                },
+                missedAppointment : false
+              },
+              date  : LessThan(today.toISOString())
+            }
+          })
+
+          if(!visited)
+          {
+            throw new BadRequestException('you cant Evaluate a doctor you have not taken an appoitment with')
+          }
+
           
           let doctorPatient = await this.doctorPatientRepository.findOne({
             where: { doctor: {
@@ -1367,12 +1528,20 @@ export class DoctorsService {
               patientId : patientId
              } },
           });          
-          if(!doctorPatient){
-            throw new BadRequestException('you cant Evaluate a doctor you are not connected with')
+          if(doctorPatient){
+            doctorPatient.evaluate = evaluateDoctor.evaluate;
+            await this.doctorPatientRepository.save(doctorPatient);
           }
-          doctorPatient.evaluate = evaluateDoctor.evaluate;
-          await this.doctorPatientRepository.save(doctorPatient);
-          return {message : 'doctor evaluated successfully'}
+          else
+          {
+            const newEvaluate = await this.doctorPatientRepository.create({
+                patient : patient,
+                doctor : doctor,
+                evaluate : evaluateDoctor.evaluate
+            });
+            await this.doctorPatientRepository.save(newEvaluate);
+          }
+          return {message : 'doctor evaluated successfully'}      
       }
 
       async getevaluateDoctor(patientId : number,doctorId : number){
@@ -1504,13 +1673,14 @@ export class DoctorsService {
         //get worktimes        
         const month = parseInt(workTimeFilter.month, 10);
         const year = parseInt(workTimeFilter.year, 10);
-        const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0);
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
         const workTime = await this.workTimeRepository.find({
           where: {
             doctor: { doctorId },
             clinic: { clinicId },
-            date: Between(startDate.toISOString().slice(0, 10), endDate.toISOString().slice(0, 10)),
+            date: Between(today.toISOString(), endDate.toISOString().slice(0, 10)),
           },
         });
         if(workTime.length == 0)

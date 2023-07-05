@@ -14,11 +14,9 @@ import { ClinicsModule } from './clinics/clinics.module';
 import { Clinic } from './typeorm/entities/clinic';
 import { InsurancesModule } from './insurances/insurances.module';
 import { DoctorClinic } from './typeorm/entities/doctor-clinic';
-import { Commission } from './typeorm/entities/commission';
 import { Secretary } from './typeorm/entities/secretary';
 import { WorkTime } from './typeorm/entities/work-time';
 import { Appointment } from './typeorm/entities/appointment';
-import { BlackList } from './typeorm/entities/black-list';
 import { MailService } from './middleware/mail/mail.service';
 import { AuthModule } from './middleware/auth/auth.module';
 import { Governorate } from './typeorm/entities/Governorate';
@@ -29,6 +27,9 @@ import { PatientsModule } from './patients/patients.module';
 // import { PhoneService } from './middleware/phone/phone.service';
 import { SecretariesModule } from './secretaries/secretaries.module';
 import { DoctorPatient } from './typeorm/entities/doctor-patient';
+import { PayInAdvance } from './typeorm/entities/pay-in-advance';
+import {  Transctions } from './typeorm/entities/transctions';
+import { MonthlySubscription } from './typeorm/entities/monthly-subscription';
 // clinicassistant
 @Module({
   imports: [
@@ -39,7 +40,7 @@ import { DoctorPatient } from './typeorm/entities/doctor-patient';
       username: 'root',
       password: '',
       database: 'clinicassistant',
-      entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Commission,Secretary,WorkTime,Appointment,BlackList,Governorate,Area,DoctorPatient],
+      entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Secretary,WorkTime,Appointment,Governorate,Area,DoctorPatient,PayInAdvance,Transctions,MonthlySubscription],
       synchronize:  false ,
       migrationsRun: false,
       dropSchema: false
