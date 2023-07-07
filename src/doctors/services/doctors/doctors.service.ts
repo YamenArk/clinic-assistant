@@ -1,7 +1,6 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException, UseInterceptors } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { validate } from 'class-validator';
-import { createWriteStream } from 'fs';
 import { CACHE_MANAGER, CacheInterceptor, CacheModule } from '@nestjs/common'; // import CACHE_MANAGER
 import { Doctor } from 'src/typeorm/entities/doctors';
 import { Insurance } from 'src/typeorm/entities/insurance';
@@ -10,13 +9,16 @@ import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, Up
 import { Between, In, IsNull, Like, MoreThanOrEqual, Not, Repository,LessThanOrEqual, MoreThan, LessThan } from 'typeorm';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { Inject } from '@nestjs/common';
+import { createWriteStream, readFileSync } from 'fs';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Clinic } from 'src/typeorm/entities/clinic';
 import { WorkTime } from 'src/typeorm/entities/work-time';
 import { Appointment } from 'src/typeorm/entities/appointment';
+import { join } from 'path';
 import { AuthLoginDto } from 'src/doctors/dtos/AuthLogin.dto';
 import * as bcrypt from 'bcryptjs'
 import { JwtService } from '@nestjs/jwt';
+const fs = require('fs');
 import { Admin } from 'src/typeorm/entities/admin';
 import { Secretary } from 'src/typeorm/entities/secretary';
 import { Specialty } from 'src/typeorm/entities/specialty';
@@ -352,32 +354,29 @@ export class DoctorsService {
 
       ////////////////////////////////////////////doctor
 
-      async updateprofile(doctorId : number,profileDetails : profileDetailsParams,file: Express.Multer.File){
-          const doctor = await this.doctorRepository.findOne({
-            where: { doctorId },
-          });
-          if (!doctor) {
-            throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
-          }
-
-          // If a file is provided, save it to disk and set the profilePicture property
-          if (file) {
-          const filename = `${doctorId}_${file.originalname}`;
-          const uploadPath = 'C:/Users/ASUS/Desktop/nestjs-projects/clinic-assistant/public/dolctors/' + filename;
-
-          await new Promise((resolve, reject) => {
-            const stream = createWriteStream(uploadPath);
-            stream.on('finish', resolve);
-            stream.on('error', reject);
-            stream.write(file.buffer);
-            stream.end();
-          });
-
-          // doctorDetails.profilePicture = filename;
-          profileDetails.profilePicture = uploadPath;
-          }
-        const updatedDoctor = Object.assign(doctor, profileDetails); // Merge profileDetails into the doctor object
-        await this.doctorRepository.save(updatedDoctor); // Save the updated doctor object
+      async  updateProfile(doctorId: number, profileDetails: profileDetailsParams, file: Express.Multer.File) {
+        const doctor = await this.doctorRepository.findOne({ where: { doctorId } });
+      
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+      
+        if (file) {
+             // Delete the old profile picture if it exists
+            if (doctor.profilePicture) {
+              const oldPath = join(__dirname,  '..', '..', '..','..', doctor.profilePicture);
+              await this.deleteFile(oldPath);
+            }
+      
+          profileDetails.profilePicture = '/'+file.path.replace(/\\/g, '/');
+        }
+      
+        const updatedDoctor = { ...doctor, ...profileDetails };
+      
+        await this.doctorRepository.save(updatedDoctor);
+      }
+      async  deleteFile(filePath: string) {
+        await fs.promises.unlink(filePath);
       }
 
       async getprofile(doctorId : number){
@@ -1128,7 +1127,7 @@ export class DoctorsService {
       }
 
 
-      async sendResetEmail(email: string): Promise<number> {
+      async sendResetEmail(email: string) {
         const doctor = await this.doctorRepository.findOne({where: {email : email}});
 
         if (doctor) {
@@ -1138,8 +1137,7 @@ export class DoctorsService {
           // Cache the generated code for 5 minutes
           const cacheKey = `resetCode-${doctor.doctorId}`;
           await this.cacheManager.set(cacheKey, code, { ttl: 300 });
-        
-          return doctor.doctorId;
+          return { message: 'message has been sent to your Email', doctorId: doctor.doctorId , type : 2};
         }    
 
         const secretary = await this.secretaryRepository.findOne({where: {email : email}});
@@ -1152,8 +1150,7 @@ export class DoctorsService {
           // Cache the generated code for 5 minutes
           const cacheKey = `resetCode-${secretary.secretaryId}`;
           await this.cacheManager.set(cacheKey, code, { ttl: 300 });
-        
-          return secretary.secretaryId;
+          return { message: 'message has been sent to your Email', secretaryId: secretary.secretaryId , type : 3};
         }    
        
         const admin = await this.adminRepository.findOne({where: {email : email}});
@@ -1166,7 +1163,7 @@ export class DoctorsService {
           // Cache the generated code for 5 minutes
           const cacheKey = `resetCodeForAdmin-${admin.adminId}`;
           await this.cacheManager.set(cacheKey, code, { ttl: 300 });
-          return admin.adminId;
+          return { message: 'message has been sent to your Email', adminId: admin.adminId , type : 1};
         }    
         // If no matching user found, throw UnauthorizedException
         throw new UnauthorizedException('Invalid credentials')

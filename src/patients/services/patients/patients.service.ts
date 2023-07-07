@@ -2,11 +2,12 @@ import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, Una
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthLoginDto } from 'src/patients/dtos/AuthLogin.dto';
 import { Patient } from 'src/typeorm/entities/patient';
-import { LessThan, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
+import { LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { patientSignUp } from 'src/utils/types';
 import { verifyParams } from 'src/utils/types';
+const fs = require('fs');
 
 import { validate } from 'class-validator';
 import { CACHE_MANAGER} from '@nestjs/common'; // import CACHE_MANAGER
@@ -14,6 +15,8 @@ import { CACHE_MANAGER} from '@nestjs/common'; // import CACHE_MANAGER
 import { v4 as uuid } from 'uuid';
 import { Appointment } from 'src/typeorm/entities/appointment';
 import { async } from 'rxjs';
+import { join } from 'path';
+import { createWriteStream, readFileSync } from 'fs';
 
 @Injectable()
 export class PatientsService {
@@ -54,6 +57,34 @@ export class PatientsService {
       }) 
       return {patient : patient}
     }
+
+
+
+    async  updateProfile(patientId: number, file: Express.Multer.File) {
+      const patient = await this.patientRepository.findOne({ where: { patientId } });
+    
+      if (!patient) {
+        throw new HttpException('patient not found', HttpStatus.NOT_FOUND);
+      }
+    
+      if (file) {
+           // Delete the old profile picture if it exists
+          if (patient.profilePicture) {
+            const oldPath = join(__dirname,  '..', '..', '..','..', patient.profilePicture);
+            await this.deleteFile(oldPath);
+          }
+          patient.profilePicture = '/'+file.path.replace(/\\/g, '/');    
+      }
+      await this.patientRepository.save(patient);
+    }
+    
+
+    async  deleteFile(filePath: string) {
+      await fs.promises.unlink(filePath);
+    }
+
+
+    
     
     async signUp(patientSignUp : patientSignUp){
 
@@ -118,40 +149,64 @@ export class PatientsService {
         {
           throw new HttpException(`doctor with id ${patientId} not found`, HttpStatus.NOT_FOUND);
         }
-        const now = new Date();
-        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const now1 = new Date();
+        const today = new Date(Date.UTC(now1.getUTCFullYear(), now1.getUTCMonth(), now1.getUTCDate()));
+
+        const moment = require('moment-timezone');
+        // Get the current time in Syria timezone
+        const syriaTimezone = 'Asia/Damascus';
+        const now = moment().tz(syriaTimezone);
+        const currentHour = now.hour();
+        const currentMinute = now.minute();
+        const currentSecond = 0;
+
+        // Construct a new Date object with the current time in the Syria timezone
+        const currentDateTime = new Date();
+        currentDateTime.setHours(currentHour);
+        currentDateTime.setMinutes(currentMinute);
+        currentDateTime.setSeconds(currentSecond);
+        currentDateTime.setMilliseconds(0);
+
+        // Convert the new Date object to a string representation in the format of HH:mm:ss
+        const finishingTimeString = currentDateTime.toTimeString().slice(0, 8);
+
         const appointments = await this.appointmentRepository.find({
-          where :{
-            patient :{
-              patientId : patientId
+          where: {
+            patient: {
+              patientId: patientId
             },
+            workTime: {
+              date: MoreThanOrEqual(today.toISOString())
+            },
+            finishingTime: MoreThanOrEqual(finishingTimeString),
+          },
+          relations : ['workTime','workTime.doctor','workTime.clinic','workTime.clinic.specialty'],
+          select  :{
+            id : true,
+            startingTime : true,
+            finishingTime : true,
             workTime :{
-              date: MoreThan(today.toISOString())
-            }
-        },
-        relations : ['workTime','workTime.doctor','workTime.clinic','workTime.clinic.specialty'],
-        select  :{
-          id : true,
-          startingTime : true,
-          finishingTime : true,
-          workTime :{
-            date : true,
-            doctor :{
-              doctorId : true,
-              firstname : true,
-              lastname : true,
-              profilePicture : true
-            },
-            clinic : {
-              clinicId : true,
-              clinicName : true,
-              specialty :{
-                specialtyName : true
+              date : true,
+              doctor :{
+                doctorId : true,
+                firstname : true,
+                lastname : true,
+                profilePicture : true
+              },
+              clinic : {
+                clinicId : true,
+                clinicName : true,
+                specialty :{
+                  specialtyName : true
+                }
               }
             }
           }
-        }
-      })
+        })
+      if(appointments.length == 0)
+      {
+        throw new BadRequestException('you dont have any Current appointments')
+      }
       return appointments;
       }
 
@@ -161,16 +216,36 @@ export class PatientsService {
         {
           throw new HttpException(`doctor with id ${patientId} not found`, HttpStatus.NOT_FOUND);
         }
-        const now = new Date();
-        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const now1 = new Date();
+        const today = new Date(Date.UTC(now1.getUTCFullYear(), now1.getUTCMonth(), now1.getUTCDate()));
+
+        const moment = require('moment-timezone');
+        // Get the current time in Syria timezone
+        const syriaTimezone = 'Asia/Damascus';
+        const now = moment().tz(syriaTimezone);
+        const currentHour = now.hour();
+        const currentMinute = now.minute();
+        const currentSecond = 0;
+
+        // Construct a new Date object with the current time in the Syria timezone
+        const currentDateTime = new Date();
+        currentDateTime.setHours(currentHour);
+        currentDateTime.setMinutes(currentMinute);
+        currentDateTime.setSeconds(currentSecond);
+        currentDateTime.setMilliseconds(0);
+
+        // Convert the new Date object to a string representation in the format of HH:mm:ss
+        const finishingTimeString = currentDateTime.toTimeString().slice(0, 8);
         const appointments = await this.appointmentRepository.find({
           where :{
             patient :{
               patientId : patientId
             },
             workTime :{
-              date: LessThan(today.toISOString())
-            }
+              date: LessThanOrEqual(today.toISOString())
+            },
+            finishingTime: LessThanOrEqual(finishingTimeString),
+
         },
         relations : ['workTime','workTime.doctor','workTime.clinic','workTime.clinic.specialty'],
         select  :{
@@ -196,6 +271,10 @@ export class PatientsService {
           }
         }
       })
+      if(appointments.length == 0)
+      {
+        throw new BadRequestException('you dont have any Previes appointments')
+      }
       return appointments;
       }
       async cancelAppointment(patientId : number,id : number){

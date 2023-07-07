@@ -41,9 +41,10 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   };
   app.use(cors(corsOptions));
-
-  // Serve static files from the "public" directory
-  app.use(express.static(join(__dirname, '..', 'public')));
+  // Serve static files from the root directory
+  app.use(express.static(join(__dirname, '..')));
+  
+  
 
   // Start the server
   const server = await app.listen(3000, async () => {

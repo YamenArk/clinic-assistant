@@ -1,4 +1,6 @@
-import { Body, Controller, Post,Get, ValidationPipe,Req, UseGuards, Put, Param, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Post,Get, ValidationPipe,Req, UseGuards, Put, Param, ParseIntPipe, UploadedFile, UseInterceptors, HttpException, HttpStatus } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer'; // import multer here
 import { JWTAuthGuardPatient } from 'src/middleware/auth/jwt-auth.guard';
 import { AuthLoginDto } from 'src/patients/dtos/AuthLogin.dto';
 import { SignUpDto } from 'src/patients/dtos/SignUp.dto';
@@ -23,6 +25,45 @@ export class PatientsController {
         const patientId = request.patientId; // Accessing the doctorId from the request object
         return this.patientSrevice.getmyAccount(patientId)
      }
+
+
+     
+    //update my profile
+    @UseGuards(JWTAuthGuardPatient)
+    @Put('update-profilePicture')
+    @UseInterceptors(
+      FileInterceptor('file', {
+        storage: multer.diskStorage({
+          destination: './uploads/patients',
+          filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+            cb(null, uniqueSuffix + '-' + file.originalname);
+          },
+        }),
+        fileFilter: (req, file, cb) => {
+          if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+            return cb(null, false);
+          }
+          cb(null, true);
+        },
+      }),
+    )
+    async updateProfile(
+      @Req() request,
+      @UploadedFile() file: Express.Multer.File,
+      ) {
+        if(!file)
+        {
+          throw new HttpException('Only image files are allowed!', HttpStatus.BAD_REQUEST);
+        }
+      const patientId = request.patientId; // Accessing the patientId from the request object
+      this.patientSrevice.updateProfile(patientId,file);
+      return {message : "patient profilePicture updated successfully"}
+    }
+
+    
+
+
 
     @Post('signup')
     async signUp(@Body(new ValidationPipe({ whitelist: true })) signUpDto: SignUpDto) {

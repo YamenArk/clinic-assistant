@@ -22,10 +22,21 @@ import { Patient } from 'src/typeorm/entities/patient';
 import { JWTAuthGuardPatient } from 'src/middleware/auth/jwt-auth.guard';
 import { Transctions } from 'src/typeorm/entities/transctions';
 import { PayInAdvance } from 'src/typeorm/entities/pay-in-advance';
+import { MulterModule } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Doctor, Insurance, SubSpecialty,DoctorClinic,Clinic,WorkTime,Appointment,Admin,Secretary,Specialty,DoctorPatient,Patient,Transctions,PayInAdvance]),
+    MulterModule.register({
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          cb(null, `${new Date().getTime()}-${file.originalname}`);
+        },
+      }),
+    }),
+
     CacheModule.register(), // add CacheModule here
     PassportModule,
     JwtModule.registerAsync({

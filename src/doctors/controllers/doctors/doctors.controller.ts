@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, Res, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put, Req, Res, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CreateDoctorDto } from 'src/doctors/dtos/CreateDoctor.dto';
 import { UpdateDoctorDto } from 'src/doctors/dtos/UpdateDoctor.dto';
 import { filterDocrotsDto } from 'src/doctors/dtos/filterDocrots.dto';
@@ -24,11 +24,14 @@ import { workTimeFilterDto } from 'src/doctors/dtos/workTimeFilter.dto';
 import TrusthubBase from 'twilio/lib/rest/TrusthubBase';
 import { DeleteWorkTimeDto } from 'src/doctors/dtos/DeleteWorkTime.dto';
 import { shiftDto } from 'src/doctors/dtos/shift.dto';
+import { join } from 'path';
+import * as fs from 'fs';
+import * as multer from 'multer'; // import multer here
+
 @Controller('doctors')
 export class DoctorsController {
 
     constructor(private doctorSrevice : DoctorsService){}
-
 
 
 
@@ -168,21 +171,46 @@ export class DoctorsController {
        
 
 
-    //update my profile
-    @UseGuards(JWTAuthGuardDoctor)
-    @Put('update-profile')
-    async updateProfile(
-      @Req() request,
-      @Body(new ValidationPipe({ whitelist: true })) profileDetails: profileDetailsDto,
-      @UploadedFile() file: Express.Multer.File,
+
+
+// import multer from 'multer';
+
+      @UseGuards(JWTAuthGuardDoctor)
+      @Put('update-profile')
+      
+      @UseInterceptors(
+        FileInterceptor('file', {
+          storage: multer.diskStorage({
+            destination: './uploads/doctors',
+            filename: (req, file, cb) => {
+              const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+              cb(null, uniqueSuffix + '-' + file.originalname);
+            },
+          }),
+          fileFilter: (req, file, cb) => {
+            if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+              return cb(null, false);
+            }
+            cb(null, true);
+          },
+        }),
+      )
+      async updateProfile(
+        @Req() request,
+        @Body(new ValidationPipe({ whitelist: true })) profileDetails: profileDetailsDto,
+        @UploadedFile() file: Express.Multer.File,
       ) {
+          if(!file)
+          {
+            throw new HttpException('Only image files are allowed!', HttpStatus.BAD_REQUEST);
+          }
+          const doctorId = request.doctorId;
+          await this.doctorSrevice.updateProfile(doctorId,profileDetails,file);
+          return { message: 'doctor updated successfully' }; 
+      }
 
-      const doctorId = request.doctorId; // Accessing the doctorId from the request object
-      this.doctorSrevice.updateprofile(doctorId,profileDetails,file);
-      return {message : "doctor updated successfully"}
-    }
 
-
+      
     //get clinic
     @UseGuards(JWTAuthGuardDoctor)
     @Get('get-clinic')
@@ -345,8 +373,7 @@ export class DoctorsController {
 
     @Post('send-email')
       async sendResetEmail(@Body(new ValidationPipe({ whitelist: true })) email: emailDto) {
-      const doctorId = await this.doctorSrevice.sendResetEmail(email.email);
-      return { message: 'message has been sent to your Email', doctorId: doctorId };
+      return await this.doctorSrevice.sendResetEmail(email.email);
     }
   
     @Post('reset-password')
