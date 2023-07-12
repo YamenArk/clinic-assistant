@@ -58,8 +58,8 @@ export class AdminsController {
 
 
     
-    @Put('amount-collected-by-admin/:adminId')
-    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    @Get('collected-money-history/:adminId')
+    @UseGuards(JWTAuthGuardAdmin)
     async AmountCollectedByAdmin(
       @Param('adminId', new ParseIntPipe()) adminId: number,
       @Body(new ValidationPipe({ whitelist: true })) amountCollectedByAdminDto : AmountCollectedByAdminDto,

@@ -27,6 +27,7 @@ import { shiftDto } from 'src/doctors/dtos/shift.dto';
 import { join } from 'path';
 import * as fs from 'fs';
 import * as multer from 'multer'; // import multer here
+import { CreateManyWorkTimeDto } from 'src/doctors/dtos/CreateManyWorkTime.dto';
 
 @Controller('doctors')
 export class DoctorsController {
@@ -237,7 +238,6 @@ export class DoctorsController {
     }
 
 
-
     //create work times
     @Post('set-work-time/:clinicId')
     @UseGuards(JWTAuthGuardDoctor)
@@ -251,6 +251,23 @@ export class DoctorsController {
       await this.doctorSrevice.createWorkTime(workTimeDetails,clinicId,doctorId);
       return {message : "work time and appoitments added successfully"}
     }
+
+        //create work times
+        @Post('set-many-work-time/:clinicId')
+        @UseGuards(JWTAuthGuardDoctor)
+        async setManyWorkTime(
+          @Body( new ValidationPipe({ whitelist: true }))workTimeDetails: CreateManyWorkTimeDto,
+          @Param('clinicId') clinicId: number,
+          @Req() request
+        ) {
+          CreateManyWorkTimeDto.validate(workTimeDetails); // Call the validate() method as a static method on CreateWorkTimeDto
+          const doctorId = request.doctorId; // Accessing the doctorId from the request object
+          await this.doctorSrevice.createmanyWorkTime(workTimeDetails,clinicId,doctorId);
+          return {message : "work time and appoitments added successfully"}
+        }
+
+
+
 
     //delete work times
     @Delete('delete-work-time/:clinicId')

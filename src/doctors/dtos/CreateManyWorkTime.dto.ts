@@ -1,6 +1,5 @@
-import { HttpException, HttpStatus } from "@nestjs/common";
-import { ArrayMinSize, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, Matches } from "class-validator";
-import { stat } from "fs";
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { IsNotEmpty, IsString, Matches, ArrayMinSize, IsEnum, IsDateString, ArrayNotEmpty } from 'class-validator';
 
 enum Day {
   الأحد = 'الأحد',
@@ -12,24 +11,21 @@ enum Day {
   السبت = 'السبت',
 }
 
-export class CreateWorkTimeDto {
-
-  @IsNotEmpty()
-  @IsString()
-  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/) // Check that the value is in the format HH:mm
-  startingTime: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/) // Check that the value is in the format HH:mm
-  finishingTime: string;
-
-  @ArrayMinSize(1)
-  @IsEnum(Day, {
-    each: true,
-    message: 'القيمة "${value}" غير صالحة. يجب أن تكون إحدى الأيام التالية: الأحد، الاثنين الثلاثاء، الأربعاء، الخميس، الجمعة، السبت.'
-  })
-  days: Day[];
+export class CreateManyWorkTimeDto {
+  @ArrayNotEmpty()
+  appointments: {
+    day: Day;
+    
+    // @IsString()
+    // @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/) // Check that the value is in the format HH:mm
+    // @IsNotEmpty()
+    startingTime: string;
+    
+    // @IsNotEmpty()
+    // @IsString()
+    // @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/) // Check that the value is in the format HH:mm
+    finishingTime: string;
+  }[];
 
   @IsNotEmpty()
   @IsDateString()
@@ -39,7 +35,8 @@ export class CreateWorkTimeDto {
   @IsDateString()
   endDate: string;
 
-  static validate(workTimeDetails: CreateWorkTimeDto) {
+
+  static validate(workTimeDetails: CreateManyWorkTimeDto) {
     const startDate = new Date(workTimeDetails.startDate + 'T00:00:00');
     const endDate = new Date(workTimeDetails.endDate + 'T00:00:00');
     const today = new Date();
@@ -52,5 +49,5 @@ export class CreateWorkTimeDto {
     if (endDate.getTime() < startDate.getTime()) {
       throw new HttpException('يجب أن يكون تاريخ الانتهاء أكبر من تاريخ البدء', HttpStatus.BAD_REQUEST);
     }
-  } 
+  }
 }

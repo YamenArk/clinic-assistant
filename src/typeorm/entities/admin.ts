@@ -1,4 +1,4 @@
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import {
     Column,
     Entity,
@@ -42,6 +42,12 @@ export class Admin {
     @IsNotEmpty()
     @IsString()
     lastname: string;
+
+    
+    @Column({default : true})
+    @IsNotEmpty()
+    @IsNumber()
+    accountBalance: number;
     
     @Column({ type: 'boolean', default: false })
     @IsBoolean()

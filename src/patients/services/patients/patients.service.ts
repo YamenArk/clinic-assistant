@@ -278,7 +278,7 @@ export class PatientsService {
       return appointments;
       }
       async cancelAppointment(patientId : number,id : number){
-        const appointment = await this.appointmentRepository.findOne({where : {id},relations:['patient']})
+        const appointment = await this.appointmentRepository.findOne({where : {id},relations:['patient','workTime']})
         if(!appointment)
         {
           throw new HttpException(`appointment with id ${id} not found`, HttpStatus.NOT_FOUND);
@@ -292,7 +292,6 @@ export class PatientsService {
         const moment = require('moment-timezone');
         const appointmentDate = moment(appointment.workTime.date).tz(syriaTimezone).startOf('day');
         const today = moment().tz(syriaTimezone).startOf('day');
-
         if (appointmentDate.isBefore(today)) {
           throw new BadRequestException('you can not get an old appointment')
         } 
@@ -334,24 +333,31 @@ export class PatientsService {
           if (appointmentDate.isBefore(today)) {
             throw new BadRequestException('you can not get an old appointment')
           } 
-        const timeDiffDays = appointmentDate.diff(today, 'days');
+        const startingTime = moment(`${appointment.workTime.date} ${appointment.startingTime}`, 'YYYY-MM-DD HH:mm').tz(syriaTimezone);
+        const currentTime = moment();
+        const timeDiffDays = startingTime.diff(currentTime, 'days');
         if (timeDiffDays >= 2) {
-          return {canCancel : true}
+          return { canCancel: true };
+        } else if (timeDiffDays < 0) {
+          throw new BadRequestException('you cannot cancel an old appointment');
         } else {
-          const startingTime = moment(`${appointment.workTime.date} ${appointment.startingTime}`, 'YYYY-MM-DD HH:mm').tz(syriaTimezone);
-          const timeDiffHours = startingTime.diff(moment(), 'hours');
-        
+          const timeDiffHours = startingTime.diff(currentTime, 'hours');
           if (timeDiffHours >= 24) {
-            return {canCancel : true}            
+            return { canCancel: true };
+          } else if (timeDiffHours < -1) {
+            throw new BadRequestException('you cannot cancel an old appointment');
           } else {
-            return {
-              canCancel : false,
-              numberOfMissAppointment : patient.numberOfMissAppointment
-            }            
-            
+            const timeDiffMinutes = startingTime.diff(currentTime, 'minutes');
+            if (timeDiffMinutes >= 30) {
+              return {
+                canCancel: false,
+                numberOfMissAppointment: patient.numberOfMissAppointment
+              };
+            } else {
+            throw new BadRequestException('To cancel an appointment, the remaining time should be more than 30 minutes.');
+            }
           }
         }
-
       }
 
       

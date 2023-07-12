@@ -369,33 +369,35 @@ export class AdminsService {
           );
         }
         //get date        
-        const month = parseInt(amountCollectedByAdmin.month, 10);
-        const year = parseInt(amountCollectedByAdmin.year, 10);
-        const startDate = new Date(year, month - 1, 1);
-        const endDate = new Date(year, month, 0);
+        // const month = parseInt(amountCollectedByAdmin.month, 10);
+        // const year = parseInt(amountCollectedByAdmin.year, 10);
+        // const startDate = new Date(year, month - 1, 1);
+        // const endDate = new Date(year, month, 0);
         const adminrows = await this.payInAdvanceRepository.find({
           where :{
             admin :{
               adminId : adminId,
             },
-            createdAt: Between(startDate.toISOString().slice(0, 10), endDate.toISOString().slice(0, 10)), 
+            // createdAt: Between(startDate.toISOString().slice(0, 10), endDate.toISOString().slice(0, 10)), 
           }
         })
         if(adminrows.length == 0)
         {
           throw new BadRequestException('this admin did not get any money this month');
         }
-        let amountOfMoney = 0;
-        let i = 0;
-        while(adminrows[i])
-        {
-          amountOfMoney = await amountOfMoney + adminrows[i].amountPaid;
-          i++;
-        }
-        return {
-          Details  : adminrows ,
-          amountOfMoney : amountOfMoney
-        }
+        return {Details  : adminrows};
+        // let amountOfMoney = 0;
+        // let i = 0;
+        // while(adminrows[i])
+        // {
+        //   amountOfMoney = await amountOfMoney + adminrows[i].amountPaid;
+        //   i++;
+        // }
+        // return {
+        //   Details  : adminrows ,
+        //   amountOfMoney : amountOfMoney
+        // }
+
       }
       async doctorsactivatedByAdmin(adminId : number,amountCollectedByAdmin : AmountCollectedByAdminParams){
         const admin = await this.adminRepository.findOne({

@@ -32,6 +32,17 @@ export interface CreateAdminParams {
     endDate: string;
   }
 
+  export interface CreateManyWorkTimeParams {
+    appointments: {
+      day: Day;      
+      startingTime: string;
+      finishingTime: string;
+    }[];
+    startDate: string;
+    endDate: string;
+  }
+
+  
   
   export interface DeleteWorkTimeParams {
     startDate: string;
