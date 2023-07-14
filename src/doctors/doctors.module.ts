@@ -24,10 +24,33 @@ import { Transctions } from 'src/typeorm/entities/transctions';
 import { PayInAdvance } from 'src/typeorm/entities/pay-in-advance';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-
+import { NewDoctorReports } from 'src/typeorm/entities/new-doctor-reports';
+import { NotificationGatewayService } from 'src/middleware/notification.gateway/notification.gateway.service';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+// import { WebSocketModule } from '@nestjs/websockets';
+import { WsAdapter } from '@nestjs/platform-ws';
+import { PatientDoctosReport } from 'src/typeorm/entities/patient-doctos-report';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Doctor, Insurance, SubSpecialty,DoctorClinic,Clinic,WorkTime,Appointment,Admin,Secretary,Specialty,DoctorPatient,Patient,Transctions,PayInAdvance]),
+    TypeOrmModule.forFeature([
+      Doctor,
+      Insurance,
+      SubSpecialty,
+      DoctorClinic,
+      Clinic,
+      WorkTime,
+      Appointment,
+      Admin,
+      Secretary,
+      Specialty,
+      DoctorPatient,
+      Patient,
+      Transctions,
+      PayInAdvance,
+      NewDoctorReports,
+      PatientDoctosReport
+    ]),
+    WsAdapter,
     MulterModule.register({
       storage: diskStorage({
         destination: './uploads',
@@ -44,12 +67,11 @@ import { diskStorage } from 'multer';
       useFactory :async () => ({
         secret : process.env.JWT_SECRET
         ,signOptions: { expiresIn: '1d' },
-  
       }),
       inject : [ConfigService]
     })
   ],
-  providers: [DoctorsService, MailService,DoctorJwtStrategy,JWTAuthGuardPatient],
+  providers: [DoctorsService, MailService,DoctorJwtStrategy,JWTAuthGuardPatient,NotificationGatewayService],
   controllers: [DoctorsController],
 })
 export class DoctorsModule {}

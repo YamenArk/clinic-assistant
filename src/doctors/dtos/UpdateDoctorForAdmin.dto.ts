@@ -27,9 +27,4 @@ export class UpdateDoctorForAdminDto {
     @IsOptional()
     lastname?: string;
 
-    @IsNotEmpty()
-    @IsOptional()
-    @IsBoolean()
-    active?: boolean;
-
 }

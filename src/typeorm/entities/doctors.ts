@@ -15,6 +15,7 @@ import { WorkTime } from './work-time';
 import { DoctorPatient } from './doctor-patient';
 import { PayInAdvance} from './pay-in-advance';
 import { Transctions } from './transctions';
+import { PatientDoctosReport } from './patient-doctos-report';
 
 
 const decimalTransformer: ValueTransformer = {
@@ -44,11 +45,7 @@ export class Doctor {
     @IsString()
     phonenumberForAdmin: string ;
   
-    @Column({
-      type: 'enum',
-      enum: ['true', 'false'],
-      default: 'false'
-    })
+    @Column({ type: 'boolean', default: false })
     @IsBoolean()
     active: boolean;
 
@@ -108,8 +105,8 @@ export class Doctor {
 
 
 
-    @Column()
-    createdAt: Date;
+    @Column({ type: 'date', nullable: false })
+    createdAt: string;
 
     @ManyToMany(() => Insurance, insurance => insurance.doctor)
     @JoinTable()
@@ -137,4 +134,7 @@ export class Doctor {
 
     @OneToMany(() => WorkTime, workTime => workTime.doctor)
     public workTime: WorkTime[];
+
+    @OneToMany(() => PatientDoctosReport, patientDoctosReport => patientDoctosReport.doctor)
+    public patientDoctosReport: PatientDoctosReport[];
   }

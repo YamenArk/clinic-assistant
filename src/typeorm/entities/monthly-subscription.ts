@@ -5,7 +5,7 @@ import {
   } from 'typeorm';
 import { IsDefined, IsNotEmpty, IsNumber } from 'class-validator';
 
-@Entity({ name: 'MonthlySubscriptions' })
+@Entity({ name: 'monthlySubscriptions' })
 export class MonthlySubscription {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     id: number;

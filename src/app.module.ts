@@ -30,6 +30,12 @@ import { DoctorPatient } from './typeorm/entities/doctor-patient';
 import { PayInAdvance } from './typeorm/entities/pay-in-advance';
 import {  Transctions } from './typeorm/entities/transctions';
 import { MonthlySubscription } from './typeorm/entities/monthly-subscription';
+import { SubAdminPayment } from './typeorm/entities/sub-admin-payment';
+import { TransctionsReports } from './typeorm/entities/transctions-reports';
+import { SubAdminPaymentReport } from './typeorm/entities/sub-admin-payment-report';
+import { NewDoctorReports } from './typeorm/entities/new-doctor-reports';
+import { PatientDoctosReport } from './typeorm/entities/patient-doctos-report';
+import { NotificationGatewayService } from './middleware/notification.gateway/notification.gateway.service';
 // clinicassistant
 @Module({
   imports: [
@@ -40,7 +46,30 @@ import { MonthlySubscription } from './typeorm/entities/monthly-subscription';
       username: 'root',
       password: '',
       database: 'clinicassistant',
-      entities: [Admin,Doctor,Specialty,SubSpecialty,Patient,Insurance,Clinic,DoctorClinic,Secretary,WorkTime,Appointment,Governorate,Area,DoctorPatient,PayInAdvance,Transctions,MonthlySubscription],
+      entities: [
+        Admin,
+        Doctor,
+        Specialty,
+        SubSpecialty,
+        Patient,
+        Insurance,
+        Clinic,
+        DoctorClinic,
+        Secretary,
+        WorkTime,
+        Appointment,
+        Governorate,
+        Area,
+        DoctorPatient,
+        PayInAdvance,
+        Transctions,
+        MonthlySubscription,
+        SubAdminPayment,
+        TransctionsReports,
+        SubAdminPaymentReport,
+        NewDoctorReports,
+        PatientDoctosReport
+      ],
       synchronize:  false ,
       migrationsRun: false,
       dropSchema: false
@@ -57,6 +86,6 @@ import { MonthlySubscription } from './typeorm/entities/monthly-subscription';
     SecretariesModule
       ],
   // providers: [MailService, QueryService, PhoneService]
-  providers: [MailService, QueryService]
+  providers: [MailService, QueryService, NotificationGatewayService]
 })
 export class AppModule {}

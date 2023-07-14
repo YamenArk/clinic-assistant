@@ -73,7 +73,6 @@ export interface UpdateDoctorForAdminParams {
   gender?: string;
   firstname?: string;
   lastname?: string;
-  active?:boolean
 }
 
  export type AddDocrotSpecialtyParams= {

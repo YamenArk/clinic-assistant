@@ -58,16 +58,6 @@ export class AdminsController {
 
 
     
-    @Get('collected-money-history/:adminId')
-    @UseGuards(JWTAuthGuardAdmin)
-    async AmountCollectedByAdmin(
-      @Param('adminId', new ParseIntPipe()) adminId: number,
-      @Body(new ValidationPipe({ whitelist: true })) amountCollectedByAdminDto : AmountCollectedByAdminDto,
-    ){
-
-      AmountCollectedByAdminDto.validate(amountCollectedByAdminDto); // Call the validate() method as a static method on CreateWorkTimeDto
-      return this.adminSrevice.AmountCollectedByAdmin(adminId,amountCollectedByAdminDto)
-   }
 
     
    @Put('doctors-activated-by-admin/:adminId')
@@ -184,9 +174,73 @@ export class AdminsController {
    // @Cron(CronExpression.EVERY_DAY_AT_0AM)
    async MonthlySubscriptions(
    ){
-     console.log("payment is working just fine")
      await this.adminSrevice.MonthlySubscriptions();
      return ;
    }
 
+
+
+   @Put('taking-money-from-admin/:adminId')
+   @UseGuards(JWTAuthGuardAdmin)
+   async TakingMoneyFromAdmin(
+    @Param('adminId',ParseIntPipe) adminId: number,
+    ){
+      await this.adminSrevice.TakingMoneyFromAdmin(adminId);
+      return {message : 'money taken sucessfully'};
+    }
+
+  @Get('sub-admin-payment-report')
+  @UseGuards(JWTAuthGuardAdminIsAdmin)
+  async subAdminPaymentReport(
+    ){
+      const subAdminPaymentReport = await this.adminSrevice.subAdminPaymentReport();
+      return {reports : subAdminPaymentReport};
+    }
+
+
+  @Get('new-doctor-report')
+  @UseGuards(JWTAuthGuardAdminIsAdmin)
+  async newDoctorReports(
+    ){
+      const newDoctorReports = await this.adminSrevice.newDoctorReports();
+      return {reports : newDoctorReports};
+    }
+
+  @Get('transctions-report')
+  @UseGuards(JWTAuthGuardAdminIsAdmin)
+  async transctionsReports(
+    ){
+      const transctionsReports = await this.adminSrevice.transctionsReports();
+      return {reports : transctionsReports};
+    }
+
+    @Get('money-from-sub-admin')
+    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    async moneyFromSubAdmin(
+      ){
+        const moneyFromSubAdmin = await this.adminSrevice.moneyFromSubAdmin();
+        return {moneyFromSubAdmin : moneyFromSubAdmin};
+      }
+
+
+    @Get('money-collected-from-doctors-history')
+    @UseGuards(JWTAuthGuardAdmin)
+    async moneyCollectedFromDoctorsHistory(
+      @Req() request,
+      ){
+        const adminId = request.adminId ;
+        const moneyCollectedByAdmin = await this.adminSrevice.moneyCollectedFromDoctorsHistory(adminId);
+        return {moneyHistoryCollected : moneyCollectedByAdmin};
+      }
+
+    @Get('money-to-admin')
+    @UseGuards(JWTAuthGuardAdmin)
+    async moneyToAdmin(
+      @Req() request,
+      ){
+        const adminId = request.adminId ;
+        const monyPaidToAdmin = await this.adminSrevice.moneyToAdmin(adminId);
+        return {monyPaidToAdmin : monyPaidToAdmin};
+      }
+  
 }

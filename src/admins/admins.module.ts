@@ -14,10 +14,25 @@ import { JWTAuthGuardAdmin } from 'src/middleware/auth/jwt-auth.guard';
 import { Transctions } from 'src/typeorm/entities/transctions';
 import { PayInAdvance } from 'src/typeorm/entities/pay-in-advance';
 import { MonthlySubscription } from 'src/typeorm/entities/monthly-subscription';
+import { SubAdminPayment } from 'src/typeorm/entities/sub-admin-payment';
+import { SubAdminPaymentReport } from 'src/typeorm/entities/sub-admin-payment-report';
+import { NewDoctorReports } from 'src/typeorm/entities/new-doctor-reports';
+import { TransctionsReports } from 'src/typeorm/entities/transctions-reports';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin,Secretary,Doctor,Transctions,PayInAdvance,MonthlySubscription]),
+    TypeOrmModule.forFeature([
+      Admin,
+      Secretary,
+      Doctor,
+      Transctions,
+      PayInAdvance,
+      MonthlySubscription,
+      SubAdminPayment,
+      SubAdminPaymentReport,
+      NewDoctorReports,
+      TransctionsReports
+    ]),
     CacheModule.register(), // add CacheModule here
     PassportModule,
     JwtModule.registerAsync({

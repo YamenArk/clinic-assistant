@@ -7,6 +7,7 @@ import {
   } from 'typeorm';
 import { PayInAdvance } from './pay-in-advance';
 import { Transctions } from './transctions';
+import { SubAdminPayment } from './sub-admin-payment';
 
 @Entity({ name: 'admins' })
 export class Admin {
@@ -58,6 +59,11 @@ export class Admin {
  
     @OneToMany(() => PayInAdvance, payInAdvance => payInAdvance.admin)
     public payInAdvance: PayInAdvance[];
+
+
+    @OneToMany(() => SubAdminPayment, subAdminPayment => subAdminPayment.admin)
+    public subAdminPayment: SubAdminPayment[];
+
 
     @OneToMany(() => Transctions, transctions => transctions.admin)
     public transctions: Transctions[];

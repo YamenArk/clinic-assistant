@@ -18,9 +18,11 @@ import { Admin } from './admin';
         @IsNumber()
         amount: number;
 
-        @ManyToOne(() => Admin, (admin) => admin.payInAdvance)
+        @ManyToOne(() => Admin, (admin) => admin.subAdminPayment)
         public admin: Admin; // Ensure that the type of this property is Clinic
         
+    
+
         @Column({ type: 'date', nullable: false })
         @IsNotEmpty()
         createdAt: string;

@@ -29,13 +29,20 @@ import { doc } from 'prettier';
 import { min, pairwise } from 'rxjs';
 import { PayInAdvance } from 'src/typeorm/entities/pay-in-advance';
 import { Transctions } from 'src/typeorm/entities/transctions';
+import { NewDoctorReports } from 'src/typeorm/entities/new-doctor-reports';
+import { NotificationGatewayService } from 'src/middleware/notification.gateway/notification.gateway.service';
+import { PatientDoctosReport } from 'src/typeorm/entities/patient-doctos-report';
 @Injectable()
 @UseInterceptors(CacheInterceptor)
 export class DoctorsService {
     constructor (
         private jwtService : JwtService,
+        @InjectRepository(PatientDoctosReport) 
+        private PatientDoctosReportRepository : Repository<PatientDoctosReport>,
         @InjectRepository(Patient) 
         private PatientRepository : Repository<Patient>,
+        @InjectRepository(NewDoctorReports) 
+        private newDoctorReportsRepository : Repository<NewDoctorReports>,
         @InjectRepository(DoctorPatient) 
         private doctorPatientRepository : Repository<DoctorPatient>,
         @InjectRepository(Specialty) 
@@ -63,8 +70,10 @@ export class DoctorsService {
         @InjectRepository(Transctions) 
         private transctionsRepository : Repository<Transctions>,
         private readonly mailService: MailService,
+        private readonly  notificationGateway: NotificationGatewayService,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: any, // update the type of cacheManager to any
+        
         ){}
 
 
@@ -139,10 +148,12 @@ export class DoctorsService {
         doctor.insurance = insurancesArray;
 
 
-        doctor.active = true
         doctor.evaluate = 2.5;
         doctor.numberOfPeopleWhoVoted = 0;
         doctor.active = false;
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        doctor.createdAt = today.toISOString()
          // Validate the updatedDoctor object using class-validator
          const errors = await validate(doctor);
          if (errors.length > 0) {
@@ -152,6 +163,29 @@ export class DoctorsService {
         // save the new Doctor entity to the database
         const newDoctor = await this.doctorRepository.save(doctor);
     
+        const month = (today.getUTCMonth() + 1).toString().padStart(2, '0');
+        const year = today.getUTCFullYear();
+        const createdAt = `${year}-${month}`;
+        let duplicated = await this.newDoctorReportsRepository.findOne({
+          where: {
+            createdAt: createdAt
+          }
+        });
+        if(!duplicated)
+        {
+
+          const newDoctorReportsRepository = await this.newDoctorReportsRepository.create({
+            createdAt : createdAt,
+           numberOfDoctors : 1
+          })
+          await this.newDoctorReportsRepository.save(newDoctorReportsRepository);
+        }
+        else
+        {
+          duplicated.numberOfDoctors = duplicated.numberOfDoctors + 1;
+          await this.newDoctorReportsRepository.save(duplicated);
+        }
+
         // associate the Doctor with the Clinics using DoctorClinic entities
         const doctorClinicEntities = await Promise.all(clinicsArray.map(async (clinic) => {
           const doctorClinic = new DoctorClinic();
@@ -379,6 +413,104 @@ export class DoctorsService {
       async  deleteFile(filePath: string) {
         await fs.promises.unlink(filePath);
       }
+
+      async numberOfPaitentWhoCame(doctorId : number){
+        const doctor = await this.doctorRepository.findOne({
+          where :{
+            doctorId : doctorId
+          }
+        });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+   
+        const starting = new Date(doctor.createdAt);
+
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const month = (today.getUTCMonth()).toString().padStart(2, '0');
+        const year = today.getUTCFullYear();
+        const createdAt = `${year}-${month}`;
+        const endYear = today.getUTCFullYear();
+        const endMonth = today.getUTCMonth() + 1;
+        const startYear = starting.getUTCFullYear();
+        const startMonth = starting.getUTCMonth() + 1;
+        //get all monthers
+        const months = [];
+
+        for (let year = startYear; year <= endYear; year++) {
+          const startMonthOfYear = year === startYear ? startMonth : 1;
+          const endMonthOfYear = year === endYear ? endMonth : 12;
+          for (let month = startMonthOfYear; month <= endMonthOfYear; month++) {
+            const monthStr = month.toString().padStart(2, '0');
+            const yearMonth = `${year}-${monthStr}`;
+            months.push({ year: year, month: monthStr, yearMonth: yearMonth });
+          }
+        }
+        let i = 0;
+
+        while (months[i]) {
+          const oldReport = await this.PatientDoctosReportRepository.findOne({
+            where: {
+              doctor: { doctorId: doctorId },
+              createdAt: months[i].yearMonth
+            }
+          });
+
+          if (!oldReport) {
+            const workTimes = await this.workTimeRepository.find({
+              relations: ['appointment'],
+              where: {
+                doctor: { doctorId: doctorId },
+                date: Like(`${months[i].yearMonth}%`)
+              }
+            });
+
+            let numberOfPatientsWhoCame = 0;
+
+            if (workTimes.length === 0) {
+              const newReport = await this.PatientDoctosReportRepository.create({
+                numberOfPaitentWhoCame: 0,
+                createdAt: months[i].yearMonth,
+                doctor: doctor
+              });
+              await this.PatientDoctosReportRepository.save(newReport);
+            } else {
+              for (const workTime of workTimes) {
+                const appointments = await this.appointmentRepository.find({
+                  where: {
+                    workTime: { workTimeId: workTime.workTimeId },
+                    patient: Not(IsNull()),
+                    missedAppointment: false
+                  }
+                });
+                numberOfPatientsWhoCame += appointments.length;
+              }
+
+              const newReport = await this.PatientDoctosReportRepository.create({
+                numberOfPaitentWhoCame: numberOfPatientsWhoCame,
+                createdAt: months[i].yearMonth,
+                doctor: doctor
+              });
+              await this.PatientDoctosReportRepository.save(newReport);
+            }
+          }
+
+          i++;
+        }
+        const reports = await this.PatientDoctosReportRepository.find({
+          where: {
+            doctor: { doctorId: doctorId },
+          }
+        });
+        if(reports.length == 0)
+        {
+          throw new HttpException('you have no reports yet', HttpStatus.NOT_FOUND);
+        }
+        return reports;
+
+      }
+
 
       async getprofile(doctorId : number){
         const doctor = await this.doctorRepository.findOne({
@@ -717,80 +849,76 @@ export class DoctorsService {
         type Day = 'الأحد' | 'الاثنين' | 'الثلاثاء' | 'الأربعاء' | 'الخميس' | 'الجمعة' | 'السبت';
         for (let k = 0 ; k < workTimeDetails.appointments.length ; k ++)
         {
-          // get all Appointment
-        const appointmentDuring = doctorClinic.appointmentDuring;
-        if (!appointmentDuring || appointmentDuring < 5) {
-          throw new HttpException('Invalid appointment duration', HttpStatus.BAD_REQUEST);
-        }
-        const daysToSeeLastAppointment = doctorClinic.daysToSeeLastAppointment;
-        if (!daysToSeeLastAppointment || daysToSeeLastAppointment < 1) {
-          throw new HttpException('Invalid daysToSeeLastAppointment', HttpStatus.BAD_REQUEST);
-        }
-        const appointmentStartingTime = new Date('2023-05-10T' + workTimeDetails.appointments[k].startingTime + ':00');
-        const appointmentFinishingTime = new Date('2023-05-10T' + workTimeDetails.appointments[k].finishingTime + ':00');
-        if (appointmentStartingTime > appointmentFinishingTime) {
-          appointmentFinishingTime.setDate(appointmentFinishingTime.getDate() + 1);
-        }
-        const appointments = [];
-        for (let time = appointmentStartingTime; time < appointmentFinishingTime; time.setMinutes(time.getMinutes() + appointmentDuring)) {
-          const currentTime = new Date(time);
-
-          const appointment = {
-            startTime: `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}`,
-            endTime: `${new Date(currentTime.getTime() + appointmentDuring * 60000).getHours().toString().padStart(2, '0')}:${new Date(currentTime.getTime() + appointmentDuring * 60000).getMinutes().toString().padStart(2, '0')}`,
-          };
-          appointments.push(appointment);
-        }
-
-      
-
-        
-        const days = workTimeDetails.appointments[k].day as Day;
-        const result = [];      
-        const startDate = new Date(workTimeDetails.startDate);
-        const endDate = new Date(workTimeDetails.endDate);
-
-
-        const dateFormatter = new Intl.DateTimeFormat('ar-EG', { weekday: 'long' });
-        for (let date = startDate; date <= endDate; date.setDate(date.getDate() + 7)) {
-          const formattedDate = dateFormatter.format(date) as Day;
-          if (days.includes(formattedDate)) {
-            const dayOfWeek = weekdayMap[dateFormatter.format(date)];
-            result.push({ day: Object.keys(weekdayMap)[dayOfWeek], date: formatDate(date) });
+            // get all Appointment
+          const appointmentDuring = doctorClinic.appointmentDuring;
+          if (!appointmentDuring || appointmentDuring < 5) {
+            throw new HttpException('Invalid appointment duration', HttpStatus.BAD_REQUEST);
           }
-          
-        }
-        function formatDate(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}/${month}/${day}`;
+          const daysToSeeLastAppointment = doctorClinic.daysToSeeLastAppointment;
+          if (!daysToSeeLastAppointment || daysToSeeLastAppointment < 1) {
+            throw new HttpException('Invalid daysToSeeLastAppointment', HttpStatus.BAD_REQUEST);
+          }
+          const appointmentStartingTime = new Date('2023-05-10T' + workTimeDetails.appointments[k].startingTime + ':00');
+          const appointmentFinishingTime = new Date('2023-05-10T' + workTimeDetails.appointments[k].finishingTime + ':00');
+          if (appointmentStartingTime > appointmentFinishingTime) {
+            appointmentFinishingTime.setDate(appointmentFinishingTime.getDate() + 1);
+          }
+          const appointments = [];
+          for (let time = appointmentStartingTime; time < appointmentFinishingTime; time.setMinutes(time.getMinutes() + appointmentDuring)) {
+            const currentTime = new Date(time);
+
+            const appointment = {
+              startTime: `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}`,
+              endTime: `${new Date(currentTime.getTime() + appointmentDuring * 60000).getHours().toString().padStart(2, '0')}:${new Date(currentTime.getTime() + appointmentDuring * 60000).getMinutes().toString().padStart(2, '0')}`,
+            };
+            appointments.push(appointment);
+          }
+
+          const days = workTimeDetails.appointments[k].day as Day;
+          const result = [];      
+          const startDate = new Date(workTimeDetails.startDate);
+          const endDate = new Date(workTimeDetails.endDate);
+
+          const dateFormatter = new Intl.DateTimeFormat('ar-EG', { weekday: 'long' });
+          for (let date = startDate; date <= endDate; date.setDate(date.getDate() + 1)) {
+            const formattedDate = dateFormatter.format(date) as Day;
+            if (days.includes(formattedDate)) {
+              const dayOfWeek = weekdayMap[dateFormatter.format(date)];
+              result.push({ day: Object.keys(weekdayMap)[dayOfWeek], date: formatDate(date) });
+              date.setDate(date.getDate() + 6)
             }
-        
-        let i =0,j=0;        
-        while(result[i])
-        {
-          let workTime  = new WorkTime();
-          workTime.day = result[i].day;
-          workTime.date = result[i].date;
-          workTime.startingTime = workTimeDetails.appointments[k].startingTime;
-          workTime.finishingTime = workTimeDetails.appointments[k].finishingTime;
-          workTime.clinic = clinic;
-          workTime.doctor = doctor;
-          await this.workTimeRepository.save(workTime);
-          j=0;
-          while(appointments[j])
-          {
-            let appointment  = new Appointment();
-            appointment.startingTime = appointments[j].startTime;
-            appointment.finishingTime = appointments[j].endTime;
-            appointment.workTime = workTime;
-            appointment.missedAppointment = false;
-            await this.appointmentRepository.save(appointment)
-            j++;
           }
-          i++
-        }
+          function formatDate(date) {
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, '0');
+              const day = String(date.getDate()).padStart(2, '0');
+              return `${year}/${month}/${day}`;
+              }
+          
+          let i =0,j=0;   
+          while(result[i])
+          {
+            let workTime  = new WorkTime();
+            workTime.day = result[i].day;
+            workTime.date = result[i].date;
+            workTime.startingTime = workTimeDetails.appointments[k].startingTime;
+            workTime.finishingTime = workTimeDetails.appointments[k].finishingTime;
+            workTime.clinic = clinic;
+            workTime.doctor = doctor;
+            await this.workTimeRepository.save(workTime);
+            j=0;
+            while(appointments[j])
+            {
+              let appointment  = new Appointment();
+              appointment.startingTime = appointments[j].startTime;
+              appointment.finishingTime = appointments[j].endTime;
+              appointment.workTime = workTime;
+              appointment.missedAppointment = false;
+              await this.appointmentRepository.save(appointment)
+              j++;
+            }
+            i++
+          }
         }  
       }
 
@@ -868,7 +996,7 @@ export class DoctorsService {
               clinicId : clinicId
             }
           },
-          relations: ['appointment'],
+          relations: ['appointment','appointment.patient'],
           order: { date: 'ASC', startingTime: 'ASC' },
         });
     
@@ -888,10 +1016,12 @@ export class DoctorsService {
     
           // Update the appointments to the next work time
           const appointmentsToUpdate = currentWorkTime.appointment;
-          // console.log("===========")
-          // console.log(currentWorkTime.appointment)
           for (const appointment of appointmentsToUpdate) {
             appointment.workTime = nextWorkTime;
+            if(appointment.patient)
+            {
+
+            }
             await this.appointmentRepository.save(appointment);
           }
         
@@ -2062,4 +2192,11 @@ export class DoctorsService {
          };
       }
 
+
+      async test(){
+        const patientId = "2";
+        const message = 'you cant be late'
+        console.log("hi")
+        this.notificationGateway.sendNotification(patientId,message)
+      }
     }    
