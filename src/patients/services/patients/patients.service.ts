@@ -1,8 +1,8 @@
-import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthLoginDto } from 'src/patients/dtos/AuthLogin.dto';
 import { Patient } from 'src/typeorm/entities/patient';
-import { LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
+import { Equal, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { patientSignUp } from 'src/utils/types';
@@ -34,13 +34,17 @@ export class PatientsService {
         const {phoneNumber , password} = authLoginDto
         const patient = await this.patientRepository.findOne({
           where : {phoneNumber : phoneNumber,password :password},
-          select : ['patientId','birthDate','firstname','lastname','profilePicture','phoneNumber','numberOfMissAppointment']
         })
         if(!patient)
         {
             // If no matching user found, throw UnauthorizedException
             throw new UnauthorizedException('Invalid credentials')
         }
+        if(patient.active == false)
+        {
+          throw new ForbiddenException('you are not active anymore');
+        }
+        
         const payload = {
             patientId: patient.patientId,
             type : 4
@@ -104,6 +108,7 @@ export class PatientsService {
         patient.firstname = patientSignUp.firstname;
         patient.lastname = patientSignUp.lastname;
         patient.birthDate = patientSignUp.birthDate;
+        patient.active = true
         
         // generate unique identifier for patient
         const patientId = uuid();
@@ -167,18 +172,26 @@ export class PatientsService {
         currentDateTime.setSeconds(currentSecond);
         currentDateTime.setMilliseconds(0);
 
+
+
+
+
         // Convert the new Date object to a string representation in the format of HH:mm:ss
         const finishingTimeString = currentDateTime.toTimeString().slice(0, 8);
-
         const appointments = await this.appointmentRepository.find({
           where: {
             patient: {
               patientId: patientId
             },
             workTime: {
-              date: MoreThanOrEqual(today.toISOString())
+              date: MoreThan(today.toISOString())
             },
-            finishingTime: MoreThanOrEqual(finishingTimeString),
+            ...({
+              workTime: {
+                date: Equal(today.toISOString())
+              },
+              finishingTime: MoreThanOrEqual(finishingTimeString)
+            })
           },
           relations : ['workTime','workTime.doctor','workTime.clinic','workTime.clinic.specialty'],
           select  :{
@@ -242,10 +255,14 @@ export class PatientsService {
               patientId : patientId
             },
             workTime :{
-              date: LessThanOrEqual(today.toISOString())
+              date: LessThan(today.toISOString())
             },
-            finishingTime: LessThanOrEqual(finishingTimeString),
-
+            ...({
+              workTime: {
+                date: Equal(today.toISOString())
+              },
+              finishingTime: LessThanOrEqual(finishingTimeString)
+            })
         },
         relations : ['workTime','workTime.doctor','workTime.clinic','workTime.clinic.specialty'],
         select  :{

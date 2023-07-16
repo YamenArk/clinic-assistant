@@ -9,13 +9,22 @@ import { PayInAdvance } from './pay-in-advance';
 import { Transctions } from './transctions';
 import { SubAdminPayment } from './sub-admin-payment';
 
+enum TypeEnum {
+  Zero = 0,
+  One = 1,
+  Four = 4,
+  Five = 5,
+}
+
 @Entity({ name: 'admins' })
 export class Admin {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     adminId: number;
 
-    @Column({default : false})
-    isAdmin: boolean;
+  
+    
+    @Column({ default: TypeEnum.Zero })
+    type: TypeEnum;
 
     @Column({unique : true})
     @IsString()

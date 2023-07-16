@@ -8,10 +8,12 @@ import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Area } from 'src/typeorm/entities/Area';
 import { Specialty } from 'src/typeorm/entities/specialty';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
+import { DoctorAdminJwtStrategy } from 'src/middleware/auth/jwt.strategy';
+import { Admin } from 'src/typeorm/entities/admin';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Clinic,Doctor,DoctorClinic,Area,Specialty,SubSpecialty])],
-  providers: [ClinicsService],
+  imports: [TypeOrmModule.forFeature([Admin,Clinic,Doctor,DoctorClinic,Area,Specialty,SubSpecialty])],
+  providers: [DoctorAdminJwtStrategy,ClinicsService],
   controllers: [ClinicsController]
 })
 export class ClinicsModule {}

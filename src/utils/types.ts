@@ -7,9 +7,19 @@ enum Day {
   الجمعة = 'الجمعة',
   السبت = 'السبت',
 }
-export interface CreateAdminParams {
+
+enum TypeEnum {
+  One = 1,
+  Four = 4,
+  Five = 5,
+}
+export type CreateAdminParams  = {
     email: string;
     phonenumber: string;
+    firstname: string;
+    lastname: string;
+    type: TypeEnum;
+
   };
   
   export interface  CreateDoctorParams {

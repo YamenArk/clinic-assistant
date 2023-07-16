@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException, UseInterceptors } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { validate } from 'class-validator';
 import { CACHE_MANAGER, CacheInterceptor, CacheModule } from '@nestjs/common'; // import CACHE_MANAGER
@@ -191,7 +191,6 @@ export class DoctorsService {
           const doctorClinic = new DoctorClinic();
           doctorClinic.doctor = newDoctor;
           doctorClinic.clinic = clinic;
-          clinic.numDoctors ++;
           await this.clinicRepository.save(clinic);
           return doctorClinic;
         }));
@@ -1181,7 +1180,7 @@ export class DoctorsService {
         {
           throw new BadRequestException('you are only allowed to update your appoitments')
         }
-        if(workTimeDate.toDateString() === today.toDateString())
+        if(workTimeDate.toDateString() != today.toDateString())
         {
           throw new BadRequestException('you can only update the appoitments of today')
         }
@@ -1348,28 +1347,19 @@ export class DoctorsService {
           if (!isPasswordMatch) {
             throw new UnauthorizedException('Invalid credentials');
           }
-          if(admin.isAdmin)
+          if(admin.active == false)
           {
-            const payload = {
-              adminId: admin.adminId,
-              type  : 0
-            };
-            return {
-              access_token: this.jwtService.sign(payload),
-             type : 0
-            };
+            throw new ForbiddenException('you are not active anymore');
           }
-          else
-          {
-            const payload = {
-              adminId: admin.adminId,
-              type : 1
-            };
-            return {
-              access_token: this.jwtService.sign(payload),
-             type : 1
-            };
-          }
+          const payload = {
+            adminId: admin.adminId,
+            type  : 0
+          };
+          return {
+            access_token: this.jwtService.sign(payload),
+            type : admin.type
+          };
+        
         }
 
 
@@ -1378,6 +1368,10 @@ export class DoctorsService {
           const isPasswordMatch = await bcrypt.compare(password, doctor.password); // compare the hashed passwords
           if (!isPasswordMatch) {
             throw new UnauthorizedException('Invalid credentials');
+          }
+          if(doctor.active == false)
+          {
+            throw new ForbiddenException('you are not active anymore');
           }
           const payload = {
             doctorId: doctor.doctorId,
@@ -1503,7 +1497,7 @@ export class DoctorsService {
     if (filterDetasils.insuranceId !== null) {
         query.andWhere('insurance.insuranceId = :insuranceId', { insuranceId: filterDetasils.insuranceId });
     }
-    
+    query.andWhere('doctor.active IS NOT false')
     const results  = await query.getMany();
     
     if (results.length === 0) {
@@ -1560,6 +1554,7 @@ export class DoctorsService {
             name: `%${secondFilterDocrotsDto.filterName}%`,
           });
         }
+        query.andWhere('doctor.active IS NOT false')
         const results  = await query.getMany();
     
         if (results.length === 0) {
@@ -1595,10 +1590,14 @@ export class DoctorsService {
       async getprofileforpatient(doctorId : number,patientId : number,tokenIsCorrect : boolean){
         const doctor = await this.doctorRepository.findOne({
           where: { doctorId },
-          select : ['doctorId','firstname','lastname','description','evaluate',"phonenumber","profilePicture"],
+          select : ['doctorId','firstname','lastname','description','evaluate',"phonenumber","profilePicture","numberOfPeopleWhoVoted","active"],
           relations: ['workTime','workTime.clinic'],
         });
         if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+        if(!doctor.active)
+        {
           throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
         }
 
@@ -1762,6 +1761,11 @@ export class DoctorsService {
         if (!doctor) {
           throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
         }
+        if(!doctor.active)
+        {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+
         const patient = await this.PatientRepository.findOne({
           where : {patientId}
           })
@@ -1813,6 +1817,7 @@ export class DoctorsService {
                 doctor : doctor,
                 evaluate : evaluateDoctor.evaluate
             });
+            doctor.numberOfPeopleWhoVoted ++ ;
             await this.doctorPatientRepository.save(newEvaluate);
           }
           const results = await this.doctorPatientRepository.find({
@@ -1839,6 +1844,11 @@ export class DoctorsService {
         if (!doctor) {
           throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
         }
+        if(!doctor.active)
+        {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+
         const patient = await this.PatientRepository.findOne({
           where : {patientId}
           })
@@ -1872,7 +1882,12 @@ export class DoctorsService {
         if (!doctor) {
           throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
         }
+        if(!doctor.active)
+        {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
 
+        
         const clinic = await this.clinicRepository.findOne({
           where: { clinicId },
           relations : ['specialty','area.governorate'],

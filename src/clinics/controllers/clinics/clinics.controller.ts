@@ -3,7 +3,7 @@ import { ClinicDto } from 'src/clinics/dtos/ClinicDetails.dto';
 import { ClinicsService } from 'src/clinics/services/clinics/clinics.service';
 import { Response } from 'express';
 import { UpdateClinicDto } from 'src/clinics/dtos/updateClinic.dto';
-import { JWTAuthGuardAdmin } from 'src/middleware/auth/jwt-auth.guard';
+import { JWTAuthGuardDoctorAdmin } from 'src/middleware/auth/jwt-auth.guard';
 import { filterNameDto } from 'src/doctors/dtos/filterName.dto';
 import { LongitudeLatitudeDto } from 'src/clinics/dtos/LongitudeLatitude.dto';
 
@@ -11,15 +11,28 @@ import { LongitudeLatitudeDto } from 'src/clinics/dtos/LongitudeLatitude.dto';
 export class ClinicsController {
     constructor(private clinicSrevice : ClinicsService){}
     ///////////////////////////admin
+
     @Get()
     async getClinics(){
         const clinics =  await this.clinicSrevice.findClinics()
+        return {clinics : clinics}; 
+    }
+
+    @Get('patients')
+    async getClinicspatients(){
+        const clinics =  await this.clinicSrevice.findClinicspatients()
         return {clinics : clinics}; 
     }
     //filter clinic
     @Post('filter-by-names')
     async  filterDoctor(@Body(new ValidationPipe({ whitelist: true })) filterName : filterNameDto){
         return this.clinicSrevice.filterClinicByName(filterName);
+    }
+
+    //filter clinic
+    @Post('filter-by-names/patients')
+    async  filterDoctorpatients(@Body(new ValidationPipe({ whitelist: true })) filterName : filterNameDto){
+        return this.clinicSrevice.filterClinicByNamepatients(filterName);
     }
 
 
@@ -35,25 +48,23 @@ export class ClinicsController {
         return  this.clinicSrevice.getLocation(clinicId)
     }
 
+     //////////////////////////////////////////////////types 0 1 4 
     @Post(':areaId/:specialtyId') 
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async createClinic(
       @Param('areaId', new ParseIntPipe()) areaId: number,
       @Param('specialtyId', new ParseIntPipe()) specialtyId: number,      
       @Body(new ValidationPipe({ whitelist: true })) createSpecialtyDto: ClinicDto)
       {
-        // ClinicDto.validate(createSpecialtyDto); // Call the validate() method as a static method on CreateWorkTimeDto
-        // Check if areaId and specialtyId are numbers
         if (isNaN(+areaId) || isNaN(+specialtyId)) {
           throw new BadRequestException('Area ID and Specialty ID must be numbers');
         }
-        console.log("olaaa")
         await this.clinicSrevice.createClinic(createSpecialtyDto,areaId,specialtyId);
         return {message : 'clinic created successfully'}
     }
 
     @Delete(':clinicId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async  deleteClinic(
       @Param('clinicId', new ParseIntPipe()) clinicId: number,
       ){
@@ -66,7 +77,7 @@ export class ClinicsController {
     }
 
     @Put(':clinicId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async updateClinic(
       @Param('clinicId', new ParseIntPipe()) clinicId: number,
       @Body(new ValidationPipe({ whitelist: true })) newData: UpdateClinicDto
@@ -81,7 +92,7 @@ export class ClinicsController {
 
     //update area
     @Put(':clinicId/:areaId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async updateClinicArea(
       @Param('clinicId', new ParseIntPipe()) clinicId: number,
       @Param('areaId', new ParseIntPipe()) areaId: number,
@@ -99,7 +110,7 @@ export class ClinicsController {
     
     //update specialty
     @Put(':clinicId/specialties/:specialtyId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async updateClinicspecialty(
       @Param('clinicId', new ParseIntPipe()) clinicId: number,
       @Param('specialtyId', new ParseIntPipe()) specialtyId: number,
@@ -117,7 +128,7 @@ export class ClinicsController {
 
       //doctor clinic
       @Post(':clinicId/doctors/:doctorId')
-      @UseGuards(JWTAuthGuardAdmin)
+      @UseGuards(JWTAuthGuardDoctorAdmin)
       async addDoctorToClinic(
         @Param('clinicId', new ParseIntPipe()) clinicId: number,
         @Param('doctorId', new ParseIntPipe()) doctorId: number,
@@ -131,7 +142,7 @@ export class ClinicsController {
       }
   
       @Delete(':clinicId/doctors/:doctorId')
-      @UseGuards(JWTAuthGuardAdmin)
+      @UseGuards(JWTAuthGuardDoctorAdmin)
       async deleteDoctorfromInsurance(
         @Param('clinicId', new ParseIntPipe()) clinicId: number,
         @Param('doctorId', new ParseIntPipe()) doctorId: number,
@@ -146,7 +157,7 @@ export class ClinicsController {
       }
   
       @Get(':clinicId/doctors')
-      @UseGuards(JWTAuthGuardAdmin)
+      @UseGuards(JWTAuthGuardDoctorAdmin)
       async getDoctorsForClinic( 
         @Param('clinicId', new ParseIntPipe()) clinicId: number,
 
@@ -191,7 +202,6 @@ export class ClinicsController {
          @Body(new ValidationPipe({ whitelist: true })) longitudeLatitudeDto: LongitudeLatitudeDto,
         @Param('specialtyId', new ParseIntPipe()) specialtyId: number,
         ){
-          console.log("=123")
           if (isNaN(+specialtyId)) {
             throw new BadRequestException('specialtyId must be numbers');
           }

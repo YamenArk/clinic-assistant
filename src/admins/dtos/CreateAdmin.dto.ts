@@ -1,5 +1,10 @@
-import { IsEmail, IsNotEmpty, IsString, Matches } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsString, Matches } from "class-validator";
 
+enum TypeEnum {
+  One = 1,
+  Four = 4,
+  Five = 5,
+}
 export class CreateAdminDto {
     @IsNotEmpty()
     @IsEmail()
@@ -18,6 +23,13 @@ export class CreateAdminDto {
     @IsNotEmpty()
     @IsString()
     lastname: string;
+
+    @IsNotEmpty()
+    @IsEnum(TypeEnum, {
+      each: true,
+      message: 'admin type must be 1 or 4 or 5'
+    })
+    type: TypeEnum;
     
   };
   

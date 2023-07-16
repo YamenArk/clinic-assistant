@@ -7,6 +7,7 @@ import {
   } from 'typeorm';
 import { Appointment } from './appointment';
 import { DoctorPatient } from './doctor-patient';
+import { PatientMessage } from './patient-message';
 
 @Entity({ name: 'patients' })
 export class Patient {
@@ -63,4 +64,9 @@ export class Patient {
 
     @OneToMany(() => DoctorPatient, doctorPatient => doctorPatient.patient)
     public doctorPatient: DoctorPatient[];
+
+
+    
+    @OneToMany(() => PatientMessage, patientMessage => patientMessage.patient)
+    public patientMessage: PatientMessage[];
 }

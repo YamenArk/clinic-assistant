@@ -13,7 +13,7 @@ import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Clinic } from 'src/typeorm/entities/clinic';
 import { WorkTime } from 'src/typeorm/entities/work-time';
 import { Appointment } from 'src/typeorm/entities/appointment';
-import { DoctorJwtStrategy } from 'src/middleware/auth/jwt.strategy';
+import { DoctorAdminJwtStrategy, DoctorJwtStrategy } from 'src/middleware/auth/jwt.strategy';
 import { Secretary } from 'src/typeorm/entities/secretary';
 import { Admin } from 'src/typeorm/entities/admin';
 import { Specialty } from 'src/typeorm/entities/specialty';
@@ -71,7 +71,7 @@ import { PatientDoctosReport } from 'src/typeorm/entities/patient-doctos-report'
       inject : [ConfigService]
     })
   ],
-  providers: [DoctorsService, MailService,DoctorJwtStrategy,JWTAuthGuardPatient,NotificationGatewayService],
+  providers: [DoctorsService, MailService,DoctorAdminJwtStrategy,DoctorJwtStrategy,JWTAuthGuardPatient,NotificationGatewayService],
   controllers: [DoctorsController],
 })
 export class DoctorsModule {}

@@ -3,7 +3,7 @@ import { CreateSubSpecialtyDto } from 'src/sub-specialties/dtos/CreateSubSpecial
 import { SubSpecialtiesService } from 'src/sub-specialties/services/sub-specialties/sub-specialties.service';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
 import { Response } from 'express';
-import { JWTAuthGuardAdmin } from 'src/middleware/auth/jwt-auth.guard';
+import {  JWTAuthGuardDoctorAdmin } from 'src/middleware/auth/jwt-auth.guard';
 import { filterNameDto } from 'src/sub-specialties/dtos/filterName.dto';
 
 @Controller('subSpecialties')
@@ -12,7 +12,7 @@ export class SubSpecialtiesController {
 
     ///////////////////////////////////admin
     @Post(':specialtyId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     createSubSpecialty(
         @Param('specialtyId') specialtyId: number,
         @Body(new ValidationPipe({ whitelist: true })) createSubSpecialtyDto: CreateSubSpecialtyDto) 
@@ -26,7 +26,7 @@ export class SubSpecialtiesController {
 
       //filter doctor
       @Post('filter-by-names/:specialtyId')
-      @UseGuards(JWTAuthGuardAdmin)
+      @UseGuards(JWTAuthGuardDoctorAdmin)
       async  filtesubSpecialties(
         @Param('specialtyId') specialtyId: number,
         @Body(new ValidationPipe({ whitelist: true })) filterName : filterNameDto){
@@ -41,7 +41,7 @@ export class SubSpecialtiesController {
 
 
     @Delete(':subSpecialtyId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async  deletesubSpecialty(
       @Param('subSpecialtyId') 
       subSpecialtyId: number      ){
@@ -55,7 +55,7 @@ export class SubSpecialtiesController {
 
 
     @Put(':subSpecialtyId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async updateSubSpecialty(
       @Param('subSpecialtyId') subSpecialtyId: number,
       @Body(new ValidationPipe({ whitelist: true })) newData: CreateSubSpecialtyDto,

@@ -3,7 +3,7 @@ import { AdminsController } from './controllers/admins/admins.controller';
 import { AdminsService } from './services/admins/admins.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Admin } from 'src/typeorm/entities/admin';
-import { AdminJwtStrategy } from 'src/middleware/auth/jwt.strategy';
+import { AdminJwtStrategy, DoctorAdminJwtStrategy, MoneyAdminJwtStrategy } from 'src/middleware/auth/jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule,ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
@@ -18,6 +18,8 @@ import { SubAdminPayment } from 'src/typeorm/entities/sub-admin-payment';
 import { SubAdminPaymentReport } from 'src/typeorm/entities/sub-admin-payment-report';
 import { NewDoctorReports } from 'src/typeorm/entities/new-doctor-reports';
 import { TransctionsReports } from 'src/typeorm/entities/transctions-reports';
+import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
+import { Clinic } from 'src/typeorm/entities/clinic';
 
 @Module({
   imports: [
@@ -31,7 +33,9 @@ import { TransctionsReports } from 'src/typeorm/entities/transctions-reports';
       SubAdminPayment,
       SubAdminPaymentReport,
       NewDoctorReports,
-      TransctionsReports
+      TransctionsReports,
+      Clinic,
+      DoctorClinic
     ]),
     CacheModule.register(), // add CacheModule here
     PassportModule,
@@ -46,6 +50,6 @@ import { TransctionsReports } from 'src/typeorm/entities/transctions-reports';
     })
     ],
   controllers: [AdminsController],
-  providers: [AdminsService,AdminJwtStrategy,MailService,JWTAuthGuardAdmin]
+  providers: [MoneyAdminJwtStrategy,DoctorAdminJwtStrategy,AdminsService,AdminJwtStrategy,MailService,JWTAuthGuardAdmin]
 })
 export class AdminsModule {}

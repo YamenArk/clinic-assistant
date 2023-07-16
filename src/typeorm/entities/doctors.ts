@@ -16,6 +16,7 @@ import { DoctorPatient } from './doctor-patient';
 import { PayInAdvance} from './pay-in-advance';
 import { Transctions } from './transctions';
 import { PatientDoctosReport } from './patient-doctos-report';
+import { DoctorMessage } from './doctor-message';
 
 
 const decimalTransformer: ValueTransformer = {
@@ -129,6 +130,10 @@ export class Doctor {
      
     @OneToMany(() => Transctions, transctions => transctions.doctor)
     public transctions: Transctions[];
+
+
+    @OneToMany(() => DoctorMessage, doctorMessage => doctorMessage.doctor)
+    public doctorMessage: DoctorMessage[];
 
 
 

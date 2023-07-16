@@ -12,10 +12,13 @@ import { Secretary } from 'src/typeorm/entities/secretary';
 import { Admin } from 'src/typeorm/entities/admin';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { DoctorJwtStrategy, SecretaryJwtStrategy } from 'src/middleware/auth/jwt.strategy';
+import { WorkTime } from 'src/typeorm/entities/work-time';
+import { Appointment } from 'src/typeorm/entities/appointment';
+import { Patient } from 'src/typeorm/entities/patient';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Doctor,DoctorClinic,Clinic,Admin,Secretary]),
+    TypeOrmModule.forFeature([Doctor,DoctorClinic,Clinic,Admin,Secretary,WorkTime,Appointment,Patient]),
     CacheModule.register(), // add CacheModule here
     PassportModule,
     JwtModule.registerAsync({

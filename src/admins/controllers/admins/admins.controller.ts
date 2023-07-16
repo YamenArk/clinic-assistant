@@ -4,7 +4,7 @@ import { UpdateAdminDto } from 'src/admins/dtos/UpdateAdmin.dto';
 import { AuthLoginDto } from 'src/admins/dtos/auth-login.dto';
 import { AdminsService } from 'src/admins/services/admins/admins.service';
 import { filterNameDto } from 'src/doctors/dtos/filterName.dto';
-import { JWTAuthGuardAdmin, JWTAuthGuardAdminIsAdmin } from 'src/middleware/auth/jwt-auth.guard';
+import { JWTAuthGuardAdmin, JWTAuthGuardAdminIsAdmin ,JWTAuthGuardDoctorAdmin , JWTAuthGuardMoneyAdmin} from 'src/middleware/auth/jwt-auth.guard';
 import { Cron, CronExpression } from 'node-cron';
 import { IsInt, Min, IsPositive } from 'class-validator';
 import { AmountCollectedByAdminDto } from 'src/admins/dtos/AmountCollectedByAdmin.dto';
@@ -12,19 +12,21 @@ import { AmountCollectedByAdminDto } from 'src/admins/dtos/AmountCollectedByAdmi
 @Controller('admins')
 export class AdminsController {
     constructor(private adminSrevice : AdminsService){}
-    @Get()
-    @UseGuards(JWTAuthGuardAdminIsAdmin)
-    getAdmins(){
-        return this.adminSrevice.findAdmins();
-       
-    }
+    
 
-    //admin
+////////////////////// admin type 0
     @Post()
     @UseGuards(JWTAuthGuardAdminIsAdmin)
     async createAdmin(@Body(new ValidationPipe({ whitelist: true })) createUserDto: CreateAdminDto){
         await this.adminSrevice.createAdmin(createUserDto)
         return {message : 'admin has been created'}
+    }
+
+    @Get()
+    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    getAdmins(){
+        return this.adminSrevice.findAdmins();
+       
     }
 
     
@@ -56,24 +58,7 @@ export class AdminsController {
       return {message : "admin updated successfully"}
     }
 
-
     
-
-    
-   @Put('doctors-activated-by-admin/:adminId')
-   @UseGuards(JWTAuthGuardAdminIsAdmin)
-   async doctorsactivatedByAdmin(
-     @Param('adminId', new ParseIntPipe()) adminId: number,
-     @Body(new ValidationPipe({ whitelist: true })) amountCollectedByAdminDto : AmountCollectedByAdminDto,
-   ){
-
-     AmountCollectedByAdminDto.validate(amountCollectedByAdminDto); // Call the validate() method as a static method on CreateWorkTimeDto
-     return this.adminSrevice.doctorsactivatedByAdmin(adminId,amountCollectedByAdminDto)
-  }
-
-  
-  
-
     @Get('monthly-subscription')
     @UseGuards(JWTAuthGuardAdminIsAdmin)
     async MonthlySubscription(
@@ -97,33 +82,113 @@ export class AdminsController {
     }
 
 
+    @Get('sub-admin-payment-report')
+    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    async subAdminPaymentReport(
+      ){
+        const subAdminPaymentReport = await this.adminSrevice.subAdminPaymentReport();
+        return {reports : subAdminPaymentReport};
+      }
   
-    @Post('reset-password')
-    async resetPassword(
-      @Body('adminId') adminId: number,
-      @Body('code') code: number,
-      @Body('newPassword') newPassword: string,
-    ): Promise<void> {
-      await this.adminSrevice.resetPassword(adminId, code, newPassword);
+  
+    @Get('new-doctor-report')
+    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    async newDoctorReports(
+      ){
+        const newDoctorReports = await this.adminSrevice.newDoctorReports();
+        return {reports : newDoctorReports};
+      }
+  
+    @Get('transctions-report')
+    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    async transctionsReports(
+      ){
+        const transctionsReports = await this.adminSrevice.transctionsReports();
+        return {reports : transctionsReports};
+      }
+
+
+    @Get('money-from-sub-admin')
+    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    async moneyFromSubAdmin(
+      ){
+        const moneyFromSubAdmin = await this.adminSrevice.moneyFromSubAdmin();
+        return {moneyFromSubAdmin : moneyFromSubAdmin};
+      }
+
+
+      
+   @Put('taking-money-from-admin/:adminId')
+   @UseGuards(JWTAuthGuardAdminIsAdmin)
+   async TakingMoneyFromAdmin(
+    @Param('adminId',ParseIntPipe) adminId: number,
+    ){
+      await this.adminSrevice.TakingMoneyFromAdmin(adminId);
+      return {message : 'money taken sucessfully'};
     }
 
+
+
+
+
+    ////////////////////////////////////////////////all types
+    
     @Get('myAccount')
     @UseGuards(JWTAuthGuardAdmin)
     async myAccount(
       @Req() request
     ){
       const adminId = request.adminId ;
-      const myAccount = await this.adminSrevice.getMyAccount(adminId)
+      const type = request.type
+      const myAccount = await this.adminSrevice.getMyAccount(adminId,type)
       return {myAccount : myAccount}
     }
 
-    
 
+    @Post('doctors/filter-doctors-by-phoneNumber')
+    //  @UseGuards(JWTAuthGuardAdmin)
+     async filterDoctorsByPhoneNumber(
+      @Body('phonenumberForAdmin') phonenumberForAdmin: string,
+     ){
+      const phoneNumber = parseInt(phonenumberForAdmin);
+      if (!Number.isInteger(phoneNumber)) {
+        throw new BadRequestException('phonenumberForAdmin must be a positive integer greater than or equal to 1000 and cannot contain a decimal point.');
+      }
+       const doctors = await this.adminSrevice.filterDoctorsByPhoneNumber(phoneNumber)
+       return {doctors : doctors}
+     }
+  
+     @Post('reset-password')
+     async resetPassword(
+       @Body('adminId') adminId: number,
+       @Body('code') code: number,
+       @Body('newPassword') newPassword: string,
+     ): Promise<void> {
+       await this.adminSrevice.resetPassword(adminId, code, newPassword);
+     }
+
+     //////////////////////////////////////////////////types 0 1 4 
+
+     @Put('activeDoctor/:doctorId')
+     @UseGuards(JWTAuthGuardDoctorAdmin)
+     async activeDoctor(
+       @Req() request,
+       @Param('doctorId',ParseIntPipe) doctorId: number,
+     ){
+       const adminId = request.adminId ;
+       await this.adminSrevice.activeDoctor(doctorId,adminId);
+       return {message : "doctor activated sucessfully"};
+     }
+
+
+
+     
 
  
+     //////////////////////////////////////////////////types  1 5 
 
     @Put('add-money-to-my-account/:doctorId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardMoneyAdmin)
     async addMoneyToMyAccount(
       @Req() request,
       @Param('doctorId',ParseIntPipe) doctorId: number,
@@ -138,93 +203,10 @@ export class AdminsController {
       await this.adminSrevice.addMoneyToMyAccount(adminId,doctorId,amount)
       return {message : 'money has been added to your account sucessfully'}
     }
-
-
-    @Put('activeDoctor/:doctorId')
-    @UseGuards(JWTAuthGuardAdmin)
-    async activeDoctor(
-      @Req() request,
-      @Param('doctorId',ParseIntPipe) doctorId: number,
-    ){
-      const adminId = request.adminId ;
-      await this.adminSrevice.activeDoctor(doctorId,adminId);
-      return {message : "doctor activated sucessfully"};
-    }
-
-
-       
-   @Post('doctors/filter-doctors-by-phoneNumber')
-  //  @UseGuards(JWTAuthGuardAdmin)
-   async filterDoctorsByPhoneNumber(
-    @Body('phonenumberForAdmin') phonenumberForAdmin: string,
-   ){
-    console.log(phonenumberForAdmin)
-    const phoneNumber = parseInt(phonenumberForAdmin);
-    console.log(phoneNumber)
-    if (!Number.isInteger(phoneNumber)) {
-      throw new BadRequestException('phonenumberForAdmin must be a positive integer greater than or equal to 1000 and cannot contain a decimal point.');
-    }
-     const doctors = await this.adminSrevice.filterDoctorsByPhoneNumber(phoneNumber)
-     return {doctors : doctors}
-   }
-
-
-
-   @Put('MonthlySubscriptions')
-   // @Cron(CronExpression.EVERY_DAY_AT_0AM)
-   async MonthlySubscriptions(
-   ){
-     await this.adminSrevice.MonthlySubscriptions();
-     return ;
-   }
-
-
-
-   @Put('taking-money-from-admin/:adminId')
-   @UseGuards(JWTAuthGuardAdmin)
-   async TakingMoneyFromAdmin(
-    @Param('adminId',ParseIntPipe) adminId: number,
-    ){
-      await this.adminSrevice.TakingMoneyFromAdmin(adminId);
-      return {message : 'money taken sucessfully'};
-    }
-
-  @Get('sub-admin-payment-report')
-  @UseGuards(JWTAuthGuardAdminIsAdmin)
-  async subAdminPaymentReport(
-    ){
-      const subAdminPaymentReport = await this.adminSrevice.subAdminPaymentReport();
-      return {reports : subAdminPaymentReport};
-    }
-
-
-  @Get('new-doctor-report')
-  @UseGuards(JWTAuthGuardAdminIsAdmin)
-  async newDoctorReports(
-    ){
-      const newDoctorReports = await this.adminSrevice.newDoctorReports();
-      return {reports : newDoctorReports};
-    }
-
-  @Get('transctions-report')
-  @UseGuards(JWTAuthGuardAdminIsAdmin)
-  async transctionsReports(
-    ){
-      const transctionsReports = await this.adminSrevice.transctionsReports();
-      return {reports : transctionsReports};
-    }
-
-    @Get('money-from-sub-admin')
-    @UseGuards(JWTAuthGuardAdminIsAdmin)
-    async moneyFromSubAdmin(
-      ){
-        const moneyFromSubAdmin = await this.adminSrevice.moneyFromSubAdmin();
-        return {moneyFromSubAdmin : moneyFromSubAdmin};
-      }
-
+    
 
     @Get('money-collected-from-doctors-history')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardMoneyAdmin)
     async moneyCollectedFromDoctorsHistory(
       @Req() request,
       ){
@@ -234,7 +216,7 @@ export class AdminsController {
       }
 
     @Get('money-to-admin')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardMoneyAdmin)
     async moneyToAdmin(
       @Req() request,
       ){
@@ -242,5 +224,18 @@ export class AdminsController {
         const monyPaidToAdmin = await this.adminSrevice.moneyToAdmin(adminId);
         return {monyPaidToAdmin : monyPaidToAdmin};
       }
-  
+
+      ///////////////////////////////////////non
+
+      
+      @Put('MonthlySubscriptions')
+      // @Cron(CronExpression.EVERY_DAY_AT_0AM)
+      async MonthlySubscriptions(
+      ){
+        await this.adminSrevice.MonthlySubscriptions();
+        return ;
+      }
+
 }
+
+

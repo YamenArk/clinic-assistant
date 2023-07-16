@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Req, UseGuards, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards, ValidationPipe } from '@nestjs/common';
 import { JWTAuthGuardDoctor, JWTAuthGuardSecretary } from 'src/middleware/auth/jwt-auth.guard';
 import { CreateSecretaryDto } from 'src/secretaries/dtos/CreateSecretary.dto';
 import { emailDto } from 'src/secretaries/dtos/email.dto';
@@ -62,18 +62,6 @@ export class SecretariesController {
       return this.secretariesService.getSecretaryByprivateId(privateId);
     }
 
-    @Get(':clinicId')
-    @UseGuards(JWTAuthGuardDoctor)
-    async getsecretaryBysecretaryId(
-        @Param('clinicId', new ParseIntPipe()) clinicId: number,
-      @Req() request
-    ) {
-      if (!clinicId) {
-        throw new BadRequestException('clinicId is required');
-      }
-      const doctorId = request.doctorId; // Accessing the doctorId from the request object
-      return this.secretariesService.getSecretaryClinicId(clinicId,doctorId);
-    }
 
     /////////////////////////////////////////////////////////////////////secretaries
     @Get('myAccount')
@@ -87,6 +75,63 @@ export class SecretariesController {
     }
 
 
+    @Get('doctors')
+    @UseGuards(JWTAuthGuardSecretary)
+    async getMyDoctors(
+      @Req() request
+    ) {
+      const secretaryId = request.secretaryId; // Accessing the doctorId from the request object
+      const doctors = await this.secretariesService.getMyDoctors(secretaryId)
+      return {doctors : doctors}
+    }
+    
+    @Get('clinics/:doctorId')
+    @UseGuards(JWTAuthGuardSecretary)
+    async getclinics(
+      @Param('doctorId', new ParseIntPipe()) doctorId: number,
+      @Req() request
+    ) {
+      const secretaryId = request.secretaryId; // Accessing the doctorId from the request object
+      const clinics = await this.secretariesService.getclinics(secretaryId,doctorId)
+      return {clinics : clinics}
+    }
+
+
+    @Get('work-time/:clinicId/:doctorId')
+    @UseGuards(JWTAuthGuardSecretary)
+    async getWotkTime(
+      @Param('clinicId') clinicId: number,
+      @Req() request,
+      @Param('doctorId', new ParseIntPipe()) doctorId: number,
+      ) {
+      const secretaryId = request.secretaryId; // Accessing the doctorId from the request object
+
+      return this.secretariesService.getWorkTime(clinicId, doctorId,secretaryId);
+    }
+
+    
+    @Get('appoitment/:workTimeId')
+    @UseGuards(JWTAuthGuardSecretary)
+    async getAppoitment(@Param('workTimeId') workTimeId: number, @Req() request) {
+      const secretaryId = request.secretaryId; // Accessing the doctorId from the request object
+      return this.secretariesService.getAppoitment(workTimeId, secretaryId);
+    }
+
+    @Put('appoitment/:id/:patientId')
+    @UseGuards(JWTAuthGuardSecretary)
+    async missedAppointment(
+      @Param('id', new ParseIntPipe()) id: number,
+      @Param('patientId', new ParseIntPipe()) patientId: number,
+      @Req() request
+    ){
+      const secretaryId = request.secretaryId; // Accessing the doctorId from the request object
+      await this.secretariesService.missedAppointment(id,patientId,secretaryId)
+      return {message : 'it has been updaed sucessfully'}
+    }
+
+
+
+
 
   @Post('reset-password')
   async resetPassword(
@@ -95,6 +140,22 @@ export class SecretariesController {
     @Body('newPassword') newPassword: string,
   ): Promise<void> {
     await this.secretariesService.resetPassword(secretaryId, code, newPassword);
+  }
+
+
+
+  /////////////////////////doctor
+  @Get(':clinicId')
+  @UseGuards(JWTAuthGuardDoctor)
+  async getsecretaryBysecretaryId(
+      @Param('clinicId', new ParseIntPipe()) clinicId: number,
+    @Req() request
+  ) {
+    if (!clinicId) {
+      throw new BadRequestException('clinicId is required');
+    }
+    const doctorId = request.doctorId; // Accessing the doctorId from the request object
+    return this.secretariesService.getSecretaryClinicId(clinicId,doctorId);
   }
 
 

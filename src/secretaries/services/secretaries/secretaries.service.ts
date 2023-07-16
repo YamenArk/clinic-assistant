@@ -1,4 +1,4 @@
-import { BadRequestException, CACHE_MANAGER, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, CACHE_MANAGER, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MailService } from 'src/middleware/mail/mail.service';
@@ -8,14 +8,24 @@ import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Doctor } from 'src/typeorm/entities/doctors';
 import { Secretary } from 'src/typeorm/entities/secretary';
 import { createSecretaryParams } from 'src/utils/types';
-import {  Repository } from 'typeorm';
+import {  MoreThanOrEqual, Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs'
+import { async } from 'rxjs';
+import { WorkTime } from 'src/typeorm/entities/work-time';
+import { Appointment } from 'src/typeorm/entities/appointment';
+import { Patient } from 'src/typeorm/entities/patient';
 
 
 @Injectable()
 export class SecretariesService {
     constructor (
         private jwtService : JwtService,
+        @InjectRepository(Patient) 
+        private patientRepository : Repository<Patient>,
+        @InjectRepository(Appointment) 
+        private appointmentRepository : Repository<Appointment>,
+        @InjectRepository(WorkTime) 
+        private workTimeRepository : Repository<WorkTime>,
         @InjectRepository(DoctorClinic) 
         private doctorClinicRepository : Repository<DoctorClinic>,
         @InjectRepository(Clinic) 
@@ -183,8 +193,332 @@ export class SecretariesService {
         return secretary;
     }
 
+    async getMyDoctors(secretaryId : number){
+        const secretary = await this.secretaryRepository.findOne({
+            where : {
+                secretaryId : secretaryId
+            },
+        })
+        if(!secretary)
+        {
+            throw new HttpException(
+                `secretary with id ${secretaryId} not found`,
+                HttpStatus.NOT_FOUND,
+              );
+        }
+        const doctors = await this.doctorClinicRepository.query(`
+        SELECT DISTINCT doctors.doctorId, doctors.firstname, doctors.lastname, doctors.profilePicture
+        FROM doctorclinics
+        INNER JOIN doctors ON doctorclinics.doctorDoctorId = doctors.doctorId
+        WHERE doctorclinics.secretaryId = ${secretaryId}
+      `);
+      return doctors;
+    }
 
-    
+    async getclinics(secretaryId : number ,doctorId : number){
+        const secretary = await this.secretaryRepository.findOne({
+            where : {
+                secretaryId : secretaryId
+            },
+        })
+        if(!secretary)
+        {
+            throw new HttpException(
+                `secretary with id ${secretaryId} not found`,
+                HttpStatus.NOT_FOUND,
+              );
+        }
+        const doctor = await this.doctorRepository.findOne({
+            where : {
+                doctorId : doctorId
+            },
+        })
+        if(!doctor)
+        {
+            throw new HttpException(
+                `doctor with id ${doctorId} not found`,
+                HttpStatus.NOT_FOUND,
+              );
+        }
+        const clinics = this.doctorClinicRepository.find({
+            relations : ['clinic'],
+            where :{
+                doctor :{
+                    doctorId : doctorId
+                },
+                secretary : {
+                    secretaryId : secretaryId
+                }
+            },
+            select :{
+                id : true,
+                clinic : {
+                    clinicId : true,
+                    clinicName : true
+                }
+            }
+        })
+        return clinics;
+    }
+
+    async getWorkTime(clinicId : number, doctorId : number,secretaryId : number){
+        const secretary = await this.secretaryRepository.findOne({
+            where : {
+                secretaryId : secretaryId
+            },
+        })
+        if(!secretary)
+        {
+            throw new HttpException(
+                `secretary with id ${secretaryId} not found`,
+                HttpStatus.NOT_FOUND,
+              );
+        }
+        const doctor = await this.doctorRepository.findOne({
+            where : {
+                doctorId : doctorId
+            },
+        })
+        if(!doctor)
+        {
+            throw new HttpException(
+                `doctor with id ${doctorId} not found`,
+                HttpStatus.NOT_FOUND,
+              );
+        }
+        const clinic = await this.clinicRepository.findOne({ where: { clinicId :  clinicId} });
+        if (!clinic) {
+            throw new HttpException(
+                `clinic with id ${clinicId} not found`,
+                HttpStatus.NOT_FOUND,
+              );
+        }
+        const relation = await this.doctorClinicRepository.findOne({
+            where : {
+                doctor : {
+                    doctorId : doctorId
+                },
+                clinic : {
+                    clinicId : clinicId
+                },
+                secretary :{
+                    secretaryId : secretaryId
+                }
+            }
+        })
+        if(!relation)
+        {
+            throw new HttpException(
+                `you are not connecting to this doctor in this clinic`,
+                HttpStatus.UNAUTHORIZED,
+              );
+        }
+
+        
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+        const workTime = await this.workTimeRepository.find({
+          where: {
+            doctor: { doctorId },
+            clinic: { clinicId },
+            date: MoreThanOrEqual(today.toISOString())
+          }
+        });
+        if(workTime.length == 0)
+        {
+          throw new NotFoundException(
+            `you have no set any worktime in this clinic clinic ${clinic.clinicId}`
+          );
+        }
+      
+        // return {worktimes : workTimeWithAppointments};
+        return {workTimes : workTime}
+    }
+
+    async getAppoitment(workTimeId : number, secretaryId : number){
+        const workTime = await this.workTimeRepository.findOne({
+            relations : ['clinic','doctor'],
+            where : {workTimeId : workTimeId}
+        });
+        if (!workTime ) {
+          throw new HttpException(`workTime with id ${workTimeId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const secretary = await this.secretaryRepository.findOne({
+            where : {
+                secretaryId : secretaryId
+            },
+        })
+        if(!secretary)
+        {
+            throw new HttpException(
+                `secretary with id ${secretaryId} not found`,
+                HttpStatus.NOT_FOUND,
+              );
+        }
+
+        const relation = await this.doctorClinicRepository.findOne({
+            where : {
+                doctor : {
+                    doctorId : workTime.doctor.doctorId
+                },
+                clinic : {
+                    clinicId : workTime.clinic.clinicId
+                },
+                secretary :{
+                    secretaryId : secretaryId
+                }
+            }
+        })
+        if(!relation)
+        {
+            throw new HttpException(
+                `you are not connecting to this doctor in this clinic`,
+                HttpStatus.UNAUTHORIZED,
+              );
+        }
+        let appointment
+        const workTimeDate = new Date(workTime.date);
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        
+
+        if(workTimeDate.toDateString() === today.toDateString())
+        {
+          appointment = await this.appointmentRepository.find({
+            where: { workTime: { workTimeId } },
+            relations: ['patient'],
+            select: {
+              id: true,
+              startingTime: true,
+              finishingTime: true,
+              missedAppointment : true,
+              patient: {
+                patientId: true,
+                firstname: true,
+                lastname: true,
+                phoneNumber : true,
+                birthDate : true,
+                profilePicture : true,
+                gender : true
+              }
+            }
+          });
+        }
+        else
+        {
+           appointment = await this.appointmentRepository.find({
+            where: { workTime: { workTimeId } },
+            relations: ['patient'],
+            select: {
+              id: true,
+              startingTime: true,
+              finishingTime: true,
+              patient: {
+                patientId: true,
+                firstname: true,
+                lastname: true,
+                phoneNumber : true,
+                birthDate : true,
+                profilePicture : true,
+                gender : true
+              }
+            }
+          });
+        }
+        if(appointment.length == 0)
+        {
+          throw new NotFoundException(
+            `you have not set any appointment in this wotk time ${workTimeId}`
+          );
+        }
+        return {appointment : appointment};
+
+
+
+        
+    }
+
+
+    async missedAppointment(id,patientId,secretaryId){
+        const secretary = await this.secretaryRepository.findOne({
+            where : {
+                secretaryId : secretaryId
+            },
+
+        })
+        if(!secretary)
+        {
+            throw new HttpException(`secretary with id ${secretaryId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const appointment = await this.appointmentRepository.findOne({where : { id },relations : ['patient','workTime.doctor','workTime.clinic']})
+        if(!appointment)
+        {
+            throw new HttpException(`appointment with id ${id} not found`, HttpStatus.NOT_FOUND);
+        }
+        const patient = await this.patientRepository.findOne({where : {patientId}});
+        if (!patient ) {
+          throw new HttpException(`patient with id ${patientId} not found`, HttpStatus.NOT_FOUND);
+        }
+        if(appointment.patient.patientId != patient.patientId)
+        {
+          throw new BadRequestException('this appoitments is not for this patient')
+        }
+
+        const relation = await this.doctorClinicRepository.findOne({
+            where : {
+                doctor : {
+                    doctorId : appointment.workTime.doctor.doctorId
+                },
+                clinic : {
+                    clinicId : appointment.workTime.clinic.clinicId
+                },
+                secretary :{
+                    secretaryId : secretaryId
+                }
+            }
+        })
+        if(!relation)
+        {
+            throw new HttpException(
+                `you are not connecting to this doctor in this clinic`,
+                HttpStatus.UNAUTHORIZED,
+              );
+        }
+
+          const workTimeDate = new Date(appointment.workTime.date);
+          const now = new Date();
+          const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+          if(workTimeDate.toDateString() != today.toDateString())
+          {
+            throw new BadRequestException('you can only update the appoitments of today')
+          }
+  
+  
+  
+          if( appointment.missedAppointment == true)
+          {
+  
+            if(patient.numberOfMissAppointment == 3)
+            {
+            patient.active = true;
+            }
+            patient.numberOfMissAppointment --
+            appointment.missedAppointment = false;
+          }
+          else
+          {
+            if(patient.numberOfMissAppointment == 2)
+            {
+            patient.active = false;
+            }
+            patient.numberOfMissAppointment ++;
+            appointment.missedAppointment = true;
+          }
+          await this.patientRepository.save(patient)
+          await this.appointmentRepository.save(appointment)
+
+    }
     
       async resetPassword(secretaryId: number, code: number, newPassword: string): Promise<void> {
         const secretary = await this.secretaryRepository.findOne({where: {secretaryId : secretaryId}});

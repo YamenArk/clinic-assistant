@@ -19,6 +19,9 @@ import { SubAdminPaymentReport } from 'src/typeorm/entities/sub-admin-payment-re
 import { SubAdminPayment } from 'src/typeorm/entities/sub-admin-payment';
 import { NewDoctorReports } from 'src/typeorm/entities/new-doctor-reports';
 import { TransctionsReports } from 'src/typeorm/entities/transctions-reports';
+import { type } from 'os';
+import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
+import { Clinic } from 'src/typeorm/entities/clinic';
 
 @Injectable()
 export class AdminsService {
@@ -33,6 +36,8 @@ export class AdminsService {
         private subAdminPaymentReportRepository : Repository<SubAdminPaymentReport>,
         @InjectRepository(TransctionsReports) 
         private TransctionsReportsRepository : Repository<TransctionsReports>,
+        @InjectRepository(DoctorClinic) 
+        private doctorClinicRepository : Repository<DoctorClinic>,
         @InjectRepository(Secretary) 
         private secretaryRepository : Repository<Secretary>,
         @InjectRepository(NewDoctorReports) 
@@ -45,6 +50,8 @@ export class AdminsService {
         private transctionsRepository : Repository<Transctions>,
         @InjectRepository(MonthlySubscription) 
         private monthlySubscriptionRepository : Repository<MonthlySubscription>,
+        @InjectRepository(Clinic) 
+        private clinicRepository : Repository<Clinic>, 
         private readonly mailService: MailService,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: any, // update the type of cacheManager to any
@@ -54,7 +61,7 @@ export class AdminsService {
 
     async findAdmins(){
       const select: Array<keyof Admin> =['adminId', 'email', 'phonenumber', 'firstname','lastname','active'];
-        const admins =  await this.adminRepository.find({select, where:{ isAdmin : false}});
+        const admins =  await this.adminRepository.find({select, where:{  type: Not(Equal(0))}});
         return {admins};
     }
     async createAdmin(adminDetails: CreateAdminParams) {
@@ -103,7 +110,7 @@ export class AdminsService {
       if (!admin ) {
         throw new HttpException(`admin with id ${adminId} not found`, HttpStatus.NOT_FOUND);
       }
-      if(admin.isAdmin)
+      if(admin.type == 0)
       {
         throw new BadRequestException(`you can not delete the admins`);
       }
@@ -134,6 +141,10 @@ export class AdminsService {
       if (!admin ) {
           throw new HttpException(`admin with id ${adminId} not found`, HttpStatus.NOT_FOUND);
         }
+      if(admin.type == 0)
+      {
+        throw new HttpException(`you can not update the admin`, HttpStatus.METHOD_NOT_ALLOWED);
+      }
       // Create a new Doctor object with the updated properties
       const updatedAdmin = this.adminRepository.create({ ...admin, ...updateAdmin });
 
@@ -171,22 +182,36 @@ export class AdminsService {
         await this.adminRepository.save(admin);
       }
 
-      async getMyAccount(adminId : number){
-        const admin = await this.adminRepository.findOne({
-          where : {
-            adminId : adminId
-          },
-          select : ['adminId','email','phonenumber','firstname','lastname','accountBalance']
-        })
+      async getMyAccount(adminId : number,type : number){
+        let admin
+        if(type == 4)
+        {
+          admin = await this.adminRepository.findOne({
+            where : {
+              adminId : adminId
+            },
+            select : ['adminId','email','phonenumber','firstname','lastname']
+          })
+        }
+        else
+        {
+          admin = await this.adminRepository.findOne({
+            where : {
+              adminId : adminId
+            },
+            select : ['adminId','email','phonenumber','firstname','lastname','accountBalance']
+          })
+        }
+      
         if (!admin) {
           throw new HttpException(
             `admin with id ${admin} not found`,
             HttpStatus.NOT_FOUND,
           );
         }
-        if(admin.isAdmin)
+        if(admin.type == 0)
         {
-          throw new BadRequestException('you cant get your information')
+          throw new UnauthorizedException('Access denied');
         }
         return admin;
       } 
@@ -308,6 +333,23 @@ export class AdminsService {
           doctor.accountBalance = doctor.accountBalance - monthlySubscription.amountOfMoney;
           doctor.dateToReactivate = nextDate.toISOString();
           doctor.active = true;
+
+
+          const doctorClinics = await this.doctorClinicRepository.find({
+            where: { doctor: { doctorId: doctor.doctorId } },
+            relations : ['clinic']
+          });
+          const clinicIds = doctorClinics.map((doctorClinic) => doctorClinic.clinic.clinicId);
+          const clinics = await this.clinicRepository.find({
+            where: { clinicId: In(clinicIds) },
+          });
+          let i = 0;
+          while(clinics[i])
+          {
+            clinics[i].numDoctors ++;
+            await this.clinicRepository.save(clinics[i])
+            i++;
+          }
           await this.doctorRepository.save(doctor);
         
           //add for reports
@@ -369,6 +411,22 @@ export class AdminsService {
           if(doctor[i].accountBalance < monthlySubscription.amountOfMoney)
           {
             doctor[i].active = false;
+            
+            const doctorClinics = await this.doctorClinicRepository.find({
+              where: { doctor: { doctorId: doctor[i].doctorId } },
+              relations : ['clinic']
+            });
+            const clinicIds = doctorClinics.map((doctorClinic) => doctorClinic.clinic.clinicId);
+            const clinics = await this.clinicRepository.find({
+              where: { clinicId: In(clinicIds) },
+            });
+            let j = 0;
+            while(clinics[j])
+            {
+              clinics[j].numDoctors --;
+              await this.clinicRepository.save(clinics[j])
+              j++;
+            }
             await this.doctorRepository.save(doctor);
 
           }
@@ -534,57 +592,6 @@ export class AdminsService {
            );
         }
         return transctionsReports;
-      }
-      async doctorsactivatedByAdmin(adminId : number,amountCollectedByAdmin : AmountCollectedByAdminParams){
-        const admin = await this.adminRepository.findOne({
-          where :{
-            adminId
-          }
-        })
-        if(!admin)
-        {
-          throw new HttpException(
-            `admin with id ${adminId} not found`,
-            HttpStatus.NOT_FOUND,
-          );
-        }
-        if(admin.isAdmin)
-        {
-          throw new HttpException(
-            `you are not allowed`,
-            HttpStatus.METHOD_NOT_ALLOWED,
-          );
-        }
-        //get date        
-        const month = parseInt(amountCollectedByAdmin.month, 10);
-        const year = parseInt(amountCollectedByAdmin.year, 10);
-        const startDate = new Date(year, month - 1, 1);
-        const endDate = new Date(year, month, 0);
-        const adminrows = await this.transctionsRepository.find({
-          relations : ['doctor'],
-          where :{
-            admin :{
-              adminId : adminId,
-            },
-            createdAt: Between(startDate.toISOString().slice(0, 10), endDate.toISOString().slice(0, 10)), 
-          },
-          select :{
-            id : true,
-            createdAt : true,
-            doctor :{
-              doctorId : true,
-              firstname : true,
-              lastname : true
-            }
-          }
-        })
-        if(adminrows.length == 0)
-        {
-          throw new BadRequestException('this admin did not active any account this month');
-        }
-        return {
-          Details  : adminrows ,
-        }
       }
       
       async filterDoctorsByPhoneNumber(phonenumberForAdmin : number){

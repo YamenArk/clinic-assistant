@@ -36,6 +36,8 @@ import { SubAdminPaymentReport } from './typeorm/entities/sub-admin-payment-repo
 import { NewDoctorReports } from './typeorm/entities/new-doctor-reports';
 import { PatientDoctosReport } from './typeorm/entities/patient-doctos-report';
 import { NotificationGatewayService } from './middleware/notification.gateway/notification.gateway.service';
+import { DoctorMessage } from './typeorm/entities/doctor-message';
+import { PatientMessage } from './typeorm/entities/patient-message';
 // clinicassistant
 @Module({
   imports: [
@@ -68,7 +70,9 @@ import { NotificationGatewayService } from './middleware/notification.gateway/no
         TransctionsReports,
         SubAdminPaymentReport,
         NewDoctorReports,
-        PatientDoctosReport
+        PatientDoctosReport,
+        DoctorMessage,
+        PatientMessage
       ],
       synchronize:  false ,
       migrationsRun: false,

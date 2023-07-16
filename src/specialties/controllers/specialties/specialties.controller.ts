@@ -1,7 +1,7 @@
 import {UseGuards, Body, Controller, Delete, Get, Param, Post, Put, Res, ValidationPipe, BadRequestException } from '@nestjs/common';
 import { SpecialtyDto } from 'src/specialties/dtos/Specialty.dto';
 import { SpecialtiesService } from 'src/specialties/services/specialties/specialties.service';
-import { JWTAuthGuardAdmin } from 'src/middleware/auth/jwt-auth.guard';
+import { JWTAuthGuardDoctorAdmin } from 'src/middleware/auth/jwt-auth.guard';
 import { filterNameDto } from 'src/specialties/dtos/filterName.dto';
 
 @Controller('specialties')
@@ -12,7 +12,7 @@ export class SpecialtiesController {
     //////////////////////////////////admin
 
     @Post()
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async createSpecialty(@Body(new ValidationPipe({ whitelist: true })) createSpecialtyDto: SpecialtyDto) {
         await this.specialtySrevice.createspecialty(createSpecialtyDto);
         return { message : 'Specialty created sucessfully'}
@@ -21,14 +21,14 @@ export class SpecialtiesController {
 
       //filter Specialty
       @Post('filter-by-names')
-      @UseGuards(JWTAuthGuardAdmin)
+      @UseGuards(JWTAuthGuardDoctorAdmin)
       async  filterSpecialty(@Body(new ValidationPipe({ whitelist: true })) filterName : filterNameDto){
           return this.specialtySrevice.filterSpecialtyByName(filterName);
       }
 
 
     @Delete(':specialtyId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async  deletespecialty(
       @Param('specialtyId') specialtyId: number
       ) {
@@ -41,7 +41,7 @@ export class SpecialtiesController {
       } 
 
     @Put(':specialtyId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async updatespecialty(
       @Param('specialtyId') specialtyId: number,
       @Body(new ValidationPipe({ whitelist: true })) newData: SpecialtyDto,
@@ -54,15 +54,18 @@ export class SpecialtiesController {
       return {message : 'specialty updated successfully'}
     }
 
+
+
+    //////////////////////////////////
     @Get()
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     getSpecialties(){
         return this.specialtySrevice.findspecialties()
     }
 
 
     @Get(':specialtyId/subSpecialties')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async findAllSubsByspecialty(@Param('specialtyId') specialtyId: number) {
       // Check if specialtyId and specialtyId are numbers
       if (isNaN(+specialtyId)) {

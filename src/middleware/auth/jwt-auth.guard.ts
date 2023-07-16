@@ -4,7 +4,28 @@ import { Observable } from 'rxjs';
 export class JWTAuthGuardAdminIsAdmin extends AuthGuard('admin-is-admin-jwt') {
 
 }
-export class JWTAuthGuardAdmin extends AuthGuard('admin-jwt') {
+export class  JWTAuthGuardAdmin extends AuthGuard('admin-jwt') {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+
+    // Call the super method to authenticate the user and get the doctor object
+    const isAuthed = await super.canActivate(context);
+
+    const isObservable = isAuthed instanceof Observable;
+    if (isObservable) {
+      const isAuthedValue = await isAuthed.toPromise();
+      return isAuthedValue;
+    }
+    const admin = request.user.user.admin;
+    // Save the doctor object to the request object
+    request.adminId = admin.adminId;
+    request.type = admin.type;
+    return isAuthed;
+  }
+}
+
+
+export class JWTAuthGuardDoctorAdmin extends AuthGuard('doctor-admin-jwt') {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
@@ -20,6 +41,26 @@ export class JWTAuthGuardAdmin extends AuthGuard('admin-jwt') {
     // Save the doctor object to the request object
     request.adminId = admin.adminId;
 
+    return isAuthed;
+  }
+}
+
+
+export class JWTAuthGuardMoneyAdmin extends AuthGuard('money-admin-jwt') {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+
+    // Call the super method to authenticate the user and get the doctor object
+    const isAuthed = await super.canActivate(context);
+
+    const isObservable = isAuthed instanceof Observable;
+    if (isObservable) {
+      const isAuthedValue = await isAuthed.toPromise();
+      return isAuthedValue;
+    }
+    const admin = request.user.user.admin;
+    // Save the doctor object to the request object
+    request.adminId = admin.adminId;
     return isAuthed;
   }
 }
@@ -71,6 +112,7 @@ export class JWTAuthGuardPatient extends AuthGuard('patient-jwt') {
 @Injectable()
 export class JWTAuthGuardSecretary extends AuthGuard('secretary-jwt') {
   async canActivate(context: ExecutionContext): Promise<boolean> {
+
     const request = context.switchToHttp().getRequest();
 
     // Call the super method to authenticate the user and get the doctor object

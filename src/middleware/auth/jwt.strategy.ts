@@ -1,4 +1,4 @@
-import { Injectable, Req, UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException, Injectable, Req, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ExtractJwt } from "passport-jwt";
@@ -49,17 +49,83 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
   }
 
   async validate(payload: { adminId: number,type : number }) {
-    if (!(payload.type == 0 || payload.type == 1)) {
+    const admin = await this.adminRepository.findOne({where : {adminId : payload.adminId}});
+    if (!admin) {
+      throw new UnauthorizedException('Access denied');
+    }
+    if(admin.active == false)
+    {
+      throw new ForbiddenException('you are not active anymore');
+    }
+    return { user: { admin } };
+
+  }
+}
+
+
+
+
+
+
+@Injectable()
+export class DoctorAdminJwtStrategy extends PassportStrategy(Strategy, 'doctor-admin-jwt') {
+  constructor(
+    @InjectRepository(Admin) 
+    private adminRepository : Repository<Admin>
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.JWT_SECRET,
+    });
+  }
+
+  async validate(payload: { adminId: number,type : number }) {
+    if (!(payload.type == 0 || payload.type == 1 || payload.type == 4)) {
       throw new UnauthorizedException('Access denied');
     }
     const admin = await this.adminRepository.findOne({where : {adminId : payload.adminId}});
     if (!admin) {
       throw new UnauthorizedException('Access denied');
     }
+    if(admin.active == false)
+    {
+      throw new ForbiddenException('you are not active anymore');
+    }
     return { user: { admin } };
 
   }
 }
+
+
+@Injectable()
+export class MoneyAdminJwtStrategy extends PassportStrategy(Strategy, 'money-admin-jwt') {
+  constructor(
+    @InjectRepository(Admin) 
+    private adminRepository : Repository<Admin>
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.JWT_SECRET,
+    });
+  }
+
+  async validate(payload: { adminId: number,type : number }) {
+    if (!( payload.type == 1 || payload.type == 5)) {
+      throw new UnauthorizedException('Access denied');
+    }
+    const admin = await this.adminRepository.findOne({where : {adminId : payload.adminId}});
+    if (!admin) {
+      throw new UnauthorizedException('Access denied');
+    }
+    if(admin.active == false)
+    {
+      throw new ForbiddenException('you are not active anymore');
+    }
+    return { user: { admin } };
+
+  }
+}
+
 
 
 
@@ -83,6 +149,10 @@ export class DoctorJwtStrategy extends PassportStrategy(Strategy, 'doctor-jwt') 
     const doctor = await this.doctorRepository.findOne({where : {doctorId : payload.doctorId}});
     if (!doctor) {
       throw new UnauthorizedException('Access denied');
+    }
+    if(doctor.active == false)
+    {
+      throw new ForbiddenException('you are not active anymore');
     }
     return { user: { doctor } };
   }
@@ -140,6 +210,10 @@ export class PatientJwtStrategy extends PassportStrategy(Strategy, 'patient-jwt'
     const patient = await this.patientRepository.findOne({where : {patientId : payload.patientId}});
     if (!patient) {
       throw new UnauthorizedException('Access denied');
+    }
+    if(patient.active == false)
+    {
+      throw new ForbiddenException('you are not active anymore');
     }
     return { user: { patient } };
   }

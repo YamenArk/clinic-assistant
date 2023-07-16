@@ -9,7 +9,7 @@ import { Doctor } from 'src/typeorm/entities/doctors';
 import { Specialty } from 'src/typeorm/entities/specialty';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
 import { ClinicParams, LongitudeLatitudeParam, UpdateClinicParams, filterNameParams } from 'src/utils/types';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import * as geolib from 'geolib';
 
 @Injectable()
@@ -34,6 +34,19 @@ export class ClinicsService {
           return clinics;
         }
 
+        async findClinicspatients() {
+          const select: Array<keyof Clinic> = ['clinicId', 'clinicName', 'createdAt', 'numDoctors'];
+          const clinics = await this.clinicRepository.find({ 
+            select,
+            where: {
+              numDoctors: MoreThanOrEqual(1)
+            },
+             relations: ['area','area.governorate','specialty'] });        
+          return clinics;
+        }
+
+        
+
 
         async filterClinicByName(filte :filterNameParams ){
           const query =  this.clinicRepository.createQueryBuilder('clinic')
@@ -45,6 +58,32 @@ export class ClinicsService {
             name: `%${filte.filterName}%`,
           })
   
+          const clinics = await query.getMany();
+          if(clinics.length === 0)
+          {
+              throw new HttpException(`No clinic met the conditions `, HttpStatus.NOT_FOUND);
+          }
+          return {clinics : clinics};
+  
+        }
+
+
+        
+
+        async filterClinicByNamepatients(filte :filterNameParams ){
+          const query =  this.clinicRepository.createQueryBuilder('clinic')
+          .select(['clinic.clinicId','clinic.clinicName','clinic.createdAt','clinic.numDoctors'])
+          .leftJoinAndSelect('clinic.specialty', 'specialty')
+          .leftJoinAndSelect('clinic.area', 'area')
+          .leftJoinAndSelect('area.governorate', 'governorate')
+          .where({
+            numDoctors: MoreThanOrEqual(1)
+          })
+          .andWhere('clinic.clinicName LIKE :name', {
+            name: `%${filte.filterName}%`,
+          },)
+          
+          
           const clinics = await query.getMany();
           if(clinics.length === 0)
           {
@@ -156,7 +195,10 @@ export class ClinicsService {
         const newDoctorClinic = new DoctorClinic();
         newDoctorClinic.doctor = doctor;
         newDoctorClinic.clinic = clinic;
-        clinic.numDoctors = clinic.numDoctors + 1;
+        if(doctor.active)
+        {
+          clinic.numDoctors = clinic.numDoctors + 1;
+        }
         await this.clinicRepository.save(clinic);
 
         
@@ -176,7 +218,10 @@ export class ClinicsService {
           throw new HttpException('Doctor is not associated with clinic', HttpStatus.NOT_FOUND);
         }
     
-        clinic.numDoctors = clinic.numDoctors - 1;
+        if(doctor.active)
+        {
+          clinic.numDoctors = clinic.numDoctors - 1;
+        }
         await this.clinicRepository.save(clinic);
         await this.doctorClinicRepository.remove(doctorClinic);
       }
@@ -232,21 +277,32 @@ export class ClinicsService {
         if (!clinic) {
           throw new HttpException('Clinic not found', HttpStatus.NOT_FOUND);
         }
-         let i  = 0;
+        if(clinic.numDoctors == 0)
+        {
+          throw new HttpException('Clinic not found', HttpStatus.NOT_FOUND);
+        }
+         let i  = 0,j=0;
          let doctors = []
          while(clinic.doctorClinic[i])
          {
-          doctors[i] = {
-            doctorId : clinic.doctorClinic[i].doctor.doctorId,
-            firstname : clinic.doctorClinic[i].doctor.firstname,
-            lastname : clinic.doctorClinic[i].doctor.lastname,
-            evaluate : clinic.doctorClinic[i].doctor.evaluate,
-            profilePicture : clinic.doctorClinic[i].doctor.profilePicture,
+          if(clinic.doctorClinic[i].doctor.active)
+          {
+            doctors[j] = {
+              doctorId : clinic.doctorClinic[i].doctor.doctorId,
+              firstname : clinic.doctorClinic[i].doctor.firstname,
+              lastname : clinic.doctorClinic[i].doctor.lastname,
+              evaluate : clinic.doctorClinic[i].doctor.evaluate,
+              profilePicture : clinic.doctorClinic[i].doctor.profilePicture,
+            }
+            j++;
           }
           i++;
          }
 
-
+         if(doctors.length == 0)
+         {
+          throw new HttpException('no doctors in this clinic for this time', HttpStatus.NOT_FOUND);
+         }
         
         //check if the doctor is working  
         const now = new Date();
@@ -314,7 +370,8 @@ export class ClinicsService {
         const clinics = await this.clinicRepository.find({
           where : {
             area : area,
-            specialty : specialty
+            specialty : specialty,
+            numDoctors: MoreThanOrEqual(1)
           }
         })
         if(clinics.length == 0 )
@@ -333,7 +390,8 @@ export class ClinicsService {
             throw new HttpException('specialty not found', HttpStatus.NOT_FOUND);
           }
           const clinics = await this.clinicRepository.find({ where :{
-            specialty : specialty
+            specialty : specialty,
+            numDoctors: MoreThanOrEqual(1)
           }})
           if(clinics.length == 0)
           {

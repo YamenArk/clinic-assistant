@@ -7,7 +7,7 @@ import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateWorkTimeParams, UpdateDoctorParams } from 'src/utils/types';
 import { IsEmail } from 'class-validator';
-import { JWTAuthGuardAdmin, JWTAuthGuardDoctor, JWTAuthGuardPatient } from 'src/middleware/auth/jwt-auth.guard';
+import { JWTAuthGuardAdmin, JWTAuthGuardDoctor, JWTAuthGuardDoctorAdmin, JWTAuthGuardPatient } from 'src/middleware/auth/jwt-auth.guard';
 import { UpdateDoctorForAdminDto } from 'src/doctors/dtos/UpdateDoctorForAdmin.dto';
 import { CreateWorkTimeDto } from 'src/doctors/dtos/CreateWorkTime.dto';
 import { UpdateDoctoeClinicDto } from 'src/doctors/dtos/updateDoctoeClinic.dto';
@@ -38,23 +38,14 @@ export class DoctorsController {
 
     //////////////////////////////////////////////////////////admin
 
-
-    //doctor profile
-    @Get('admin/doctor-profile/:doctorId')
-    @UseGuards(JWTAuthGuardAdmin)
-    async getdoctorprofile(
-      @Param('doctorId', new ParseIntPipe()) doctorId: number,
-    ){
-      const doctorProfile = await this.doctorSrevice.getprofileforadmin(doctorId);
-      return {doctorProfile : doctorProfile}
-  }
-
-    //create doctor
-    @Post()
-    @UseGuards(JWTAuthGuardAdmin)
-    async  createDoctor(@Body(new ValidationPipe({ whitelist: true })) createDoctorDto : CreateDoctorDto){
-        await this.doctorSrevice.createDoctor(createDoctorDto);
-        return{message : "doctor created successfully"}
+    //////////////////////all types of admin
+    @Get(':type(1|2|3)')
+    @UseGuards(JWTAuthGuardAdmin)//type 1 active doctors 2 not active 3 all
+    async getDoctors(@Param('type', ParseIntPipe) type: number) {
+      if (type < 1 || type > 3) {
+        throw new BadRequestException('Invalid type parameter');
+      }
+      return  this.doctorSrevice.findDoctors(type);
     }
 
 
@@ -67,8 +58,22 @@ export class DoctorsController {
 
 
 
+
+
+    //////////////////////////types 0 1 4 doctor admin
+
+
+    
+    //create doctor
+    @Post()
+    @UseGuards(JWTAuthGuardDoctorAdmin)
+    async  createDoctor(@Body(new ValidationPipe({ whitelist: true })) createDoctorDto : CreateDoctorDto){
+        await this.doctorSrevice.createDoctor(createDoctorDto);
+        return{message : "doctor created successfully"}
+    }
+
     @Put('update/:doctorId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async updateDoctorForAdmin(
       @Param('doctorId',ParseIntPipe) doctorId: number,
       @Body(new ValidationPipe({ whitelist: true })) updateDoctorForAdminDto: UpdateDoctorForAdminDto,
@@ -77,18 +82,9 @@ export class DoctorsController {
       return {message : "doctor updated successfully"}
     }
 
-    @Get(':type(1|2|3)')
-    @UseGuards(JWTAuthGuardAdmin)//type 1 active doctors 2 not active 3 all
-    async getDoctors(@Param('type', ParseIntPipe) type: number) {
-      if (type < 1 || type > 3) {
-        throw new BadRequestException('Invalid type parameter');
-      }
-      return  this.doctorSrevice.findDoctors(type);
-    }
-
     //doctor insurances
     @Post(':doctorId/insurances/:insuranceId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async addDoctorToInsurance(
       @Param('insuranceId') insuranceId: number,
       @Param('doctorId') doctorId: number,
@@ -99,7 +95,7 @@ export class DoctorsController {
 
 
     @Delete(':doctorId/insurances/:insuranceId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async deleteDoctorfromInsurance(
       @Param('insuranceId') insuranceId: number,
       @Param('doctorId') doctorId: number,
@@ -110,10 +106,13 @@ export class DoctorsController {
     }
 
 
+        
+
+
 
     //doctor subSpecialties
     @Post(':doctorId/subSpecialties/:subSpecialtyId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async addDoctorToSubSpecialty(
       @Param('subSpecialtyId') insuranceId: number,
       @Param('doctorId') doctorId: number,
@@ -125,7 +124,7 @@ export class DoctorsController {
     }
 
     @Delete(':doctorId/subSpecialties/:subSpecialtyId')
-    @UseGuards(JWTAuthGuardAdmin)
+    @UseGuards(JWTAuthGuardDoctorAdmin)
     async deleteDoctorfromSubSpecialty(
       @Param('subSpecialtyId') subSpecialtyId: number,
       @Param('doctorId') doctorId: number,
@@ -135,6 +134,15 @@ export class DoctorsController {
 
     }
 
+      //doctor profile
+      @Get('admin/doctor-profile/:doctorId')
+      @UseGuards(JWTAuthGuardDoctorAdmin)
+      async getdoctorprofile(
+        @Param('doctorId', new ParseIntPipe()) doctorId: number,
+      ){
+        const doctorProfile = await this.doctorSrevice.getprofileforadmin(doctorId);
+        return {doctorProfile : doctorProfile}
+    }
 
     //////////////////////////////////////////////////////////doctor
    

@@ -7,6 +7,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule,ConfigService } from '@nestjs/config';
 import { Appointment } from 'src/typeorm/entities/appointment';
+import { Admin } from 'typeorm';
 
 @Module({
   imports : [
