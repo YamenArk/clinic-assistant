@@ -263,7 +263,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIyIiwidHlwZSI6NCwiaWF0IjoxNjg5Nzc2NDcxLCJleHAiOjE2ODk4NjI4NzF9.4-qqNiPMCY444lMzxCnarZY9af9YUKH4BjiM1kpJrgA",
 											"type": "string"
 										}
 									]
@@ -285,7 +285,7 @@
 									"variable": [
 										{
 											"key": "doctorId",
-											"value": "2"
+											"value": "1"
 										}
 									]
 								}
@@ -381,13 +381,76 @@
 					"name": "auth",
 					"item": [
 						{
+							"name": "rest password",
+							"item": [
+								{
+									"name": "rest pawword",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"phoneNumber\":\"0932691622\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://localhost:3000/patients/rest-password",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"patients",
+												"rest-password"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "verify",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"patientId\":2,\r\n    \"code\":15731,\r\n    \"newPassword\":\"123\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://localhost:3000/patients/rest-password-verify",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"patients",
+												"rest-password-verify"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
 							"name": "login",
 							"request": {
 								"method": "POST",
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"phoneNumber\":\"0932691629\",\r\n    \"password\":\"12313\"\r\n}",
+									"raw": "{\r\n    \"phoneNumber\":\"0932691622\",\r\n    \"password\":\"12313\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -416,7 +479,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"phoneNumber\":\"0932691629\",\r\n    \"password\":\"12313\",\r\n    \"firstname\":\"يامن\",\r\n    \"lastname\":\"عرقسةسي\",\r\n    \"birthDate\":\"1999-12-23\",\r\n    \"gender\":\"ذكر\"\r\n    \r\n}",
+									"raw": "{\r\n    \"phoneNumber\":\"0932691622\",\r\n    \"password\":\"12313\",\r\n    \"firstname\":\"يامن\",\r\n    \"lastname\":\"عرقسةسي\",\r\n    \"birthDate\":\"1999-12-23\",\r\n    \"gender\":\"ذكر\"\r\n    \r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -445,7 +508,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"patientId\":\"a01b2cd0-77b4-4750-b6f2-2531598a0d9c\",\r\n    \"code\":54136\r\n}",
+									"raw": "{\r\n    \"patientId\":\"b18a844d-faac-46b4-a481-aa2fd92faacc\",\r\n    \"code\":74836\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1009,6 +1072,71 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "messages",
+					"item": [
+						{
+							"name": "patient-delays",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg5ODY2Mjc5LCJleHAiOjE2ODk5NTI2Nzl9.03bywMrjPcTqPR0zwFimO24tKfMwBPVSCDrNCa2CaO8",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/patients/patient-delays",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"patients",
+										"patient-delays"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "patient-reminders",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg5ODY2Mjc5LCJleHAiOjE2ODk5NTI2Nzl9.03bywMrjPcTqPR0zwFimO24tKfMwBPVSCDrNCa2CaO8",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/patients/patient-reminders",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"patients",
+										"patient-reminders"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},
@@ -1029,7 +1157,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODkzMTQzMzAsImV4cCI6MTY4OTQwMDczMH0.ltP9hZUN-5nzuvsTEz2iYaYPpwoeFUXW4MR6ono5ECk",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk4NjYzODIsImV4cCI6MTY4OTk1Mjc4Mn0.5tpy96JlVwppnWbpEkdHFTU9EWltZ79fVi6KbH63u9g",
 													"type": "string"
 												}
 											]
@@ -1038,7 +1166,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"appointments\": [\r\n    {\r\n      \"day\": \"السبت\",\r\n      \"startingTime\": \"13:00\",\r\n      \"finishingTime\": \"15:00\"\r\n    },\r\n    {\r\n      \"day\": \"الاثنين\",\r\n      \"startingTime\": \"11:00\",\r\n      \"finishingTime\": \"13:00\"\r\n    },\r\n    {\r\n      \"day\": \"الثلاثاء\",\r\n      \"startingTime\": \"09:00\",\r\n      \"finishingTime\": \"10:00\"\r\n    }\r\n  ],\r\n    \"startDate\":\"2023-07-17\",\r\n    \"endDate\": \"2023-08-15\"\r\n}",
+											"raw": "{\r\n    \"appointments\": [\r\n    {\r\n      \"day\": \"السبت\",\r\n      \"startingTime\": \"13:00\",\r\n      \"finishingTime\": \"15:00\"\r\n    },\r\n    {\r\n      \"day\": \"الاثنين\",\r\n      \"startingTime\": \"11:00\",\r\n      \"finishingTime\": \"13:00\"\r\n    },\r\n    {\r\n      \"day\": \"الثلاثاء\",\r\n      \"startingTime\": \"09:00\",\r\n      \"finishingTime\": \"10:00\"\r\n    }\r\n  ],\r\n    \"startDate\":\"2023-07-25\",\r\n    \"endDate\": \"2023-08-15\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1075,7 +1203,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODkzMTQzMzAsImV4cCI6MTY4OTQwMDczMH0.ltP9hZUN-5nzuvsTEz2iYaYPpwoeFUXW4MR6ono5ECk",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk3NzYxNTEsImV4cCI6MTY4OTg2MjU1MX0.SoG9XlK3ClmbAL2udfFpwI_Rf9tRQGQjZLB9dDMWXcI",
 													"type": "string"
 												}
 											]
@@ -1084,7 +1212,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"startingTime\":\"11:00\",\r\n    \"finishingTime\":\"13:00\",\r\n    \"days\":[\"الخميس\"],\r\n    \"startDate\":\"2023-07-18\",\r\n    \"endDate\": \"2023-08-15\"\r\n}",
+											"raw": "{\r\n    \"startingTime\":\"11:00\",\r\n    \"finishingTime\":\"12:01\",\r\n    \"days\":[\"الخميس\"],\r\n    \"startDate\":\"2023-07-20\",\r\n    \"endDate\": \"2023-08-05\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1121,7 +1249,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODkzMTQzMzAsImV4cCI6MTY4OTQwMDczMH0.ltP9hZUN-5nzuvsTEz2iYaYPpwoeFUXW4MR6ono5ECk",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk3NzYxNTEsImV4cCI6MTY4OTg2MjU1MX0.SoG9XlK3ClmbAL2udfFpwI_Rf9tRQGQjZLB9dDMWXcI",
 													"type": "string"
 												}
 											]
@@ -1200,7 +1328,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODkzMTQzMzAsImV4cCI6MTY4OTQwMDczMH0.ltP9hZUN-5nzuvsTEz2iYaYPpwoeFUXW4MR6ono5ECk",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk4NjYzODIsImV4cCI6MTY4OTk1Mjc4Mn0.5tpy96JlVwppnWbpEkdHFTU9EWltZ79fVi6KbH63u9g",
 													"type": "string"
 												}
 											]
@@ -1345,7 +1473,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"email\":\"yamen2@gmail.com\",\r\n    \"password\":\"123\"\r\n    }",
+											"raw": "{\r\n    \"email\":\"yamen3@gmail.com\",\r\n    \"password\":\"123\"\r\n    }",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1802,7 +1930,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODc1OTQ2NDQsImV4cCI6MTY4NzY4MTA0NH0.So4Qx6hIFf4vuqNMGP0F_SnvDBkXzCSOAMGnc9r7Zc0",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk4NjYzODIsImV4cCI6MTY4OTk1Mjc4Mn0.5tpy96JlVwppnWbpEkdHFTU9EWltZ79fVi6KbH63u9g",
 													"type": "string"
 												}
 											]
@@ -1927,7 +2055,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjIiLCJ0eXBlIjoyLCJpYXQiOjE2ODc2NzYyMjgsImV4cCI6MTY4Nzc2MjYyOH0.OawT8ou5JIhZYOyEaernWuKzuyTmzRxw30LKKJjz1XM",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk4NjYzODIsImV4cCI6MTY4OTk1Mjc4Mn0.5tpy96JlVwppnWbpEkdHFTU9EWltZ79fVi6KbH63u9g",
 													"type": "string"
 												}
 											]
@@ -1949,7 +2077,7 @@
 											"variable": [
 												{
 													"key": "workTimeId",
-													"value": "36"
+													"value": "18"
 												}
 											]
 										}
@@ -1964,7 +2092,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjIiLCJ0eXBlIjoyLCJpYXQiOjE2ODg1NDM2NzksImV4cCI6MTY4ODYzMDA3OX0.PgsASGIr99Zd2IrW1n7wBAbrPA5a_3TIzXqR6z-eDrw",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk4NjYzODIsImV4cCI6MTY4OTk1Mjc4Mn0.5tpy96JlVwppnWbpEkdHFTU9EWltZ79fVi6KbH63u9g",
 													"type": "string"
 												}
 											]
@@ -2150,7 +2278,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4OTUwODE5MSwiZXhwIjoxNjg5NTk0NTkxfQ.1L_S4aqQyBqveHlXuuz7lWWNBHRWyabwQfY1RQSgNk0",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4OTc3NTQ0NiwiZXhwIjoxNjg5ODYxODQ2fQ.6bgS7Ni8GuTtzgAeyYtefgs3aR6JGRBFkXIEerLr0GE",
 													"type": "string"
 												}
 											]
@@ -2159,7 +2287,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"email\" : \"yamen@gmail.com\",\r\n    \"phonenumber\" : \"0932691632\",\r\n    \"firstname\":\"ahmad\",\r\n    \"lastname\":\"hadeded\",\r\n    \"type\" : 1\r\n}",
+											"raw": "{\r\n    \"email\" : \"yamen1@gmail.com\",\r\n    \"phonenumber\" : \"0932691632\",\r\n    \"firstname\":\"ahmad\",\r\n    \"lastname\":\"hadeded\",\r\n    \"type\" : 5\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2373,7 +2501,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMiIsInR5cGUiOjAsImlhdCI6MTY4OTUzMzY5OSwiZXhwIjoxNjg5NjIwMDk5fQ.tCIY60oEuAEM2sQDnkebEFwMuaruNgpq7xPUKYNN37I",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4OTg2NjMyNSwiZXhwIjoxNjg5OTUyNzI1fQ.cHZbKewkoHhQ-7py5DzNw6sEy0Dt14raWVoJ-pBl5ZY",
 													"type": "string"
 												}
 											]
@@ -3310,7 +3438,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMiIsInR5cGUiOjAsImlhdCI6MTY4OTUyNTgxNSwiZXhwIjoxNjg5NjEyMjE1fQ.VHVxqy9IzpDbC94AJfEdq4g5eAvzUsHLv4AucZte9Ag",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4OTg2NjMyNSwiZXhwIjoxNjg5OTUyNzI1fQ.cHZbKewkoHhQ-7py5DzNw6sEy0Dt14raWVoJ-pBl5ZY",
 													"type": "string"
 												}
 											]
@@ -3976,7 +4104,7 @@
 											"variable": [
 												{
 													"key": "governorateId",
-													"value": "2"
+													"value": "1"
 												}
 											]
 										}
@@ -4073,7 +4201,7 @@
 													"bearer": [
 														{
 															"key": "token",
-															"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMyIsInR5cGUiOjEsImlhdCI6MTY4OTIyOTA0MywiZXhwIjoxNjg5MzE1NDQzfQ.g9L_74wEs48nIvL_OJycGTGDd9s92N4KOsdWqnEJ7ds",
+															"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMiIsInR5cGUiOjUsImlhdCI6MTY4OTc3NTcwNSwiZXhwIjoxNjg5ODYyMTA1fQ.byKwFydNhQReNcBoMXewXYtDB_ZJZtU3AGCtm-6WdxA",
 															"type": "string"
 														}
 													]
@@ -4707,12 +4835,23 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000",
+					"raw": "http://localhost:3000/doctors/test/:patientId",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
-					"port": "3000"
+					"port": "3000",
+					"path": [
+						"doctors",
+						"test",
+						":patientId"
+					],
+					"variable": [
+						{
+							"key": "patientId",
+							"value": "1"
+						}
+					]
 				}
 			},
 			"response": []
