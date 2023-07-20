@@ -1,13 +1,9 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post,Delete, Put,Req, UseGuards,ValidationPipe, BadRequestException  } from '@nestjs/common';
 import { CreateAdminDto } from 'src/admins/dtos/CreateAdmin.dto';
 import { UpdateAdminDto } from 'src/admins/dtos/UpdateAdmin.dto';
-import { AuthLoginDto } from 'src/admins/dtos/auth-login.dto';
 import { AdminsService } from 'src/admins/services/admins/admins.service';
 import { filterNameDto } from 'src/doctors/dtos/filterName.dto';
 import { JWTAuthGuardAdmin, JWTAuthGuardAdminIsAdmin ,JWTAuthGuardDoctorAdmin , JWTAuthGuardMoneyAdmin} from 'src/middleware/auth/jwt-auth.guard';
-import { Cron, CronExpression } from 'node-cron';
-import { IsInt, Min, IsPositive } from 'class-validator';
-import { AmountCollectedByAdminDto } from 'src/admins/dtos/AmountCollectedByAdmin.dto';
 
 @Controller('admins')
 export class AdminsController {

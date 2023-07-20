@@ -52,5 +52,9 @@ export class CreateWorkTimeDto {
     if (endDate.getTime() < startDate.getTime()) {
       throw new HttpException('يجب أن يكون تاريخ الانتهاء أكبر من تاريخ البدء', HttpStatus.BAD_REQUEST);
     }
+    if(workTimeDetails.startingTime > workTimeDetails.finishingTime)
+    {
+      throw new HttpException('يجب أن يكون وقت بداية الموعد اصغر من وقت بداية الموعد', HttpStatus.BAD_REQUEST);
+    }
   } 
 }

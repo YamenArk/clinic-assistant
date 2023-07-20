@@ -35,12 +35,19 @@ import { TransctionsReports } from './typeorm/entities/transctions-reports';
 import { SubAdminPaymentReport } from './typeorm/entities/sub-admin-payment-report';
 import { NewDoctorReports } from './typeorm/entities/new-doctor-reports';
 import { PatientDoctosReport } from './typeorm/entities/patient-doctos-report';
-import { NotificationGatewayService } from './middleware/notification.gateway/notification.gateway.service';
+// import { NotificationGatewayService } from './middleware/notification.gateway/notification.gateway.service';
 import { DoctorMessage } from './typeorm/entities/doctor-message';
-import { PatientMessage } from './typeorm/entities/patient-message';
+import { GatewayModule } from './gateway/gateway.module';
+import { PatientMessagingGateway } from './gateway/gateway';
+import { Doctornotification } from './typeorm/entities/doctor-notification';
+import { PatientNotification } from './typeorm/entities/patient-notification';
+import { PatientReminders } from './typeorm/entities/patient-reminders';
+import { PatientDelay } from './typeorm/entities/patient-delays';
+// import { WebSocketModule } from '@nestjs/websockets';
 // clinicassistant
 @Module({
   imports: [
+    GatewayModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',
@@ -72,7 +79,10 @@ import { PatientMessage } from './typeorm/entities/patient-message';
         NewDoctorReports,
         PatientDoctosReport,
         DoctorMessage,
-        PatientMessage
+        Doctornotification,
+        PatientNotification,
+        PatientReminders,
+        PatientDelay
       ],
       synchronize:  false ,
       migrationsRun: false,
@@ -90,6 +100,7 @@ import { PatientMessage } from './typeorm/entities/patient-message';
     SecretariesModule
       ],
   // providers: [MailService, QueryService, PhoneService]
-  providers: [MailService, QueryService, NotificationGatewayService]
+  // providers: [MailService, QueryService, NotificationGatewayService]
+  providers: [MailService, QueryService]
 })
 export class AppModule {}

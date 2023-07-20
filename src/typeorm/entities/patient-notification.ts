@@ -1,19 +1,16 @@
 import {
     Column,
     Entity,
-    JoinTable,
-    ManyToMany,
     ManyToOne,
-    OneToMany,
     PrimaryGeneratedColumn,
   } from 'typeorm';
-import { SubSpecialty } from './sub-specialty';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { Clinic } from './clinic';
 import { Patient } from './patient';
 
-@Entity({ name: 'patientMessages' })
-export class PatientMessage {
+
+
+@Entity({ name: 'patientNotifications' })
+export class PatientNotification {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     id: number;
 
@@ -21,11 +18,7 @@ export class PatientMessage {
     @IsNotEmpty()
     @IsString()
     message: string;
-
     
-    @ManyToOne(() => Patient, (patient) => patient.patientMessage)
+    @ManyToOne(() => Patient, (patient) => patient.patientNotification)
     public patient: Patient; // Ensure that the type of this property is Clinic
-
-    @Column({ type: 'date', nullable: false })
-    createdAt: string;
 }

@@ -20,6 +20,10 @@ import { NewDoctorReports } from 'src/typeorm/entities/new-doctor-reports';
 import { TransctionsReports } from 'src/typeorm/entities/transctions-reports';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Clinic } from 'src/typeorm/entities/clinic';
+import { WorkTime } from 'src/typeorm/entities/work-time';
+import { Patient } from 'src/typeorm/entities/patient';
+import { PatientNotification } from 'src/typeorm/entities/patient-notification';
+import { PatientReminders } from 'src/typeorm/entities/patient-reminders';
 
 @Module({
   imports: [
@@ -35,7 +39,11 @@ import { Clinic } from 'src/typeorm/entities/clinic';
       NewDoctorReports,
       TransctionsReports,
       Clinic,
-      DoctorClinic
+      DoctorClinic,
+      WorkTime,
+      Patient,
+      PatientNotification,
+      PatientReminders
     ]),
     CacheModule.register(), // add CacheModule here
     PassportModule,

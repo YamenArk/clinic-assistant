@@ -324,8 +324,7 @@ export class DoctorsController {
       await this.doctorSrevice.shiftWorkTimes(shift.shiftValue,doctorId,clinicId);
       return {message : "work time and appoitments shifted successfully"}
     }
-        
-
+         
     @Get('work-time/:clinicId')
     @UseGuards(JWTAuthGuardDoctor)
     async getWotkTime(@Param('clinicId') clinicId: number, @Req() request) {
@@ -603,10 +602,5 @@ export class DoctorsController {
   }
 
 
-  @Get('testing')
-  async test(
-  ){
-    await this.doctorSrevice.test();
-  }
 
 }

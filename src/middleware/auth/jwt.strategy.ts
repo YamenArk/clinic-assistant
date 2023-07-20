@@ -110,6 +110,7 @@ export class MoneyAdminJwtStrategy extends PassportStrategy(Strategy, 'money-adm
   }
 
   async validate(payload: { adminId: number,type : number }) {
+    console.log(payload)
     if (!( payload.type == 1 || payload.type == 5)) {
       throw new UnauthorizedException('Access denied');
     }

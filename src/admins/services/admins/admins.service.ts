@@ -22,6 +22,12 @@ import { TransctionsReports } from 'src/typeorm/entities/transctions-reports';
 import { type } from 'os';
 import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Clinic } from 'src/typeorm/entities/clinic';
+import { WorkTime } from 'src/typeorm/entities/work-time';
+import { Patient } from 'src/typeorm/entities/patient';
+import { PatientMessagingGateway } from 'src/gateway/gateway';
+import { PatientDelay } from 'src/typeorm/entities/patient-delays';
+import { PatientNotification } from 'src/typeorm/entities/patient-notification';
+import { PatientReminders } from 'src/typeorm/entities/patient-reminders';
 
 @Injectable()
 export class AdminsService {
@@ -30,6 +36,14 @@ export class AdminsService {
         private jwtService : JwtService,
         @InjectRepository(SubAdminPayment) 
         private subAdminPaymentRepository : Repository<SubAdminPayment>,
+        @InjectRepository(PatientReminders) 
+        private patientRemindersRepository: Repository<PatientReminders>,
+        @InjectRepository(PatientNotification) 
+        private patientNotificationRepository: Repository<PatientNotification>,
+        @InjectRepository(Patient) 
+        private PatientRepository : Repository<Patient>,
+        @InjectRepository(WorkTime) 
+        private workTimeRepository : Repository<WorkTime>,  
         @InjectRepository(Doctor) 
         private doctorRepository : Repository<Doctor>,
         @InjectRepository(SubAdminPaymentReport) 
@@ -60,7 +74,7 @@ export class AdminsService {
 
 
     async findAdmins(){
-      const select: Array<keyof Admin> =['adminId', 'email', 'phonenumber', 'firstname','lastname','active'];
+      const select: Array<keyof Admin> =['adminId', 'email', 'phonenumber', 'firstname','lastname','active','accountBalance','type'];
         const admins =  await this.adminRepository.find({select, where:{  type: Not(Equal(0))}});
         return {admins};
     }
@@ -383,93 +397,147 @@ export class AdminsService {
       async MonthlySubscriptions(){
         const now = new Date();
         const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-        const nextMonth = now.getUTCMonth() + 1;
-        const nextYear = nextMonth > 11 ? now.getUTCFullYear() + 1 : now.getUTCFullYear();
-        const nextDate = new Date(Date.UTC(nextYear, nextMonth % 12, now.getUTCDate()));
+        // const nextMonth = now.getUTCMonth() + 1;
+        // const nextYear = nextMonth > 11 ? now.getUTCFullYear() + 1 : now.getUTCFullYear();
+        // const nextDate = new Date(Date.UTC(nextYear, nextMonth % 12, now.getUTCDate()));
         
-        // Use Intl.DateTimeFormat to format the date as "YYYY-MM-DD"
-        const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
-        const nextDateString = dateFormatter.format(nextDate); 
-        const doctor = await this.doctorRepository.find({
-          where : {
-            dateToReactivate  : Equal(today.toISOString()),
-            active: true
+        // // Use Intl.DateTimeFormat to format the date as "YYYY-MM-DD"
+        // const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        // const nextDateString = dateFormatter.format(nextDate); 
+        // const doctor = await this.doctorRepository.find({
+        //   where : {
+        //     dateToReactivate  : Equal(today.toISOString()),
+        //     active: true
+        //   }
+        // })
+        // if(doctor.length == 0)
+        // {
+        //   throw new HttpException(
+        //     `No doctos has to pay to Reactivate today`,
+        //     HttpStatus.NOT_FOUND,
+        //   );
+        // }
+        // const monthlySubscription = await this.monthlySubscriptionRepository.findOne({where :{ id : 1}});
+        // let i = 0;
+        // let numberOfDoctorsWhoActivated = 0;
+        // while(doctor[i])
+        // {
+        //   if(doctor[i].accountBalance < monthlySubscription.amountOfMoney)
+        //   {
+        //     doctor[i].active = false;
+            
+        //     const doctorClinics = await this.doctorClinicRepository.find({
+        //       where: { doctor: { doctorId: doctor[i].doctorId } },
+        //       relations : ['clinic']
+        //     });
+        //     const clinicIds = doctorClinics.map((doctorClinic) => doctorClinic.clinic.clinicId);
+        //     const clinics = await this.clinicRepository.find({
+        //       where: { clinicId: In(clinicIds) },
+        //     });
+        //     let j = 0;
+        //     while(clinics[j])
+        //     {
+        //       clinics[j].numDoctors --;
+        //       await this.clinicRepository.save(clinics[j])
+        //       j++;
+        //     }
+        //     await this.doctorRepository.save(doctor);
+
+        //   }
+        //   else
+        //   {
+        //     numberOfDoctorsWhoActivated ++;
+        //     const newPayment = await this.transctionsRepository.create({
+        //       amountPaid : monthlySubscription.amountOfMoney,
+        //       doctor : doctor[i],
+        //       createdAt: today.toISOString()
+        //     });
+        //     await this.transctionsRepository.save(newPayment)
+        //     doctor[i].accountBalance = doctor[i].accountBalance - monthlySubscription.amountOfMoney;
+        //     doctor[i].dateToReactivate = nextDateString;
+        //     await this.doctorRepository.save(doctor);
+        //   }
+        //   i++;
+        // }
+        // const amountOfMoneyCollectedToday = ( numberOfDoctorsWhoActivated * Number(monthlySubscription.amountOfMoney))
+        
+
+        
+        // const month = (today.getUTCMonth() + 1).toString().padStart(2, '0');
+        // const year = today.getUTCFullYear();
+        // const createdAt = `${year}-${month}`;
+        // let duplicated = await this.TransctionsReportsRepository.findOne({
+        //   where: {
+        //     createdAt: createdAt
+        //   }
+        // });
+        // if(!duplicated)
+        // {
+
+        //   const transctionsReports = await this.TransctionsReportsRepository.create({
+        //     createdAt : createdAt,
+        //     amountCollected : amountOfMoneyCollectedToday
+        //   })
+        //   await this.TransctionsReportsRepository.save(transctionsReports);
+        // }
+        // else
+        // {
+        //   duplicated.amountCollected = duplicated.amountCollected + amountOfMoneyCollectedToday;
+        //   await this.TransctionsReportsRepository.save(duplicated);
+        // }
+
+
+
+        //send reminder for paitnet
+        const workTimes = await this.workTimeRepository.find({
+          relations : ['doctor','appointment','appointment.patient','clinic'],
+          where :{
+            date: Equal(today.toISOString())
           }
         })
-        if(doctor.length == 0)
+
+
+
+        for(const workTime of workTimes)
         {
-          throw new HttpException(
-            `No doctos has to pay to Reactivate today`,
-            HttpStatus.NOT_FOUND,
-          );
-        }
-        const monthlySubscription = await this.monthlySubscriptionRepository.findOne({where :{ id : 1}});
-        let i = 0;
-        let numberOfDoctorsWhoActivated = 0;
-        while(doctor[i])
-        {
-          if(doctor[i].accountBalance < monthlySubscription.amountOfMoney)
-          {
-            doctor[i].active = false;
-            
-            const doctorClinics = await this.doctorClinicRepository.find({
-              where: { doctor: { doctorId: doctor[i].doctorId } },
-              relations : ['clinic']
-            });
-            const clinicIds = doctorClinics.map((doctorClinic) => doctorClinic.clinic.clinicId);
-            const clinics = await this.clinicRepository.find({
-              where: { clinicId: In(clinicIds) },
-            });
-            let j = 0;
-            while(clinics[j])
+          for (const appointment of workTime.appointment) {
+          
+            if(appointment.patient)
             {
-              clinics[j].numDoctors --;
-              await this.clinicRepository.save(clinics[j])
-              j++;
+              const patientId = appointment.patient.patientId;
+              const patient = await this.PatientRepository.findOne({
+                where: {
+                  patientId : patientId
+                }
+              })
+              if (!patient ) {
+                throw new HttpException(`patient with id ${patientId} not found`, HttpStatus.NOT_FOUND);
+              }
+              //send notifcation
+              const message = 'تذكير اليوم لديك موعد'; 
+              const gateway = new PatientMessagingGateway(this.PatientRepository,this.patientNotificationRepository);
+              await gateway.sendNotification(patientId, message);
+    
+    
+              //send numberOfUnRead
+              const numberOfUnRead = patient.numberOfDelay + patient.numberOfReminder + 1;
+              await gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
+    
+              //save new number of delay message
+              patient.numberOfReminder ++;
+              this.PatientRepository.save(patient)
+    
+              //send message
+              const newPatientReminders = await this.patientRemindersRepository.create({
+                appointment : appointment,
+                patient : patient,
+                doctor : workTime.doctor,
+                clinic : workTime.clinic,
+                createdAt : today.toISOString()
+              })
+              await this.patientRemindersRepository.save(newPatientReminders)
             }
-            await this.doctorRepository.save(doctor);
-
           }
-          else
-          {
-            numberOfDoctorsWhoActivated ++;
-            const newPayment = await this.transctionsRepository.create({
-              amountPaid : monthlySubscription.amountOfMoney,
-              doctor : doctor[i],
-              createdAt: today.toISOString()
-            });
-            await this.transctionsRepository.save(newPayment)
-            doctor[i].accountBalance = doctor[i].accountBalance - monthlySubscription.amountOfMoney;
-            doctor[i].dateToReactivate = nextDateString;
-            await this.doctorRepository.save(doctor);
-          }
-          i++;
-        }
-        const amountOfMoneyCollectedToday = ( numberOfDoctorsWhoActivated * Number(monthlySubscription.amountOfMoney))
-        
-
-        
-        const month = (today.getUTCMonth() + 1).toString().padStart(2, '0');
-        const year = today.getUTCFullYear();
-        const createdAt = `${year}-${month}`;
-        let duplicated = await this.TransctionsReportsRepository.findOne({
-          where: {
-            createdAt: createdAt
-          }
-        });
-        if(!duplicated)
-        {
-
-          const transctionsReports = await this.TransctionsReportsRepository.create({
-            createdAt : createdAt,
-            amountCollected : amountOfMoneyCollectedToday
-          })
-          await this.TransctionsReportsRepository.save(transctionsReports);
-        }
-        else
-        {
-          duplicated.amountCollected = duplicated.amountCollected + amountOfMoneyCollectedToday;
-          await this.TransctionsReportsRepository.save(duplicated);
         }
       }
 

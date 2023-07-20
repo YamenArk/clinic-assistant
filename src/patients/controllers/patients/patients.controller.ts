@@ -4,6 +4,8 @@ import * as multer from 'multer'; // import multer here
 import { JWTAuthGuardPatient } from 'src/middleware/auth/jwt-auth.guard';
 import { AuthLoginDto } from 'src/patients/dtos/AuthLogin.dto';
 import { SignUpDto } from 'src/patients/dtos/SignUp.dto';
+import { restPasswordDto } from 'src/patients/dtos/restPassword.dto';
+import { restPasswordVerifyDto } from 'src/patients/dtos/restPasswordVerify.dto';
 import { verifyDto } from 'src/patients/dtos/verify.dto';
 import { PatientsService } from 'src/patients/services/patients/patients.service';
 
@@ -75,7 +77,7 @@ export class PatientsController {
     async verify(@Body(new ValidationPipe({ whitelist: true })) verifyDto: verifyDto) {
       await this.patientSrevice.verify(verifyDto);
       return {message : 'account created successfully'}
-  } 
+    } 
   @Get('my-current-appointment')
   @UseGuards(JWTAuthGuardPatient)
    async myCurrentAccount(
@@ -119,5 +121,46 @@ export class PatientsController {
       await this.patientSrevice.cancelAppointment(patientId,id);
       return {message : 'Appointment has been canceled sucessfully'}
     }
+
+
+
+
+
+
+      @Post('rest-password')
+      async restPassword(@Body(new ValidationPipe({ whitelist: true })) restPassword: restPasswordDto) {
+          const patientId =  await this.patientSrevice.restPassword(restPassword);
+          return {patientId : patientId}
+      }   
+  
+      @Post('rest-password-verify')
+      async restPasswordVerify(@Body(new ValidationPipe({ whitelist: true })) restPassword: restPasswordVerifyDto) {
+        await this.patientSrevice.restPasswordVerify(restPassword);
+        return {message : 'password changed successfully'}
+      } 
+
+
+
+    @Get('patient-delays')
+    @UseGuards(JWTAuthGuardPatient)
+      async patientDelays(
+      @Req() request
+      ){
+        const patientId = request.patientId; // Accessing the patientId from the request object
+        const patientDelays =  await this.patientSrevice.patientDelays(patientId);
+        return {patientDelays : patientDelays}
+      }
+
+
+
+    @Get('patient-reminders')
+    @UseGuards(JWTAuthGuardPatient)
+      async patientReminders(
+      @Req() request
+      ){
+        const patientId = request.patientId; // Accessing the patientId from the request object
+        const patientReminders =  await this.patientSrevice.patientReminders(patientId);
+        return {patientReminders : patientReminders}
+      }
 
 }

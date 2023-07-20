@@ -1,3 +1,5 @@
+import { type } from "os";
+
 enum Day {
   الأحد = 'الأحد',
   الاثنين = 'الاثنين',
@@ -143,6 +145,17 @@ export type verifyParams = {
   patientId: string;
   code: number;
 };
+
+export type restPasswordParams = {
+  phoneNumber: string;
+}
+
+export type newPasswordParams = {
+  patientId: number;
+  code: number;
+  newPassword: string;
+}
+
 
 
 export type profileDetailsParams = {

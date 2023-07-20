@@ -8,10 +8,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule,ConfigService } from '@nestjs/config';
 import { Appointment } from 'src/typeorm/entities/appointment';
 import { Admin } from 'typeorm';
+import { PatientNotification } from 'src/typeorm/entities/patient-notification';
+import { PatientDelay } from 'src/typeorm/entities/patient-delays';
+import { PatientReminders } from 'src/typeorm/entities/patient-reminders';
 
 @Module({
   imports : [
-    TypeOrmModule.forFeature([Patient,Appointment]),
+    TypeOrmModule.forFeature([Patient,Appointment,PatientNotification,PatientDelay,PatientReminders]),
     CacheModule.register(), // add CacheModule here
     PassportModule,
     JwtModule.registerAsync({

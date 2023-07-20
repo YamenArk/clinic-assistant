@@ -30,13 +30,20 @@ import { min, pairwise } from 'rxjs';
 import { PayInAdvance } from 'src/typeorm/entities/pay-in-advance';
 import { Transctions } from 'src/typeorm/entities/transctions';
 import { NewDoctorReports } from 'src/typeorm/entities/new-doctor-reports';
-import { NotificationGatewayService } from 'src/middleware/notification.gateway/notification.gateway.service';
+// import { NotificationGatewayService } from 'src/middleware/notification.gateway/notification.gateway.service';
 import { PatientDoctosReport } from 'src/typeorm/entities/patient-doctos-report';
+import { PatientMessagingGateway } from 'src/gateway/gateway';
+import { PatientNotification } from 'src/typeorm/entities/patient-notification';
+import { PatientDelay } from 'src/typeorm/entities/patient-delays';
 @Injectable()
 @UseInterceptors(CacheInterceptor)
 export class DoctorsService {
     constructor (
         private jwtService : JwtService,
+        @InjectRepository(PatientDelay) 
+        private patientDelayRepository: Repository<PatientDelay>,
+        @InjectRepository(PatientNotification) 
+        private patientNotificationRepository: Repository<PatientNotification>,
         @InjectRepository(PatientDoctosReport) 
         private PatientDoctosReportRepository : Repository<PatientDoctosReport>,
         @InjectRepository(Patient) 
@@ -70,7 +77,7 @@ export class DoctorsService {
         @InjectRepository(Transctions) 
         private transctionsRepository : Repository<Transctions>,
         private readonly mailService: MailService,
-        private readonly  notificationGateway: NotificationGatewayService,
+        // private readonly  notificationGateway: NotificationGatewayService,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: any, // update the type of cacheManager to any
         
@@ -923,6 +930,8 @@ export class DoctorsService {
 
 
       async deleteWorkTimes(workTimeDetails : DeleteWorkTimeParams,clinicId : number,doctorId : number){
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
         if (!doctorId) {
           throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
         }
@@ -951,6 +960,7 @@ export class DoctorsService {
 
         // Find all work times that fall between the start and end dates
         const workTimesToDelete = await this.workTimeRepository.find({
+          relations : ['appointment','appointment.patient'],
           where: {
             doctor: { doctorId },
             clinic: { clinicId },
@@ -958,11 +968,58 @@ export class DoctorsService {
           }
         });
 
-        // Delete the work times
-        await this.workTimeRepository.remove(workTimesToDelete);
+        for(const workTime of workTimesToDelete)
+        {
+          for (const appointment of workTime.appointment) {
+          
+            if(appointment.patient)
+            {
+              const patientId = appointment.patient.patientId;
+              const patient = await this.PatientRepository.findOne({
+                where: {
+                  patientId : patientId
+                }
+              })
+              if (!patient ) {
+                throw new HttpException(`patient with id ${patientId} not found`, HttpStatus.NOT_FOUND);
+              }
+              //send notifcation
+              const message = 'تم حذف الموعد الخاص بك'; 
+              const gateway = new PatientMessagingGateway(this.PatientRepository,this.patientNotificationRepository);
+              await gateway.sendNotification(patientId, message);
+    
+    
+              //send numberOfUnRead
+              const numberOfUnRead = patient.numberOfDelay + patient.numberOfReminder + 1;
+              await gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
+    
+              //save new number of delay message
+              patient.numberOfDelay ++;
+              this.PatientRepository.save(patient)
+    
+    
+              //send delay message
+              const delayMessage =  
+              `تم الغاء الموعد الخاص بك من يوم ${workTime.day}
+                   ${appointment.startingTime} - ${workTime.date}`;
+              const newPatientDelay = await this.patientDelayRepository.create({
+                message : delayMessage,
+                patient : patient,
+                doctor : doctor,
+                clinic : clinic,
+                createdAt : today.toISOString()
+              })
+              await this.patientDelayRepository.save(newPatientDelay)
+            }
+          }
+          // Delete the work times
+          await this.workTimeRepository.remove(workTime);
+        }
       }
 
       async deleteWorkTime(workTimeId : number,doctorId : number){
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
         if (!doctorId) {
           throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
         }
@@ -970,7 +1027,7 @@ export class DoctorsService {
         if (!doctor ) {
           throw new HttpException(`doctor with id ${doctorId} not found`, HttpStatus.NOT_FOUND);
         }
-        const workTime = await this.workTimeRepository.findOne({where : {workTimeId : workTimeId},relations : ['doctor']});
+        const workTime = await this.workTimeRepository.findOne({where : {workTimeId : workTimeId},relations : ['doctor','appointment','appointment.patient','clinic']});
         if (!workTime ) {
           throw new HttpException(`workTime with id ${workTimeId} not found`, HttpStatus.NOT_FOUND);
         }
@@ -978,10 +1035,70 @@ export class DoctorsService {
         {
           throw new BadRequestException('you can only delete your worktime')
         }
-        await this.workTimeRepository.remove(workTime);
+        for (const appointment of workTime.appointment) {
+          
+        if(appointment.patient)
+        {
+          const patientId = appointment.patient.patientId;
+          const patient = await this.PatientRepository.findOne({
+            where: {
+              patientId : patientId
+            }
+          })
+          if (!patient ) {
+            throw new HttpException(`patient with id ${patientId} not found`, HttpStatus.NOT_FOUND);
+          }
+          //send notifcation
+          const message = 'تم حذف الموعد الخاص بك'; 
+          const gateway = new PatientMessagingGateway(this.PatientRepository,this.patientNotificationRepository);
+          await gateway.sendNotification(patientId, message);
+
+
+          //send numberOfUnRead
+          const numberOfUnRead = patient.numberOfDelay + patient.numberOfReminder + 1;
+          await gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
+
+          //save new number of delay message
+          patient.numberOfDelay ++;
+          this.PatientRepository.save(patient)
+
+
+          //send delay message
+          const delayMessage =  
+          `تم الغاء الموعد الخاص بك من يوم ${workTime.day}
+               ${appointment.startingTime} - ${workTime.date}`;
+          const newPatientDelay = await this.patientDelayRepository.create({
+            message : delayMessage,
+            patient : patient,
+            doctor : doctor,
+            clinic : workTime.clinic,
+            createdAt : today.toISOString()
+          })
+          await this.patientDelayRepository.save(newPatientDelay)
+        }
       }
+      await this.workTimeRepository.remove(workTime);
+    }
 
       async shiftWorkTimes(shiftValue : number,doctorId : number,clinicId : number){
+        const doctor = await this.doctorRepository.findOne({
+          where: {
+            doctorId : doctorId
+          }
+        })
+        if (!doctor ) {
+          throw new HttpException(`doctor with id ${doctorId} not found`, HttpStatus.NOT_FOUND);
+        }
+
+
+        const clinic = await this.clinicRepository.findOne({
+          where: {
+            clinicId : clinicId
+          }
+        })
+        if (!clinic ) {
+          throw new HttpException(`clinic with id ${clinicId} not found`, HttpStatus.NOT_FOUND);
+        }
 
         const now = new Date();
         const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -998,6 +1115,7 @@ export class DoctorsService {
           relations: ['appointment','appointment.patient'],
           order: { date: 'ASC', startingTime: 'ASC' },
         });
+
     
         await this.appointmentRepository.delete({
           workTime: workTimes[workTimes.length-1],
@@ -1016,11 +1134,48 @@ export class DoctorsService {
           // Update the appointments to the next work time
           const appointmentsToUpdate = currentWorkTime.appointment;
           for (const appointment of appointmentsToUpdate) {
-            appointment.workTime = nextWorkTime;
             if(appointment.patient)
             {
+              const patientId = appointment.patient.patientId;
+              const patient = await this.PatientRepository.findOne({
+                where: {
+                  patientId : patientId
+                }
+              })
+              if (!patient ) {
+                throw new HttpException(`patient with id ${patientId} not found`, HttpStatus.NOT_FOUND);
+              }
+              //send notifcation
+              const message = 'تم تأخير الموعد الخاص بك'; 
+              const gateway = new PatientMessagingGateway(this.PatientRepository,this.patientNotificationRepository);
+              await gateway.sendNotification(patientId, message);
 
+
+              //send numberOfUnRead
+              const numberOfUnRead = patient.numberOfDelay + patient.numberOfReminder + 1;
+              await gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
+
+              //save new number of delay message
+              patient.numberOfDelay ++;
+              this.PatientRepository.save(patient)
+
+
+              //send delay message
+              const delayMessage =  
+              `تم تأخير الموعد الخاص بك من يوم ${currentWorkTime.day}
+                   الى يوم ${nextWorkTime.day}
+                   ${appointment.startingTime} - ${currentWorkTime.date}`;
+              const newPatientDelay = await this.patientDelayRepository.create({
+                message : delayMessage,
+                patient : patient,
+                doctor : doctor,
+                clinic : clinic,
+                createdAt : today.toISOString()
+              })
+              await this.patientDelayRepository.save(newPatientDelay)
             }
+
+            appointment.workTime = nextWorkTime;
             await this.appointmentRepository.save(appointment);
           }
         
@@ -1059,7 +1214,11 @@ export class DoctorsService {
             doctor: { doctorId },
             clinic: { clinicId },
             date: MoreThanOrEqual(today.toISOString())
+          },
+          order: {
+            date: 'ASC' // or 'DESC' for descending order
           }
+        
         });
         if(workTime.length == 0)
         {
@@ -1068,7 +1227,6 @@ export class DoctorsService {
           );
         }
       
-        // return {worktimes : workTimeWithAppointments};
         return {workTimes : workTime}
       }
       
@@ -1353,7 +1511,7 @@ export class DoctorsService {
           }
           const payload = {
             adminId: admin.adminId,
-            type  : 0
+            type  : admin.type
           };
           return {
             access_token: this.jwtService.sign(payload),
@@ -1639,9 +1797,10 @@ export class DoctorsService {
         const isWorkingNow = doctor.workTime.some(workTime => {
           const { date, startingTime, finishingTime } = workTime;
           if (date !== currentDate) {
-            return false; // not working on this date
+              return false; // not working on this date
           }
           if (currentTime < startingTime || currentTime > finishingTime) {
+
             return false; // not working at this time
           }
           clinicWorkingNow = {
@@ -1856,6 +2015,30 @@ export class DoctorsService {
             throw new HttpException('patient not found', HttpStatus.NOT_FOUND);
           }
 
+
+
+          const now = new Date();
+          const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+           const visited = await this.workTimeRepository.findOne({
+             where:{
+               doctor :{
+                 doctorId : doctorId
+               },
+               appointment :{
+                 patient :{
+                   patientId : patientId
+                 },
+                 missedAppointment : false
+               },
+               date  : LessThan(today.toISOString())
+             }
+           })
+ 
+           if(!visited)
+           {
+             throw new BadRequestException('you cant Evaluate a doctor you have not taken an appoitment with')
+           }
+
           let doctorPatient = await this.doctorPatientRepository.findOne({
             where: { doctor: {
               doctorId : doctorId
@@ -1864,10 +2047,7 @@ export class DoctorsService {
               patientId : patientId
              } },
           });          
-          if(!doctorPatient){
-            throw new BadRequestException('you are not connected to this doctor to get the evaluate')
-          }
-          if(!doctorPatient.evaluate)
+          if(!doctorPatient)
           {
             return {evaluate : 0}
           }
@@ -1877,7 +2057,7 @@ export class DoctorsService {
       async getDoctorClinic(doctorId : number ,clinicId : number){
         const doctor = await this.doctorRepository.findOne({
           where: { doctorId },
-          select : ['firstname','lastname','profilePicture']
+          select : ['firstname','lastname','profilePicture',"active"]
         });
         if (!doctor) {
           throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
@@ -1928,6 +2108,7 @@ export class DoctorsService {
             return false; // not working on this date
           }
           if (currentTime < startingTime || currentTime > finishingTime) {
+            
             return false; // not working at this time
           }
           return true; // working now
@@ -2207,11 +2388,4 @@ export class DoctorsService {
          };
       }
 
-
-      async test(){
-        const patientId = "2";
-        const message = 'you cant be late'
-        console.log("hi")
-        this.notificationGateway.sendNotification(patientId,message)
-      }
     }    

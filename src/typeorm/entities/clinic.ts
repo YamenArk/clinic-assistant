@@ -10,6 +10,7 @@ import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { Area } from './Area';
 import { WorkTime } from './work-time';
 import { Specialty } from './specialty';
+import { PatientReminders } from './patient-reminders';
 
 @Entity({ name: 'clinics' })
 export class Clinic {
@@ -60,4 +61,9 @@ export class Clinic {
     
     @ManyToOne(() => Specialty, (specialty) => specialty.clinic)
     public specialty: Specialty; // Ensure that the type of this property is Clinic
+
+
+    
+    @OneToMany(() => PatientReminders, patientReminders => patientReminders.clinic)
+    public patientReminders: PatientReminders[];
 }

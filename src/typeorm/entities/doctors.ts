@@ -17,6 +17,7 @@ import { PayInAdvance} from './pay-in-advance';
 import { Transctions } from './transctions';
 import { PatientDoctosReport } from './patient-doctos-report';
 import { DoctorMessage } from './doctor-message';
+import { PatientReminders } from './patient-reminders';
 
 
 const decimalTransformer: ValueTransformer = {
@@ -49,6 +50,9 @@ export class Doctor {
     @Column({ type: 'boolean', default: false })
     @IsBoolean()
     active: boolean;
+
+    @Column({ nullable: true })
+    socketId: string;
 
 
     @Column({default : true})
@@ -142,4 +146,10 @@ export class Doctor {
 
     @OneToMany(() => PatientDoctosReport, patientDoctosReport => patientDoctosReport.doctor)
     public patientDoctosReport: PatientDoctosReport[];
+
+
+    
+    @OneToMany(() => PatientReminders, patientReminders => patientReminders.doctor)
+    public patientReminders: PatientReminders[];
+
   }

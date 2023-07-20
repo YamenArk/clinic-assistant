@@ -25,14 +25,16 @@ import { PayInAdvance } from 'src/typeorm/entities/pay-in-advance';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { NewDoctorReports } from 'src/typeorm/entities/new-doctor-reports';
-import { NotificationGatewayService } from 'src/middleware/notification.gateway/notification.gateway.service';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 // import { WebSocketModule } from '@nestjs/websockets';
 import { WsAdapter } from '@nestjs/platform-ws';
 import { PatientDoctosReport } from 'src/typeorm/entities/patient-doctos-report';
+import { PatientNotification } from 'src/typeorm/entities/patient-notification';
+import { PatientDelay } from 'src/typeorm/entities/patient-delays';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      PatientNotification,
       Doctor,
       Insurance,
       SubSpecialty,
@@ -48,7 +50,8 @@ import { PatientDoctosReport } from 'src/typeorm/entities/patient-doctos-report'
       Transctions,
       PayInAdvance,
       NewDoctorReports,
-      PatientDoctosReport
+      PatientDoctosReport,
+      PatientDelay
     ]),
     WsAdapter,
     MulterModule.register({
@@ -71,7 +74,7 @@ import { PatientDoctosReport } from 'src/typeorm/entities/patient-doctos-report'
       inject : [ConfigService]
     })
   ],
-  providers: [DoctorsService, MailService,DoctorAdminJwtStrategy,DoctorJwtStrategy,JWTAuthGuardPatient,NotificationGatewayService],
+  providers: [DoctorsService, MailService,DoctorAdminJwtStrategy,DoctorJwtStrategy,JWTAuthGuardPatient],
   controllers: [DoctorsController],
 })
 export class DoctorsModule {}

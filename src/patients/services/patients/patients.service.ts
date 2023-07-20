@@ -3,25 +3,29 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AuthLoginDto } from 'src/patients/dtos/AuthLogin.dto';
 import { Patient } from 'src/typeorm/entities/patient';
 import { Equal, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
-import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
-import { patientSignUp } from 'src/utils/types';
+import { newPasswordParams, patientSignUp, restPasswordParams } from 'src/utils/types';
 import { verifyParams } from 'src/utils/types';
 const fs = require('fs');
-
-import { validate } from 'class-validator';
 import { CACHE_MANAGER} from '@nestjs/common'; // import CACHE_MANAGER
-
 import { v4 as uuid } from 'uuid';
 import { Appointment } from 'src/typeorm/entities/appointment';
-import { async } from 'rxjs';
 import { join } from 'path';
-import { createWriteStream, readFileSync } from 'fs';
+import { PatientNotification } from 'src/typeorm/entities/patient-notification';
+import { PatientMessagingGateway } from 'src/gateway/gateway';
+import { PatientReminders } from 'src/typeorm/entities/patient-reminders';
+import { PatientDelay } from 'src/typeorm/entities/patient-delays';
 
 @Injectable()
 export class PatientsService {
     constructor (
         private jwtService : JwtService,
+        @InjectRepository(PatientDelay) 
+        private patientDelayRepository: Repository<PatientDelay>,
+        @InjectRepository(PatientReminders) 
+        private patientRemindersRepository: Repository<PatientReminders>,
+        @InjectRepository(PatientNotification) 
+        private patientNotificationRepository: Repository<PatientNotification>,
         @InjectRepository(Patient) 
         private patientRepository : Repository<Patient>,
         @InjectRepository(Appointment) 
@@ -50,7 +54,8 @@ export class PatientsService {
             type : 4
           };  
         return {
-        accessToken: this.jwtService.sign(payload)
+        accessToken: this.jwtService.sign(payload),
+        patientId: patient.patientId
         };
     }
 
@@ -99,7 +104,10 @@ export class PatientsService {
         })
         if(duplicates)
         {
-          throw new BadRequestException('this phone number already exist')
+          throw new HttpException(
+            `this phone number already exist`,
+            HttpStatus.NOT_ACCEPTABLE,
+          );
         }
         const patient = new Patient();
         patient.gender = patientSignUp.gender;
@@ -113,7 +121,6 @@ export class PatientsService {
         // generate unique identifier for patient
         const patientId = uuid();
           const code = Math.floor(10000 + Math.random() * 90000);
-      console.log(code)
         // create a new object that contains both the patient and the code
         const patientData = {
           patient: patient,
@@ -123,9 +130,11 @@ export class PatientsService {
         // store patient data in cache
         const cacheKey = `patient:${patientId}`;
         await this.cacheManager.set(cacheKey, patientData, { ttl: 300 });
-        console.log(patientId)
         // send verification code to patient phone number using your preferred SMS service
         // ...
+        console.log(patientId);
+        console.log(code);
+        
       
 
         // return success response
@@ -377,6 +386,152 @@ export class PatientsService {
         }
       }
 
+
+      async restPassword(restPassword : restPasswordParams){
+        const patient = await this.patientRepository.findOne({
+          where :{
+            phoneNumber : restPassword.phoneNumber
+          }
+        })
+        if(!patient)
+        {
+          throw new HttpException(`patient with phone number ${restPassword.phoneNumber} not found`, HttpStatus.NOT_FOUND);
+        }
+        // generate unique identifier for patient
+        const code = Math.floor(10000 + Math.random() * 90000);
+       const patientData = {
+         code: code
+       };
+       // store patient data in cache
+       const cacheKey = `patient:${patient.patientId}`;
+       await this.cacheManager.set(cacheKey, patientData, { ttl: 300 });
+       // send verification code to patient phone number using your preferred SMS service
+       // ...
+       console.log(code);
+       return patient.patientId
+      }
       
+      async restPasswordVerify(restPassword : newPasswordParams){
+        const {patientId,code,newPassword} = restPassword
+        const cacheKey = `patient:${patientId}`;
+        const cachedCode = await this.cacheManager.get(cacheKey);
+        if (!cachedCode || cachedCode.code !== code) {
+          throw new HttpException(
+            `Invalid reset code for patient with id ${patientId}`,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        
+        const patient = await this.patientRepository.findOne({where : {patientId : patientId}});
+        if(!patient)
+        {
+          throw new HttpException(`doctor with id ${patientId} not found`, HttpStatus.NOT_FOUND);
+        }
+        patient.password = newPassword
+        await this.patientRepository.save(patient);
+      }
+
+
+      async patientDelays(patientId : number){
+        const patient = await this.patientRepository.findOne({where : {patientId}});
+        if(!patient)
+        {
+          throw new HttpException(`patient with id ${patientId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const patientDelays = await this.patientDelayRepository.find({
+          relations : ['doctor','clinic'],
+          where:{
+            patient : {
+              patientId
+            }
+          },
+          select :{
+            doctor :{
+              doctorId : true,
+              firstname : true,
+              lastname : true,
+              profilePicture : true
+            },
+            clinic :{
+              clinicId : true,
+              clinicName : true
+            },
+            message : true,
+            createdAt : true
+          },
+          order: {
+            id: 'DESC' 
+          }
+        })
+        if(patientDelays.length == 0)
+        {
+          throw new HttpException(`no Delays messages found`, HttpStatus.NOT_FOUND);
+        }
+        //send notification about new number of UnRead message
+        if(patient.numberOfDelay != 0)
+        {
+          patient.numberOfDelay = 0;
+          const numberOfUnRead = patient.numberOfReminder;
+          await this.patientRepository.save(patient);
+          const gateway = new PatientMessagingGateway(this.patientRepository,this.patientNotificationRepository);
+          await gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
+        }
+        return patientDelays;
+      }
+
+      async patientReminders(patientId : number){
+        const patient = await this.patientRepository.findOne({where : {patientId}});
+        if(!patient)
+        {
+          throw new HttpException(`patient with id ${patientId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const patientReminders = await this.patientRemindersRepository.find({
+          relations : ['doctor','clinic','appointment','appointment.workTime'],
+          where:{
+            patient : {
+              patientId
+            }
+          },
+          select :{
+            doctor :{
+              doctorId : true,
+              firstname : true,
+              lastname : true,
+              profilePicture : true
+            },
+            clinic :{
+              clinicId : true,
+              clinicName : true
+            },
+            appointment :{
+              id : true,
+              startingTime : true,
+              workTime :{
+                workTimeId : true,
+                date : true,
+                day : true
+              }
+            },
+            createdAt : true
+          },
+          order: {
+            id: 'DESC' 
+          }
+        })
+        if(patientReminders.length == 0)
+        {
+          throw new HttpException(`no Reminders messages found`, HttpStatus.NOT_FOUND);
+        }
+        //send notification about new number of UnRead message
+        if(patient.numberOfReminder != 0)
+        {
+          patient.numberOfReminder = 0;
+          const numberOfUnRead = patient.numberOfDelay;
+          await this.patientRepository.save(patient);
+          const gateway = new PatientMessagingGateway(this.patientRepository,this.patientNotificationRepository);
+          await gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
+        }
+        return patientReminders;
+      }
       
 }

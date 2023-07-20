@@ -7,7 +7,8 @@ import {
   } from 'typeorm';
 import { Appointment } from './appointment';
 import { DoctorPatient } from './doctor-patient';
-import { PatientMessage } from './patient-message';
+import { PatientReminders } from './patient-reminders';
+import { PatientNotification } from './patient-notification';
 
 @Entity({ name: 'patients' })
 export class Patient {
@@ -17,6 +18,17 @@ export class Patient {
     @Column()
     @IsEnum(['ذكر', 'أنثى'])
     gender: string;
+
+    @Column()
+    @IsNotEmpty()
+    @IsNumber()
+    numberOfDelay: number;
+
+
+    @Column()
+    @IsNotEmpty()
+    @IsNumber()
+    numberOfReminder: number;
 
     @Column({unique : true})
     @IsNotEmpty()
@@ -50,6 +62,9 @@ export class Patient {
     @IsOptional()
     profilePicture: string;
 
+    @Column({ nullable: true })
+    socketId: string;
+
 
     @Column({ type: 'date', nullable: false })
     @IsNotEmpty()
@@ -66,7 +81,13 @@ export class Patient {
     public doctorPatient: DoctorPatient[];
 
 
+    @OneToMany(() => PatientNotification, patientNotification => patientNotification.patient)
+    public patientNotification: PatientNotification[];
+
+
+
     
-    @OneToMany(() => PatientMessage, patientMessage => patientMessage.patient)
-    public patientMessage: PatientMessage[];
+    @OneToMany(() => PatientReminders, patientReminders => patientReminders.patient)
+    public patientReminders: PatientReminders[];
+    
 }
