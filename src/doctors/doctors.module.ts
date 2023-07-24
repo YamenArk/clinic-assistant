@@ -34,6 +34,7 @@ import { PatientDelay } from 'src/typeorm/entities/patient-delays';
 import { Gateway } from 'src/gateway/gateway';
 import { Doctornotification } from 'src/typeorm/entities/doctor-notification';
 import { SharedModule } from 'src/shared/shared.module';
+import { DoctorMessage } from 'src/typeorm/entities/doctor-message';
 @Module({
   imports: [
     SharedModule,
@@ -57,6 +58,7 @@ import { SharedModule } from 'src/shared/shared.module';
       PatientDoctosReport,
       PatientDelay,
       Doctornotification,
+      DoctorMessage
     ]),
     WsAdapter,
     MulterModule.register({

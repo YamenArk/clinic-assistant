@@ -240,6 +240,16 @@ export class DoctorsController {
     }
 
 
+    //get clinic
+    @UseGuards(JWTAuthGuardDoctor)
+    @Get('get-message')
+    async getMessages(@Req() request) {
+      const doctorId = request.doctorId; // Accessing the doctorId from the request object
+      return this.doctorSrevice.getMessages(doctorId);
+    }
+
+    
+
     //get sub
     @UseGuards(JWTAuthGuardDoctor)
     @Get('get-sub')

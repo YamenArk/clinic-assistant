@@ -450,7 +450,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"phoneNumber\":\"0932691622\",\r\n    \"password\":\"12313\"\r\n}",
+									"raw": "{\r\n    \"phoneNumber\":\"0932691621\",\r\n    \"password\":\"12313\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -479,7 +479,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"phoneNumber\":\"0932691622\",\r\n    \"password\":\"12313\",\r\n    \"firstname\":\"يامن\",\r\n    \"lastname\":\"عرقسةسي\",\r\n    \"birthDate\":\"1999-12-23\",\r\n    \"gender\":\"ذكر\"\r\n    \r\n}",
+									"raw": "{\r\n    \"phoneNumber\":\"0932691621\",\r\n    \"password\":\"12313\",\r\n    \"firstname\":\"يامن\",\r\n    \"lastname\":\"عرقسةسي\",\r\n    \"birthDate\":\"1999-12-23\",\r\n    \"gender\":\"ذكر\"\r\n    \r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -508,7 +508,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"patientId\":\"b18a844d-faac-46b4-a481-aa2fd92faacc\",\r\n    \"code\":74836\r\n}",
+									"raw": "{\r\n    \"patientId\":\"0ae369a5-09c4-4e3e-b29a-e5a2b4a25215\",\r\n    \"code\":96913\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -936,7 +936,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg5MzU0OTIyLCJleHAiOjE2ODk0NDEzMjJ9.hynDMHc7WwnYC_6frbr0s0JCxaK_sbzCCIqaz-Ln_NI",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjkwMjE1MjMxLCJleHAiOjE2OTAzMDE2MzF9.WcLVzIrB9N6Vt7G3vAX4alp7IEGsGYiyMkUArXXeiy8",
 											"type": "string"
 										}
 									]
@@ -1084,7 +1084,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg5ODY2Mjc5LCJleHAiOjE2ODk5NTI2Nzl9.03bywMrjPcTqPR0zwFimO24tKfMwBPVSCDrNCa2CaO8",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjkwMDQ2MzU2LCJleHAiOjE2OTAxMzI3NTZ9.bZNFCQJHTqrjKcrYr7yHtqOjLs6IYv4T_qn4oMeNkmc",
 											"type": "string"
 										}
 									]
@@ -1114,7 +1114,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg5ODY2Mjc5LCJleHAiOjE2ODk5NTI2Nzl9.03bywMrjPcTqPR0zwFimO24tKfMwBPVSCDrNCa2CaO8",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjkwMDQ2MzU2LCJleHAiOjE2OTAxMzI3NTZ9.bZNFCQJHTqrjKcrYr7yHtqOjLs6IYv4T_qn4oMeNkmc",
 											"type": "string"
 										}
 									]
@@ -1157,7 +1157,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk4NjYzODIsImV4cCI6MTY4OTk1Mjc4Mn0.5tpy96JlVwppnWbpEkdHFTU9EWltZ79fVi6KbH63u9g",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk5NTQ0NTUsImV4cCI6MTY5MDA0MDg1NX0.7xNtQGqf-bmKYZAZSaFdjBWayiOG-cjVfliqdBLQaxI",
 													"type": "string"
 												}
 											]
@@ -1328,7 +1328,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk4NjYzODIsImV4cCI6MTY4OTk1Mjc4Mn0.5tpy96JlVwppnWbpEkdHFTU9EWltZ79fVi6KbH63u9g",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk5NTQ0NTUsImV4cCI6MTY5MDA0MDg1NX0.7xNtQGqf-bmKYZAZSaFdjBWayiOG-cjVfliqdBLQaxI",
 													"type": "string"
 												}
 											]
@@ -1930,7 +1930,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk4NjYzODIsImV4cCI6MTY4OTk1Mjc4Mn0.5tpy96JlVwppnWbpEkdHFTU9EWltZ79fVi6KbH63u9g",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2OTAwNDYyMDQsImV4cCI6MTY5MDEzMjYwNH0.VlJeMcDB_smNE07eRosa9PR369zKBa5Td_M7dBxZpfs",
 													"type": "string"
 												}
 											]
@@ -1939,7 +1939,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"startDate\":\"2023-07-01\",\r\n    \"endDate\": \"2023-11-01\"\r\n}",
+											"raw": "{\r\n    \"startDate\":\"2023-07-26\",\r\n    \"endDate\": \"2023-07-29\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2092,7 +2092,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk4NjYzODIsImV4cCI6MTY4OTk1Mjc4Mn0.5tpy96JlVwppnWbpEkdHFTU9EWltZ79fVi6KbH63u9g",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2OTAwNDYyMDQsImV4cCI6MTY5MDEzMjYwNH0.VlJeMcDB_smNE07eRosa9PR369zKBa5Td_M7dBxZpfs",
 													"type": "string"
 												}
 											]
@@ -2225,6 +2225,41 @@
 											"path": [
 												"doctors",
 												"number-of-paitent-who-came"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "messages",
+							"item": [
+								{
+									"name": "get messages",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2OTAyMTY1MzUsImV4cCI6MTY5MDMwMjkzNX0.E7KlhogcQQ2700TWYZMmRyBrK73O2huDX6qshfwOCLM",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/get-message",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"get-message"
 											]
 										}
 									},
@@ -2501,7 +2536,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4OTg2NjMyNSwiZXhwIjoxNjg5OTUyNzI1fQ.cHZbKewkoHhQ-7py5DzNw6sEy0Dt14raWVoJ-pBl5ZY",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4OTk1NDM4MiwiZXhwIjoxNjkwMDQwNzgyfQ.TseoQWboYRu3CRcFYszWT3LCbSmRYczU4OdP5hFMgEc",
 													"type": "string"
 												}
 											]
@@ -3438,7 +3473,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4OTg2NjMyNSwiZXhwIjoxNjg5OTUyNzI1fQ.cHZbKewkoHhQ-7py5DzNw6sEy0Dt14raWVoJ-pBl5ZY",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4OTk1NDM4MiwiZXhwIjoxNjkwMDQwNzgyfQ.TseoQWboYRu3CRcFYszWT3LCbSmRYczU4OdP5hFMgEc",
 													"type": "string"
 												}
 											]

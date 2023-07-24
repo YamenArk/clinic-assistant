@@ -35,12 +35,16 @@ import { PatientDoctosReport } from 'src/typeorm/entities/patient-doctos-report'
 import { Gateway } from 'src/gateway/gateway';
 import { PatientNotification } from 'src/typeorm/entities/patient-notification';
 import { PatientDelay } from 'src/typeorm/entities/patient-delays';
+import { DoctorMessage } from 'src/typeorm/entities/doctor-message';
 @Injectable()
 @UseInterceptors(CacheInterceptor)
 export class DoctorsService {
     constructor (
+      
         private jwtService : JwtService,
         private readonly gateway: Gateway,
+        @InjectRepository(DoctorMessage) 
+        private doctorMessageRepository: Repository<DoctorMessage>,
         @InjectRepository(PatientDelay) 
         private patientDelayRepository: Repository<PatientDelay>,
         @InjectRepository(PatientNotification) 
@@ -602,6 +606,28 @@ export class DoctorsService {
           hasSecretary: !!doctorClinic.secretary,
         }));
         return {clinics : clinics}
+      }
+
+      async getMessages(doctorId : number){
+        const doctor = await this.doctorRepository.findOne({ where: { doctorId } });
+        if (!doctor) {
+          throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
+        }
+        const doctorMessage = await this.doctorMessageRepository.find({
+          where:{
+            doctor :{
+              doctorId
+            }
+          },
+          order: {
+            id: 'DESC' 
+          }
+        })
+        if(doctorMessage.length == 0)
+        {
+          throw new HttpException('Doctor does not have any messages', HttpStatus.NOT_FOUND);
+        }
+        return { doctorMessage : doctorMessage}
       }
 
 
