@@ -11,10 +11,23 @@ import { Admin } from 'typeorm';
 import { PatientNotification } from 'src/typeorm/entities/patient-notification';
 import { PatientDelay } from 'src/typeorm/entities/patient-delays';
 import { PatientReminders } from 'src/typeorm/entities/patient-reminders';
+import { Gateway } from 'src/gateway/gateway';
+import { Doctornotification } from 'src/typeorm/entities/doctor-notification';
+import { Doctor } from 'src/typeorm/entities/doctors';
+import { SharedModule } from 'src/shared/shared.module';
 
 @Module({
   imports : [
-    TypeOrmModule.forFeature([Patient,Appointment,PatientNotification,PatientDelay,PatientReminders]),
+    SharedModule,
+    TypeOrmModule.forFeature([
+      Patient,
+      Appointment,
+      PatientNotification,
+      PatientDelay,
+      PatientReminders,
+      Doctor,
+      PatientNotification,
+      Doctornotification,]),
     CacheModule.register(), // add CacheModule here
     PassportModule,
     JwtModule.registerAsync({
@@ -29,5 +42,6 @@ import { PatientReminders } from 'src/typeorm/entities/patient-reminders';
   ],
   controllers: [PatientsController],
   providers: [PatientsService]
+  // providers: [PatientsService,Gateway]
 })
 export class PatientsModule {}

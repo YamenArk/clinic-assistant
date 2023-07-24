@@ -5,7 +5,7 @@ import { Admin } from 'src/typeorm/entities/admin';
 import { AmountCollectedByAdminParams, CreateAdminParams, filterNameParams, updateAdminParams } from 'src/utils/types';
 import { AuthLoginDto } from 'src/admins/dtos/auth-login.dto';
 import * as bcrypt from 'bcryptjs'
-import { Between, Equal, In, Not, NumericType, Repository } from 'typeorm';
+import { Between, Equal, In, LessThan, LessThanOrEqual, Not, NumericType, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { CACHE_MANAGER } from '@nestjs/common'; // import CACHE_MANAGER
@@ -24,16 +24,20 @@ import { DoctorClinic } from 'src/typeorm/entities/doctor-clinic';
 import { Clinic } from 'src/typeorm/entities/clinic';
 import { WorkTime } from 'src/typeorm/entities/work-time';
 import { Patient } from 'src/typeorm/entities/patient';
-import { PatientMessagingGateway } from 'src/gateway/gateway';
+import { Gateway } from 'src/gateway/gateway';
 import { PatientDelay } from 'src/typeorm/entities/patient-delays';
 import { PatientNotification } from 'src/typeorm/entities/patient-notification';
 import { PatientReminders } from 'src/typeorm/entities/patient-reminders';
+import { DoctorMessage } from 'src/typeorm/entities/doctor-message';
 
 @Injectable()
 export class AdminsService {
     constructor (
       
         private jwtService : JwtService,
+        private readonly gateway: Gateway,
+        @InjectRepository(DoctorMessage) 
+        private doctorMessageRepository : Repository<DoctorMessage>,
         @InjectRepository(SubAdminPayment) 
         private subAdminPaymentRepository : Repository<SubAdminPayment>,
         @InjectRepository(PatientReminders) 
@@ -397,6 +401,7 @@ export class AdminsService {
       async MonthlySubscriptions(){
         const now = new Date();
         const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
         // const nextMonth = now.getUTCMonth() + 1;
         // const nextYear = nextMonth > 11 ? now.getUTCFullYear() + 1 : now.getUTCFullYear();
         // const nextDate = new Date(Date.UTC(nextYear, nextMonth % 12, now.getUTCDate()));
@@ -417,7 +422,7 @@ export class AdminsService {
         //     HttpStatus.NOT_FOUND,
         //   );
         // }
-        // const monthlySubscription = await this.monthlySubscriptionRepository.findOne({where :{ id : 1}});
+        const monthlySubscription = await this.monthlySubscriptionRepository.findOne({where :{ id : 1}});
         // let i = 0;
         // let numberOfDoctorsWhoActivated = 0;
         // while(doctor[i])
@@ -487,6 +492,34 @@ export class AdminsService {
         // }
 
 
+        //send doctor warrnings
+        const futureDate = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // Add 7 days to the current date
+        console.log(futureDate)
+        futureDate.setUTCHours(0, 0, 0, 0); // Set the hours, minutes, seconds, and milliseconds to zero
+          const doctors = await this.doctorRepository.find({
+            where: {
+              dateToReactivate: Equal(futureDate.toISOString()), // Find doctors whose dateToReactivate is after 7 days from now
+              accountBalance : LessThan(monthlySubscription.amountOfMoney)
+            },
+          });
+        for( const doctor of doctors)
+        {
+          const notificationMessage = 'تحذير الغاء تفعيل حسابك';
+          await this.gateway.sendNotificationForDoctor(doctor.doctorId, notificationMessage);
+
+          const message = 'لا يوجد لديك رصيد كافي لاعاد شحن شهر اخر في التطبيق'
+          const newDoctorMessage = await this.doctorMessageRepository.create({
+            message : message,
+            doctor : doctor,
+            createdAt : today.toISOString()
+          })
+          await this.doctorMessageRepository.save(newDoctorMessage)
+        }
+
+
+
+
+
 
         //send reminder for paitnet
         const workTimes = await this.workTimeRepository.find({
@@ -515,18 +548,17 @@ export class AdminsService {
               }
               //send notifcation
               const message = 'تذكير اليوم لديك موعد'; 
-              const gateway = new PatientMessagingGateway(this.PatientRepository,this.patientNotificationRepository);
-              await gateway.sendNotification(patientId, message);
+              // const gateway = new PatientMessagingGateway(this.PatientRepository,this.patientNotificationRepository);
+              await this.gateway.sendNotification(patientId, message);
     
     
               //send numberOfUnRead
               const numberOfUnRead = patient.numberOfDelay + patient.numberOfReminder + 1;
-              await gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
+              await  this.gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
     
               //save new number of delay message
               patient.numberOfReminder ++;
               this.PatientRepository.save(patient)
-    
               //send message
               const newPatientReminders = await this.patientRemindersRepository.create({
                 appointment : appointment,
@@ -706,7 +738,8 @@ export class AdminsService {
               doctorId : true,
               firstname : true,
               lastname : true
-            }
+            },
+            createdAt : true
           }
         })
         if(moneyCollectedByAdmin.length == 0)
@@ -766,7 +799,7 @@ export class AdminsService {
             adminId : true,
             firstname : true,
             lastname : true
-          }
+          },
         }
         })
         if(moneyPaid.length == 0)

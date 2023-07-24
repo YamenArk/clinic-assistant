@@ -24,9 +24,14 @@ import { WorkTime } from 'src/typeorm/entities/work-time';
 import { Patient } from 'src/typeorm/entities/patient';
 import { PatientNotification } from 'src/typeorm/entities/patient-notification';
 import { PatientReminders } from 'src/typeorm/entities/patient-reminders';
+import { Gateway } from 'src/gateway/gateway';
+import { Doctornotification } from 'src/typeorm/entities/doctor-notification';
+import { SharedModule } from 'src/shared/shared.module';
+import { DoctorMessage } from 'src/typeorm/entities/doctor-message';
 
 @Module({
   imports: [
+    SharedModule,
     TypeOrmModule.forFeature([
       Admin,
       Secretary,
@@ -43,7 +48,9 @@ import { PatientReminders } from 'src/typeorm/entities/patient-reminders';
       WorkTime,
       Patient,
       PatientNotification,
-      PatientReminders
+      Doctornotification,
+      PatientReminders,
+      DoctorMessage
     ]),
     CacheModule.register(), // add CacheModule here
     PassportModule,

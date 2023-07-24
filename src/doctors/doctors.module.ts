@@ -31,8 +31,12 @@ import { WsAdapter } from '@nestjs/platform-ws';
 import { PatientDoctosReport } from 'src/typeorm/entities/patient-doctos-report';
 import { PatientNotification } from 'src/typeorm/entities/patient-notification';
 import { PatientDelay } from 'src/typeorm/entities/patient-delays';
+import { Gateway } from 'src/gateway/gateway';
+import { Doctornotification } from 'src/typeorm/entities/doctor-notification';
+import { SharedModule } from 'src/shared/shared.module';
 @Module({
   imports: [
+    SharedModule,
     TypeOrmModule.forFeature([
       PatientNotification,
       Doctor,
@@ -51,7 +55,8 @@ import { PatientDelay } from 'src/typeorm/entities/patient-delays';
       PayInAdvance,
       NewDoctorReports,
       PatientDoctosReport,
-      PatientDelay
+      PatientDelay,
+      Doctornotification,
     ]),
     WsAdapter,
     MulterModule.register({

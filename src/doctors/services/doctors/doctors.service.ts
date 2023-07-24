@@ -6,7 +6,7 @@ import { Doctor } from 'src/typeorm/entities/doctors';
 import { Insurance } from 'src/typeorm/entities/insurance';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
 import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, evaluateDoctorParams, filterDocrotsParams, filterNameParams, profileDetailsParams, secondFilterDocrotsParams,WorkTimeWithAppointments, workTimeFilterParams,appointmentwithBooked, DeleteWorkTimeParams, CreateManyWorkTimeParams } from 'src/utils/types';
-import { Between, In, IsNull, Like, MoreThanOrEqual, Not, Repository,LessThanOrEqual, MoreThan, LessThan } from 'typeorm';
+import { Between, In, IsNull, Like, MoreThanOrEqual, Not, Repository,LessThanOrEqual, MoreThan, LessThan, SimpleConsoleLogger } from 'typeorm';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { Inject } from '@nestjs/common';
 import { createWriteStream, readFileSync } from 'fs';
@@ -32,7 +32,7 @@ import { Transctions } from 'src/typeorm/entities/transctions';
 import { NewDoctorReports } from 'src/typeorm/entities/new-doctor-reports';
 // import { NotificationGatewayService } from 'src/middleware/notification.gateway/notification.gateway.service';
 import { PatientDoctosReport } from 'src/typeorm/entities/patient-doctos-report';
-import { PatientMessagingGateway } from 'src/gateway/gateway';
+import { Gateway } from 'src/gateway/gateway';
 import { PatientNotification } from 'src/typeorm/entities/patient-notification';
 import { PatientDelay } from 'src/typeorm/entities/patient-delays';
 @Injectable()
@@ -40,6 +40,7 @@ import { PatientDelay } from 'src/typeorm/entities/patient-delays';
 export class DoctorsService {
     constructor (
         private jwtService : JwtService,
+        private readonly gateway: Gateway,
         @InjectRepository(PatientDelay) 
         private patientDelayRepository: Repository<PatientDelay>,
         @InjectRepository(PatientNotification) 
@@ -971,7 +972,8 @@ export class DoctorsService {
         for(const workTime of workTimesToDelete)
         {
           for (const appointment of workTime.appointment) {
-          
+          console.log("hi")
+          console.log(appointment)
             if(appointment.patient)
             {
               const patientId = appointment.patient.patientId;
@@ -985,13 +987,13 @@ export class DoctorsService {
               }
               //send notifcation
               const message = 'تم حذف الموعد الخاص بك'; 
-              const gateway = new PatientMessagingGateway(this.PatientRepository,this.patientNotificationRepository);
-              await gateway.sendNotification(patientId, message);
+              // const gateway = new PatientMessagingGateway(this.PatientRepository,this.patientNotificationRepository);
+              await this.gateway.sendNotification(patientId, message);
     
     
               //send numberOfUnRead
               const numberOfUnRead = patient.numberOfDelay + patient.numberOfReminder + 1;
-              await gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
+              await this.gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
     
               //save new number of delay message
               patient.numberOfDelay ++;
@@ -1050,13 +1052,13 @@ export class DoctorsService {
           }
           //send notifcation
           const message = 'تم حذف الموعد الخاص بك'; 
-          const gateway = new PatientMessagingGateway(this.PatientRepository,this.patientNotificationRepository);
-          await gateway.sendNotification(patientId, message);
+          // const gateway = new PatientMessagingGateway(this.PatientRepository,this.patientNotificationRepository);
+          await  this.gateway.sendNotification(patientId, message);
 
 
           //send numberOfUnRead
           const numberOfUnRead = patient.numberOfDelay + patient.numberOfReminder + 1;
-          await gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
+          await  this.gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
 
           //save new number of delay message
           patient.numberOfDelay ++;
@@ -1147,13 +1149,13 @@ export class DoctorsService {
               }
               //send notifcation
               const message = 'تم تأخير الموعد الخاص بك'; 
-              const gateway = new PatientMessagingGateway(this.PatientRepository,this.patientNotificationRepository);
-              await gateway.sendNotification(patientId, message);
+              // const gateway = new PatientMessagingGateway(this.PatientRepository,this.patientNotificationRepository);
+              await this.gateway.sendNotification(patientId, message);
 
 
               //send numberOfUnRead
               const numberOfUnRead = patient.numberOfDelay + patient.numberOfReminder + 1;
-              await gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
+              await this.gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
 
               //save new number of delay message
               patient.numberOfDelay ++;

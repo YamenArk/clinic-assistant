@@ -14,6 +14,14 @@ export class QueryService {
       
           // Check if admintables has zero records
           try {
+            await connection.execute(
+              `UPDATE doctors SET socketId = NULL WHERE socketId IS NOT NULL;`
+            )
+
+            await connection.execute(
+              `UPDATE patients SET socketId = NULL WHERE socketId IS NOT NULL;`
+            )
+
             const [rows, fields] = await connection.execute(
               'SELECT adminId FROM admins LIMIT 1'
             );

@@ -73,9 +73,8 @@ export class Patient {
     @Column({default : 0})
     numberOfMissAppointment: number;
 
-    @OneToMany(() => Appointment, appointment => appointment.patient)
-    public appointment: Appointment[];
-
+    @OneToMany(() => Appointment, appointment => appointment.patient, { onDelete: 'SET NULL' })
+    public appointment: Appointment[];  
 
     @OneToMany(() => DoctorPatient, doctorPatient => doctorPatient.patient)
     public doctorPatient: DoctorPatient[];

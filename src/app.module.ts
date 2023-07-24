@@ -35,19 +35,16 @@ import { TransctionsReports } from './typeorm/entities/transctions-reports';
 import { SubAdminPaymentReport } from './typeorm/entities/sub-admin-payment-report';
 import { NewDoctorReports } from './typeorm/entities/new-doctor-reports';
 import { PatientDoctosReport } from './typeorm/entities/patient-doctos-report';
-// import { NotificationGatewayService } from './middleware/notification.gateway/notification.gateway.service';
 import { DoctorMessage } from './typeorm/entities/doctor-message';
-import { GatewayModule } from './gateway/gateway.module';
-import { PatientMessagingGateway } from './gateway/gateway';
 import { Doctornotification } from './typeorm/entities/doctor-notification';
 import { PatientNotification } from './typeorm/entities/patient-notification';
 import { PatientReminders } from './typeorm/entities/patient-reminders';
 import { PatientDelay } from './typeorm/entities/patient-delays';
-// import { WebSocketModule } from '@nestjs/websockets';
+import { SharedModule } from './shared/shared.module';
 // clinicassistant
 @Module({
   imports: [
-    GatewayModule,
+    SharedModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',
@@ -97,10 +94,8 @@ import { PatientDelay } from './typeorm/entities/patient-delays';
     AuthModule,
     GovernoratesModule,
     PatientsModule,
-    SecretariesModule
+    SecretariesModule,
       ],
-  // providers: [MailService, QueryService, PhoneService]
-  // providers: [MailService, QueryService, NotificationGatewayService]
   providers: [MailService, QueryService]
 })
 export class AppModule {}

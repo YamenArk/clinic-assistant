@@ -12,7 +12,7 @@ import { v4 as uuid } from 'uuid';
 import { Appointment } from 'src/typeorm/entities/appointment';
 import { join } from 'path';
 import { PatientNotification } from 'src/typeorm/entities/patient-notification';
-import { PatientMessagingGateway } from 'src/gateway/gateway';
+import { Gateway } from 'src/gateway/gateway';
 import { PatientReminders } from 'src/typeorm/entities/patient-reminders';
 import { PatientDelay } from 'src/typeorm/entities/patient-delays';
 
@@ -20,6 +20,7 @@ import { PatientDelay } from 'src/typeorm/entities/patient-delays';
 export class PatientsService {
     constructor (
         private jwtService : JwtService,
+        private readonly gateway: Gateway,
         @InjectRepository(PatientDelay) 
         private patientDelayRepository: Repository<PatientDelay>,
         @InjectRepository(PatientReminders) 
@@ -181,27 +182,27 @@ export class PatientsService {
         currentDateTime.setSeconds(currentSecond);
         currentDateTime.setMilliseconds(0);
 
-
-
-
+         // ...({
+            //   workTime: {
+            //     date: Equal(today.toISOString())
+            //   },
+            //   finishingTime: MoreThanOrEqual(finishingTimeString)
+            // })
 
         // Convert the new Date object to a string representation in the format of HH:mm:ss
         const finishingTimeString = currentDateTime.toTimeString().slice(0, 8);
         const appointments = await this.appointmentRepository.find({
-          where: {
-            patient: {
-              patientId: patientId
+          where: [
+            { 
+              patient: { patientId },
+              workTime: { date: MoreThan(today.toISOString()) }
             },
-            workTime: {
-              date: MoreThan(today.toISOString())
-            },
-            ...({
-              workTime: {
-                date: Equal(today.toISOString())
-              },
+            {
+              patient: { patientId },
+              workTime: { date: Equal(today.toISOString()) },
               finishingTime: MoreThanOrEqual(finishingTimeString)
-            })
-          },
+            }
+          ],
           relations : ['workTime','workTime.doctor','workTime.clinic','workTime.clinic.specialty'],
           select  :{
             id : true,
@@ -259,20 +260,19 @@ export class PatientsService {
         // Convert the new Date object to a string representation in the format of HH:mm:ss
         const finishingTimeString = currentDateTime.toTimeString().slice(0, 8);
         const appointments = await this.appointmentRepository.find({
-          where :{
-            patient :{
-              patientId : patientId
+          where: [
+            { 
+              patient: { patientId },
+              workTime: { date: MoreThan(today.toISOString()) }
             },
-            workTime :{
-              date: LessThan(today.toISOString())
-            },
-            ...({
+            {
+              patient: { patientId },
               workTime: {
                 date: Equal(today.toISOString())
               },
               finishingTime: LessThanOrEqual(finishingTimeString)
-            })
-        },
+            }
+          ],
         relations : ['workTime','workTime.doctor','workTime.clinic','workTime.clinic.specialty'],
         select  :{
           id : true,
@@ -473,8 +473,8 @@ export class PatientsService {
           patient.numberOfDelay = 0;
           const numberOfUnRead = patient.numberOfReminder;
           await this.patientRepository.save(patient);
-          const gateway = new PatientMessagingGateway(this.patientRepository,this.patientNotificationRepository);
-          await gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
+          // const gateway = new PatientMessagingGateway(this.patientRepository,this.patientNotificationRepository);
+          await this.gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
         }
         return patientDelays;
       }
@@ -528,8 +528,8 @@ export class PatientsService {
           patient.numberOfReminder = 0;
           const numberOfUnRead = patient.numberOfDelay;
           await this.patientRepository.save(patient);
-          const gateway = new PatientMessagingGateway(this.patientRepository,this.patientNotificationRepository);
-          await gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
+          // const gateway = new PatientMessagingGateway(this.patientRepository,this.patientNotificationRepository);
+          await this.gateway.sendNumberOfUnReadMessages(patientId, numberOfUnRead);
         }
         return patientReminders;
       }
