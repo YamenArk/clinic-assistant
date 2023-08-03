@@ -25,6 +25,17 @@ export class AdminsController {
        
     }
 
+
+    @Put('disactiveDoctor/:doctorId')
+    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    async disactiveDoctor(
+      @Req() request,
+      @Param('doctorId',ParseIntPipe) doctorId: number,
+    ){
+      const adminId = request.adminId ;
+      await this.adminSrevice.disactiveDoctor(doctorId,adminId);
+      return {message : "doctor disactivated sucessfully"};
+    }
     
     @Delete(':adminId')
     @UseGuards(JWTAuthGuardAdminIsAdmin)
@@ -175,6 +186,9 @@ export class AdminsController {
        await this.adminSrevice.activeDoctor(doctorId,adminId);
        return {message : "doctor activated sucessfully"};
      }
+
+
+    
 
 
 

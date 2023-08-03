@@ -2248,12 +2248,31 @@ export class DoctorsService {
           throw new HttpException(`clinic with id ${workTimeId} not found`, HttpStatus.NOT_FOUND);
         }
      
-        const appointment = await this.appointmentRepository.find({
+        const syriaTimezone = 'Asia/Damascus';
+        const moment = require('moment-timezone');
+        const today = moment().tz(syriaTimezone).startOf('day');
+        const workTimeDate = moment(workTime.date, 'YYYY-MM-DD').tz(syriaTimezone).startOf('day');
+        let  appointment;       
+        if (today.isSame(workTimeDate)) {
+          appointment = await this.appointmentRepository.find({
+            where : {
+              startingTime: MoreThan(moment().tz(syriaTimezone).toDate()), //
+              workTime : {workTimeId}}, 
+              
+              relations: ['patient'],
+              select : ['id','startingTime','finishingTime','patient'] ,
+            });
+          console.log("hii")
+        } else {
+          appointment = await this.appointmentRepository.find({
           where : {
             workTime : {workTimeId}}, 
             relations: ['patient'],
             select : ['id','startingTime','finishingTime','patient'] 
           });
+
+        }
+
         if(appointment.length == 0)
         {
           throw new NotFoundException(
@@ -2283,7 +2302,7 @@ export class DoctorsService {
           where : {
            id : appointmentId
           },
-        relations: ['patient']})
+        relations: ['patient','workTime']})
         if(!appointment)
         {
           throw new NotFoundException(
@@ -2296,15 +2315,38 @@ export class DoctorsService {
         }
         const patient = await this.PatientRepository.findOne({
           where : {patientId}
-          })
-          if (!patient) {
-            throw new HttpException('patient not found', HttpStatus.NOT_FOUND);
+        })
+        if (!patient) {
+          throw new HttpException('patient not found', HttpStatus.NOT_FOUND);
+        }
+        const syriaTimezone = 'Asia/Damascus';
+        const moment = require('moment-timezone');
+        const appointmentDate = moment(appointment.workTime.date).tz(syriaTimezone).startOf('day');
+        const today = moment().tz(syriaTimezone).startOf('day');
+        if (appointmentDate.isBefore(today)) {
+          throw new BadRequestException('you can not book an old appointment')
+        } 
+        const timeDiffDays = appointmentDate.diff(today, 'days');
+        if (timeDiffDays == 0) {
+          const startingTime = moment(`${appointment.workTime.date} ${appointment.startingTime}`, 'YYYY-MM-DD HH:mm').tz(syriaTimezone);
+          const timeDiffHours = startingTime.diff(moment(), 'hours');
+          if (timeDiffHours < 0) {
+            throw new BadRequestException('you can not book an old appointment')
+          } 
+          else if (timeDiffHours == 0)
+          {
+            const timeDiffMinutes = startingTime.diff(moment(), 'Minutes');
+            if(timeDiffMinutes < 30)
+            {
+              throw new BadRequestException('you can not book an old appointment')
+            }
           }
-          appointment.patient = patient;
-          await this.appointmentRepository.save(appointment);
+        } 
+        appointment.patient = patient;
+        await this.appointmentRepository.save(appointment);
       }
 
-      
+
       async getTimeBetweenTodayAndTheAppoitment(appointmentId : number){
         const appointment = await this.appointmentRepository.findOne({
           where : {

@@ -9,7 +9,7 @@ import { filterNameDto } from 'src/insurances/dtos/filterName.dto';
 export class InsurancesController {
     constructor(private InsuranceSrevice : InsurancesService){}
     @Get()
-    @UseGuards(JWTAuthGuardDoctorAdmin)
+    @UseGuards()
     async getInsurances(){
         const insurances =  await this.InsuranceSrevice.findInsurances()
         return {insurances : insurances};

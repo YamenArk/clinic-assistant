@@ -397,6 +397,41 @@ export class AdminsService {
         }
       }
 
+      async disactiveDoctor(doctorId : number,adminId : number){
+        const doctor = await this.doctorRepository.findOne({
+          where :{
+            doctorId : doctorId
+          }
+        })
+        if (!doctor) {
+          throw new HttpException(
+            `doctor with id ${doctorId} not found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        if (doctor.active === false) {
+          throw new BadRequestException('This doctor is already not  active');
+        }
+        doctor.active = false;
+            
+        const doctorClinics = await this.doctorClinicRepository.find({
+          where: { doctor: { doctorId: doctor.doctorId } },
+          relations : ['clinic']
+        });
+        const clinicIds = doctorClinics.map((doctorClinic) => doctorClinic.clinic.clinicId);
+        const clinics = await this.clinicRepository.find({
+          where: { clinicId: In(clinicIds) },
+        });
+        let j = 0;
+        while(clinics[j])
+        {
+          clinics[j].numDoctors --;
+          await this.clinicRepository.save(clinics[j])
+          j++;
+        }
+        await this.doctorRepository.save(doctor);
+      }
+
 
       async MonthlySubscriptions(){
         const now = new Date();
