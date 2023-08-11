@@ -585,7 +585,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg3NTg4MDM5LCJleHAiOjE2ODc2NzQ0Mzl9.2PH1qxOa0eh4WFFVLSK6vNlQpUtWjqQG21VveQrNz_4",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjkxMDc5OTU3LCJleHAiOjE2OTExNjYzNTd9.595QTVe1uQtZEZUMhq8_T4UxTz0WBmDIg5vsLt8yqVk",
 											"type": "string"
 										}
 									]
@@ -678,7 +678,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg3NTg4MDM5LCJleHAiOjE2ODc2NzQ0Mzl9.2PH1qxOa0eh4WFFVLSK6vNlQpUtWjqQG21VveQrNz_4",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjkxMDc5OTU3LCJleHAiOjE2OTExNjYzNTd9.595QTVe1uQtZEZUMhq8_T4UxTz0WBmDIg5vsLt8yqVk",
 											"type": "string"
 										}
 									]
@@ -702,7 +702,7 @@
 									"variable": [
 										{
 											"key": "workTimeId",
-											"value": "1"
+											"value": "3"
 										}
 									]
 								}
@@ -717,7 +717,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjg3NTk3MjUxLCJleHAiOjE2ODc2ODM2NTF9.Spirk7DzBGAuoYvjqaszJzP5MCk0kKc_Z4IiA1aSN3M",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXRpZW50SWQiOiIxIiwidHlwZSI6NCwiaWF0IjoxNjkxMDc5OTU3LCJleHAiOjE2OTExNjYzNTd9.595QTVe1uQtZEZUMhq8_T4UxTz0WBmDIg5vsLt8yqVk",
 											"type": "string"
 										}
 									]
@@ -740,7 +740,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "69"
+											"value": "15"
 										}
 									]
 								}
@@ -1131,6 +1131,40 @@
 									"path": [
 										"patients",
 										"patient-reminders"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Insurances",
+					"item": [
+						{
+							"name": "get Insurances",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMyIsInR5cGUiOjAsImlhdCI6MTY4NjczNjQyNCwiZXhwIjoxNjg2ODIyODI0fQ.D7dpkCCLO0JPMaAobIBcybQgzEOLv3TpVklXgcS_5p4",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/insurances",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"insurances"
 									]
 								}
 							},
@@ -2243,7 +2277,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2OTAyMTY1MzUsImV4cCI6MTY5MDMwMjkzNX0.E7KlhogcQQ2700TWYZMmRyBrK73O2huDX6qshfwOCLM",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2OTAzNjc2NTEsImV4cCI6MTY5MDQ1NDA1MX0.EyxVISpYhijqe8Va0suNWtjVm3yhoWQQLJkKWhvNwfE",
 													"type": "string"
 												}
 											]
@@ -3042,6 +3076,43 @@
 											"path": [
 												"admins",
 												"activeDoctor",
+												":doctorId"
+											],
+											"variable": [
+												{
+													"key": "doctorId",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "dis active Doctor",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY5MDk3NTIxMiwiZXhwIjoxNjkxMDYxNjEyfQ.Nj5OAX9WbIK1YHyzJpgstT_jL-egj9JOcoiIF9_28w4",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/admins/disactiveDoctor/:doctorId",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"admins",
+												"disactiveDoctor",
 												":doctorId"
 											],
 											"variable": [

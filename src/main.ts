@@ -42,6 +42,20 @@ async function bootstrap() {
   };
   app.use(cors(corsOptions));
   // Serve static files from the root directory
+
+  // If you're using Socket.IO, configure its CORS settings as well
+  const httpServer = app.getHttpServer();
+  const io = require('socket.io')(httpServer, {
+    cors: {
+      origin: corsOptions.origin,
+      methods: corsOptions.methods,
+      allowedHeaders: corsOptions.allowedHeaders,
+    },
+  });
+  
+
+
+
   app.use(express.static(join(__dirname, '..')));
   
   
