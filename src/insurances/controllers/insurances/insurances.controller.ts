@@ -1,4 +1,4 @@
-import { UseGuards,Body, Controller, Delete, Get, Param, Post, Put, Res, ValidationPipe } from '@nestjs/common';
+import { UseGuards,Body, Controller, Delete, Get, Param, Post, Put, Res, ValidationPipe, Query } from '@nestjs/common';
 import { InsuranceDto } from 'src/insurances/dtos/InsuranceDetails.dto';
 import { InsurancesService } from 'src/insurances/services/insurances/insurances.service';
 import { Response } from 'express';
@@ -10,10 +10,14 @@ export class InsurancesController {
     constructor(private InsuranceSrevice : InsurancesService){}
     @Get()
     @UseGuards()
-    async getInsurances(){
-        const insurances =  await this.InsuranceSrevice.findInsurances()
-        return {insurances : insurances};
+    async getInsurances(
+      @Query('page') page: number = 1,
+      @Query('perPage') perPage: number = 10
+    ) {
+      const result = await this.InsuranceSrevice.findInsurances(page, perPage);
+      return result;
     }
+
     
 
       //filter insurances

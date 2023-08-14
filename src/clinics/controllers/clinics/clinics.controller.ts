@@ -1,4 +1,4 @@
-import {UseGuards, Controller, Get, Post, Put,Delete, Param, Body, Res, ValidationPipe, ParseIntPipe, BadRequestException } from '@nestjs/common';
+import {UseGuards, Controller, Get, Post, Put,Delete, Param, Body, Res, ValidationPipe, ParseIntPipe, BadRequestException, Query } from '@nestjs/common';
 import { ClinicDto } from 'src/clinics/dtos/ClinicDetails.dto';
 import { ClinicsService } from 'src/clinics/services/clinics/clinics.service';
 import { Response } from 'express';
@@ -13,10 +13,14 @@ export class ClinicsController {
     ///////////////////////////admin
 
     @Get()
-    async getClinics(){
-        const clinics =  await this.clinicSrevice.findClinics()
-        return {clinics : clinics}; 
+    async getClinics(
+      @Query('page') page: number ,
+      @Query('perPage') perPage: number 
+    ) {
+      const result = await this.clinicSrevice.findClinics(page, perPage);
+      return result;
     }
+    
 
     @Get('patients')
     async getClinicspatients(){

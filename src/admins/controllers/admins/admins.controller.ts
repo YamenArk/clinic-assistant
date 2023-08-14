@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post,Delete, Put,Req, UseGuards,ValidationPipe, BadRequestException  } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post,Delete, Put,Req, UseGuards,ValidationPipe, BadRequestException, Query  } from '@nestjs/common';
 import { CreateAdminDto } from 'src/admins/dtos/CreateAdmin.dto';
 import { UpdateAdminDto } from 'src/admins/dtos/UpdateAdmin.dto';
 import { AdminsService } from 'src/admins/services/admins/admins.service';
@@ -20,10 +20,15 @@ export class AdminsController {
 
     @Get()
     @UseGuards(JWTAuthGuardAdminIsAdmin)
-    getAdmins(){
-        return this.adminSrevice.findAdmins();
-       
+    async getAdmins(
+      @Query('page') page: number ,
+      @Query('perPage') perPage: number 
+    ) {
+      console.log(perPage)
+      const result = await this.adminSrevice.findAdmins(page, perPage);
+      return result;
     }
+    
 
 
     @Put('disactiveDoctor/:doctorId')
@@ -114,14 +119,17 @@ export class AdminsController {
         return {reports : transctionsReports};
       }
 
-
+    
     @Get('money-from-sub-admin')
     @UseGuards(JWTAuthGuardAdminIsAdmin)
     async moneyFromSubAdmin(
-      ){
-        const moneyFromSubAdmin = await this.adminSrevice.moneyFromSubAdmin();
-        return {moneyFromSubAdmin : moneyFromSubAdmin};
-      }
+      @Query('page') page: number = 1,
+      @Query('perPage') perPage: number = 10
+    ) {
+      const result = await this.adminSrevice.moneyFromSubAdmin(page, perPage);
+      return result;
+    }
+    
 
 
       
@@ -214,27 +222,31 @@ export class AdminsController {
       return {message : 'money has been added to your account sucessfully'}
     }
     
-
     @Get('money-collected-from-doctors-history')
     @UseGuards(JWTAuthGuardMoneyAdmin)
     async moneyCollectedFromDoctorsHistory(
       @Req() request,
-      ){
-        const adminId = request.adminId ;
-        const moneyCollectedByAdmin = await this.adminSrevice.moneyCollectedFromDoctorsHistory(adminId);
-        return {moneyHistoryCollected : moneyCollectedByAdmin};
-      }
+      @Query('page') page: number = 1,
+      @Query('perPage') perPage: number = 10
+    ) {
+      const adminId = request.adminId;
+      const result = await this.adminSrevice.moneyCollectedFromDoctorsHistory(adminId, page, perPage);
+      return result;
+    }
+    
 
     @Get('money-to-admin')
     @UseGuards(JWTAuthGuardMoneyAdmin)
     async moneyToAdmin(
       @Req() request,
-      ){
-        const adminId = request.adminId ;
-        const monyPaidToAdmin = await this.adminSrevice.moneyToAdmin(adminId);
-        return {monyPaidToAdmin : monyPaidToAdmin};
-      }
-
+      @Query('page') page: number = 1,
+      @Query('perPage') perPage: number = 10
+    ) {
+      const adminId = request.adminId;
+      const result = await this.adminSrevice.moneyToAdmin(adminId, page, perPage);
+      return result;
+    }
+    
       ///////////////////////////////////////non
 
       

@@ -17,10 +17,17 @@ export class InsurancesService {
 
     }
     
-
-    findInsurances():Promise<Insurance[]>{
-        return this.insuranceRepository.find();
+    async findInsurances(page: number, perPage: number) {
+      const [insurances, totalCount] = await this.insuranceRepository.findAndCount({
+        take: perPage,
+        skip: (page - 1) * perPage,
+      });
+    
+      const totalPages = Math.ceil(totalCount / perPage);
+    
+      return { insurances, totalPages, currentPage: page, totalItems: totalCount };
     }
+    
 
     
     async filterInsurancesByName(filte :filterNameParams ){

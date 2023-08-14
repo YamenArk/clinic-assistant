@@ -6,7 +6,7 @@ import { Doctor } from 'src/typeorm/entities/doctors';
 import { Insurance } from 'src/typeorm/entities/insurance';
 import { SubSpecialty } from 'src/typeorm/entities/sub-specialty';
 import {  CreateDoctorParams, CreateWorkTimeParams, UpdateDoctoeClinicParams, UpdateDoctorForAdminParams, UpdateDoctorParams, evaluateDoctorParams, filterDocrotsParams, filterNameParams, profileDetailsParams, secondFilterDocrotsParams,WorkTimeWithAppointments, workTimeFilterParams,appointmentwithBooked, DeleteWorkTimeParams, CreateManyWorkTimeParams } from 'src/utils/types';
-import { Between, In, IsNull, Like, MoreThanOrEqual, Not, Repository,LessThanOrEqual, MoreThan, LessThan, SimpleConsoleLogger } from 'typeorm';
+import { Between, In, IsNull, Like, MoreThanOrEqual, Not, Repository,LessThanOrEqual, MoreThan, LessThan, SimpleConsoleLogger, Equal } from 'typeorm';
 import { MailService } from 'src/middleware/mail/mail.service';
 import { Inject } from '@nestjs/common';
 import { createWriteStream, readFileSync } from 'fs';
@@ -242,20 +242,28 @@ export class DoctorsService {
         return this.doctorRepository.update({doctorId},{...doctorDetails});
       }
 
-      async findDoctors(type?: number) {
-        const select: Array<keyof Doctor> =['active', 'phonenumberForAdmin', 'email', 'firstname', 'lastname', 'doctorId','gender'];
+      async findDoctors(type: number, page: number, perPage: number) {
+        const select: Array<keyof Doctor> = ['active', 'phonenumberForAdmin', 'email', 'firstname', 'lastname', 'doctorId', 'gender'];
         let where: any = {};
-        if (type == 1) {
+      
+        if (type === 1) {
           where = { active: true };
-        } else if (type == 2) {
+        } else if (type === 2) {
           where = { active: false };
         }
-        const doctors = await this.doctorRepository.find({
+      
+        const [doctors, totalCount] = await this.doctorRepository.findAndCount({
           select,
-          where ,
+          where,
+          take: perPage,
+          skip: (page - 1) * perPage,
         });
-        return { doctors };
+      
+        const totalPages = Math.ceil(totalCount / perPage);
+      
+        return { doctors, totalPages, currentPage: page, totalItems: totalCount };
       }
+      
 
 
        async addDoctorToInsuranceCompany(
@@ -534,40 +542,46 @@ export class DoctorsService {
         }
         return {doctor : doctor}
       }
-
-      async payInAdvance(doctorId : number){
+      async payInAdvance(doctorId: number, page: number, perPage: number) {
+        // Your existing code to check doctor existence
         const doctor = await this.doctorRepository.findOne({
           where: { doctorId },
         });
         if (!doctor) {
           throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
         }
-        const payInAdvance = await this.payInAdvanceRepository.find({
-          relations :['admin'],
-          where :{
-            doctor :{
-              doctorId : doctorId
+        const [payInAdvance, totalCount] = await this.payInAdvanceRepository.findAndCount({
+          relations: ['admin'],
+          where: {
+            doctor: {
+              doctorId: doctorId
             }
           },
-          select : {
-            id : true,
-            amountPaid : true,
-            admin :{
-              adminId : true,
-              firstname : true,
-              lastname : true
+          select: {
+            id: true,
+            amountPaid: true,
+            admin: {
+              adminId: true,
+              firstname: true,
+              lastname: true
             },
-            createdAt : true
-          }
-        })
-        if(payInAdvance.length == 0)
-        {
-          throw new BadRequestException('you have not payed in advance any money yet')
+            createdAt: true
+          },
+          take: perPage,
+          skip: (page - 1) * perPage
+        });
+      
+        const totalPages = Math.ceil(totalCount / perPage);
+      
+        if (payInAdvance.length === 0) {
+          throw new BadRequestException('You have not paid in advance any money yet');
         }
-        return payInAdvance;
+      
+        return { payInAdvance, totalPages, currentPage: page, totalItems: totalCount };
       }
-
-      async gettransctions(doctorId : number){
+      
+      async gettransctions(doctorId: number, page: number, perPage: number) {
+        // Your existing code to check doctor existence
         const doctor = await this.doctorRepository.findOne({
           where: { doctorId },
         });
@@ -575,20 +589,23 @@ export class DoctorsService {
           throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
         }
         const mytransctions = await this.transctionsRepository.find({
-          where :{
-            doctor :{
+          where: {
+            doctor: {
               doctorId: doctorId
             }
           },
-          select :{
-            id : true,
-            amountPaid : true,
-            createdAt : true
-          }
-        })
-        return mytransctions;
+          select: {
+            id: true,
+            amountPaid: true,
+            createdAt: true
+          },
+          take: perPage,
+          skip: (page - 1) * perPage
+        });
+      
+        return { mytransctions, currentPage: page, totalItems: mytransctions.length };
       }
-
+      
       async getClinicsForDoctor(doctorId : number){
         const doctor = await this.doctorRepository.findOne({ where: { doctorId } });
         if (!doctor) {
@@ -690,45 +707,34 @@ export class DoctorsService {
             `No doctorClinic entity found for doctor ${doctor.doctorId} and clinic ${clinic.clinicId}`
           );
         }
+      
 
-        const now = new Date();
-        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
-        const worktimeDuplicated = await this.workTimeRepository.find({
+        const startDate = new Date(workTimeDetails.startDate);
+        const endDate = new Date(workTimeDetails.endDate)
+
+        // Check for conflicts with existing work times
+        const existingWorkTimes = await this.workTimeRepository.find({
           where: {
-            doctor: {
-              doctorId: doctorId
-            },
-            clinic: {
-              clinicId: clinicId
-            },
-            date: MoreThanOrEqual(today.toISOString())
-          },
-          order: {
-            date: 'ASC'
+            clinic: clinic,
+            day: In(workTimeDetails.days), // Check for work times on the selected days
+            date: Between(startDate.toISOString(), endDate.toISOString()) // Check for work times between selected start and end dates
           }
         });
-        if(worktimeDuplicated.length != 0 )
-        {
-          const startDate1 = new Date(workTimeDetails.startDate);
-          const endDate1 = new Date(workTimeDetails.endDate);
-          
-          // Get the timestamps of the start and end dates
-          const startTimestamp = startDate1.getTime();
-          const endTimestamp = endDate1.getTime();  
-          
-          // Get the timestamps of the first and last elements in worktimeDuplicated
-          const firstDateTimestamp = new Date(worktimeDuplicated[0].date).getTime();
-          const lastDateTimestamp = new Date(worktimeDuplicated[worktimeDuplicated.length - 1].date).getTime();
-          if (startTimestamp >= firstDateTimestamp && startTimestamp <= lastDateTimestamp) {
-            throw new BadRequestException('you can not create a worktimes inside your work times')
-          } 
-          if(endTimestamp >= firstDateTimestamp && endTimestamp <= lastDateTimestamp)
-          {
-            throw new BadRequestException('you can not create a worktimes inside your work times')
+        const appointmentStartingTimee = workTimeDetails.startingTime 
+        const appointmentFinishingTimee = workTimeDetails.finishingTime 
+        // Iterate through existing work times and check for time conflicts
+        for (const existingWorkTime of existingWorkTimes) {
+          // Check for time conflicts
+          if (
+            (appointmentStartingTimee >= existingWorkTime.startingTime && appointmentStartingTimee <= existingWorkTime.finishingTime) ||
+            (appointmentFinishingTimee >= existingWorkTime.startingTime && appointmentFinishingTimee <= existingWorkTime.finishingTime)
+          ) {
+            throw new BadRequestException('A work time conflict exists with the existing schedule.');
           }
         }
-      
+
+
      
         // get all Appointment
         const appointmentDuring = doctorClinic.appointmentDuring;
@@ -762,8 +768,6 @@ export class DoctorsService {
         type Day = 'الأحد' | 'الاثنين' | 'الثلاثاء' | 'الأربعاء' | 'الخميس' | 'الجمعة' | 'السبت';
         const days = workTimeDetails.days as Day[];
         const result = [];      
-        const startDate = new Date(workTimeDetails.startDate);
-        const endDate = new Date(workTimeDetails.endDate);
 
 
         const dateFormatter = new Intl.DateTimeFormat('ar-EG', { weekday: 'long' });
@@ -1209,9 +1213,8 @@ export class DoctorsService {
         
         }
       }
-
-      async getWorkTimeForDoctor(clinicId : number,doctorId : number){
-
+      async getWorkTimeForDoctor(clinicId: number, doctorId: number, page: number, perPage: number) {
+        // Your existing code to check doctor and clinic existence
         if (!doctorId) {
           throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
         }
@@ -1234,31 +1237,34 @@ export class DoctorsService {
           );
         }
 
-         const now = new Date();
+        const now = new Date();
         const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-
-        const workTime = await this.workTimeRepository.find({
+      
+        const [workTime, totalCount] = await this.workTimeRepository.findAndCount({
           where: {
             doctor: { doctorId },
             clinic: { clinicId },
             date: MoreThanOrEqual(today.toISOString())
           },
           order: {
-            date: 'ASC' // or 'DESC' for descending order
-          }
-        
+            date: 'ASC'
+          },
+          take: perPage,
+          skip: (page - 1) * perPage
         });
-        if(workTime.length == 0)
-        {
+      
+        const totalPages = Math.ceil(totalCount / perPage);
+      
+        if (workTime.length === 0) {
           throw new NotFoundException(
-            `you have no set any worktime in this clinic clinic ${clinic.clinicId}`
+            `You have not set any worktime in this clinic clinic ${clinic.clinicId}`
           );
         }
       
-        return {workTimes : workTime}
+        return { workTimes: workTime, totalPages, currentPage: page, totalItems: totalCount };
       }
-      
-      async getAppoitment(workTimeId : number,doctorId : number){
+
+      async getAppoitment(workTimeId: number, doctorId: number, page: number, perPage: number) {
         if (!doctorId) {
           throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
         }
@@ -1270,16 +1276,13 @@ export class DoctorsService {
         if (!workTime ) {
           throw new HttpException(`workTime with id ${workTimeId} not found`, HttpStatus.NOT_FOUND);
         }
- 
-
-        let appointment
+      
+        let appointment;
         const workTimeDate = new Date(workTime.date);
         const now = new Date();
         const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-        
-
-        if(workTimeDate.toDateString() === today.toDateString())
-        {
+      
+        if (workTimeDate.toDateString() === today.toDateString()) {
           appointment = await this.appointmentRepository.find({
             where: { workTime: { workTimeId } },
             relations: ['patient'],
@@ -1287,22 +1290,22 @@ export class DoctorsService {
               id: true,
               startingTime: true,
               finishingTime: true,
-              missedAppointment : true,
+              missedAppointment: true,
               patient: {
                 patientId: true,
                 firstname: true,
                 lastname: true,
-                phoneNumber : true,
-                birthDate : true,
-                profilePicture : true,
-                gender : true
+                phoneNumber: true,
+                birthDate: true,
+                profilePicture: true,
+                gender: true
               }
-            }
+            },
+            take: perPage,
+            skip: (page - 1) * perPage
           });
-        }
-        else
-        {
-           appointment = await this.appointmentRepository.find({
+        } else {
+          appointment = await this.appointmentRepository.find({
             where: { workTime: { workTimeId } },
             relations: ['patient'],
             select: {
@@ -1313,22 +1316,90 @@ export class DoctorsService {
                 patientId: true,
                 firstname: true,
                 lastname: true,
-                phoneNumber : true,
-                birthDate : true,
-                profilePicture : true,
-                gender : true
+                phoneNumber: true,
+                birthDate: true,
+                profilePicture: true,
+                gender: true
               }
-            }
+            },
+            take: perPage,
+            skip: (page - 1) * perPage
           });
         }
-        if(appointment.length == 0)
-        {
+      
+        if (appointment.length === 0) {
           throw new NotFoundException(
-            `you have not set any appointment in this wotk time ${workTimeId}`
+            `You have not set any appointment in this work time ${workTimeId}`
           );
         }
-        return {appointment : appointment};
+      
+        return { appointment, currentPage: page, totalItems: appointment.length };
       }
+      
+      async gettodayAppoitment(clinicId: number, doctorId: number, page: number, perPage: number) {
+        if (!doctorId) {
+          throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
+        }
+        const doctor = await this.doctorRepository.findOne({where : {doctorId : doctorId}});
+        if (!doctor ) {
+          throw new HttpException(`doctor with id ${doctorId} not found`, HttpStatus.NOT_FOUND);
+        }
+        const clinic = await this.clinicRepository.findOne({where : {clinicId : clinicId}});
+        if (!clinic ) {
+          throw new HttpException(`clinic with id ${clinicId} not found`, HttpStatus.NOT_FOUND);
+        }
+
+
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      
+        const workTime = await this.workTimeRepository.findOne({
+          where : {
+            doctor :{
+              doctorId : doctorId
+            },
+            clinic : {
+              clinicId : clinicId
+            },
+            date: Equal(today.toISOString())
+          }});
+        console.log(workTime.workTimeId)
+        if (!workTime ) {
+          throw new HttpException(`doctor does not have any appoitment today`, HttpStatus.NOT_FOUND);
+        }
+      
+        let appointment;
+        appointment = await this.appointmentRepository.find({
+          where: { workTime: { workTimeId : workTime.workTimeId } },
+          relations: ['patient'],
+          select: {
+            id: true,
+            startingTime: true,
+            finishingTime: true,
+            missedAppointment: true,
+            patient: {
+              patientId: true,
+              firstname: true,
+              lastname: true,
+              phoneNumber: true,
+              birthDate: true,
+              profilePicture: true,
+              gender: true
+            }
+          },
+          take: perPage,
+          skip: (page - 1) * perPage
+        });
+      
+        if (appointment.length === 0) {
+          throw new NotFoundException(
+            `You have not set any appointment in this work time ${workTime.workTimeId}`
+          );
+        }
+      
+        return { appointment, currentPage: page, totalItems: appointment.length };
+      }
+      
 
       async missedAppointment(id : number,patientId : number,doctorId : number){
         if (!doctorId) {

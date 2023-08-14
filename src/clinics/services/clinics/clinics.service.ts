@@ -28,11 +28,21 @@ export class ClinicsService {
          @InjectRepository(DoctorClinic) private doctorClinicRepository: 
          Repository<DoctorClinic>){}
     
-         async findClinics() {
+         async findClinics(page: number, perPage: number) {
           const select: Array<keyof Clinic> = ['clinicId', 'clinicName', 'createdAt', 'numDoctors'];
-          const clinics = await this.clinicRepository.find({ select, relations: ['area','area.governorate','specialty'] });        
-          return clinics;
+          
+          const [clinics, totalCount] = await this.clinicRepository.findAndCount({
+            select,
+            relations: ['area', 'area.governorate', 'specialty'],
+            take: perPage,
+            skip: (page - 1) * perPage,
+          });
+        
+          const totalPages = Math.ceil(totalCount / perPage);
+        
+          return { clinics, totalPages, currentPage: page, totalItems: totalCount };
         }
+        
 
         async findClinicspatients() {
           const select: Array<keyof Clinic> = ['clinicId', 'clinicName', 'createdAt', 'numDoctors'];

@@ -1,4 +1,4 @@
-import {UseGuards, Body, Controller, Delete, Get, Param, Post, Put, Res, ValidationPipe, BadRequestException } from '@nestjs/common';
+import {UseGuards, Body, Controller, Delete, Get, Param, Post, Put, Res, ValidationPipe, BadRequestException, Query } from '@nestjs/common';
 import { SpecialtyDto } from 'src/specialties/dtos/Specialty.dto';
 import { SpecialtiesService } from 'src/specialties/services/specialties/specialties.service';
 import { JWTAuthGuardDoctorAdmin } from 'src/middleware/auth/jwt-auth.guard';
@@ -59,9 +59,14 @@ export class SpecialtiesController {
     //////////////////////////////////
     @Get()
     @UseGuards(JWTAuthGuardDoctorAdmin)
-    getSpecialties(){
-        return this.specialtySrevice.findspecialties()
+    async getSpecialties(
+      @Query('page') page: number ,
+      @Query('perPage') perPage: number 
+    ) {
+      const result = await this.specialtySrevice.findSpecialties(page, perPage);
+      return result;
     }
+    
 
 
     @Get(':specialtyId/subSpecialties')

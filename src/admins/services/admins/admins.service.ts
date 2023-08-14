@@ -77,11 +77,26 @@ export class AdminsService {
 
 
 
-    async findAdmins(){
-      const select: Array<keyof Admin> =['adminId', 'email', 'phonenumber', 'firstname','lastname','active','accountBalance','type'];
-        const admins =  await this.adminRepository.find({select, where:{  type: Not(Equal(0))}});
-        return {admins};
+    // async findAdmins(){
+    //   const select: Array<keyof Admin> =['adminId', 'email', 'phonenumber', 'firstname','lastname','active','accountBalance','type'];
+    //     const admins =  await this.adminRepository.find({select, where:{  type: Not(Equal(0))}});
+    //     return {admins};
+    // }
+    async findAdmins(page: number, perPage: number) {
+      const select: Array<keyof Admin> = ['adminId', 'email', 'phonenumber', 'firstname', 'lastname', 'active', 'accountBalance', 'type'];
+      
+      const [admins, totalCount] = await this.adminRepository.findAndCount({
+        select,
+        where: { type: Not(Equal(0)) },
+        take: perPage,
+        skip: (page - 1) * perPage,
+      });
+    
+      const totalPages = Math.ceil(totalCount / perPage);
+    
+      return { admins, totalPages, currentPage: page, totalItems: totalCount };
     }
+    
     async createAdmin(adminDetails: CreateAdminParams) {
       const email = adminDetails.email;
        //doctor duplicates
@@ -742,108 +757,122 @@ export class AdminsService {
         return doctors;
       }
 
-
-      async moneyCollectedFromDoctorsHistory(adminId : number){
+      async moneyCollectedFromDoctorsHistory(adminId: number, page: number, perPage: number) {
         const admin = await this.adminRepository.findOne({
-          where :{
+          where: {
             adminId
           }
-        })
-        if(!admin)
-        {
+        });
+      
+        if (!admin) {
           throw new HttpException(
-            `admin with id ${adminId} not found`,
+            `Admin with id ${adminId} not found`,
             HttpStatus.NOT_FOUND,
           );
         }
-        const moneyCollectedByAdmin = await this.payInAdvanceRepository.find({
-          relations : ['doctor'],
-          where:{
-            admin :{
-              adminId : adminId
+      
+        const [moneyCollectedByAdmin, totalCount] = await this.payInAdvanceRepository.findAndCount({
+          relations: ['doctor'],
+          where: {
+            admin: {
+              adminId: adminId
             }
           },
           order: {
             id: 'DESC'
           },
-          select :{
-            id : true,
-            amountPaid : true,
-            doctor :{
-              doctorId : true,
-              firstname : true,
-              lastname : true
+          select: {
+            id: true,
+            amountPaid: true,
+            doctor: {
+              doctorId: true,
+              firstname: true,
+              lastname: true
             },
-            createdAt : true
-          }
-        })
-        if(moneyCollectedByAdmin.length == 0)
-        {
+            createdAt: true
+          },
+          take: perPage,
+          skip: (page - 1) * perPage,
+        });
+      
+        const totalPages = Math.ceil(totalCount / perPage);
+      
+        if (moneyCollectedByAdmin.length === 0) {
           throw new HttpException(
-            `no history yet`,
+            `No history yet`,
             HttpStatus.NOT_FOUND,
           );
         }
-        return moneyCollectedByAdmin;
+      
+        return { moneyCollectedByAdmin, totalPages, currentPage: page, totalItems: totalCount };
       }
-
-      async moneyToAdmin(adminId : number){
+      
+      async moneyToAdmin(adminId: number, page: number, perPage: number) {
         const admin = await this.adminRepository.findOne({
-          where :{
+          where: {
             adminId
           }
-        })
-        if(!admin)
-        {
+        });
+      
+        if (!admin) {
           throw new HttpException(
-            `admin with id ${adminId} not found`,
+            `Admin with id ${adminId} not found`,
             HttpStatus.NOT_FOUND,
           );
         }
-        const moneyPaid = await this.subAdminPaymentRepository.find({
-          where:{
-            admin :{
-              adminId : adminId
+      
+        const [moneyPaid, totalCount] = await this.subAdminPaymentRepository.findAndCount({
+          where: {
+            admin: {
+              adminId: adminId
             }
           },
           order: {
             id: 'DESC'
-        },
-        })
-        if(moneyPaid.length == 0)
-        {
+          },
+          take: perPage,
+          skip: (page - 1) * perPage,
+        });
+      
+        const totalPages = Math.ceil(totalCount / perPage);
+      
+        if (moneyPaid.length === 0) {
           throw new HttpException(
-            `no history yet`,
+            `No history yet`,
             HttpStatus.NOT_FOUND,
           );
         }
-        return moneyPaid;
+      
+        return { moneyPaid, totalPages, currentPage: page, totalItems: totalCount };
       }
-
-      async moneyFromSubAdmin(){
-        const moneyPaid = await this.subAdminPaymentRepository.find({
+      
+      async moneyFromSubAdmin(page: number, perPage: number) {
+        const [moneyPaid, totalCount] = await this.subAdminPaymentRepository.findAndCount({
           order: {
             id: 'DESC'
-        },
-        relations :['admin'],
-        select :{
-          id : true,
-          amount : true,
-          createdAt : true,
-          admin :{
-            adminId : true,
-            firstname : true,
-            lastname : true
           },
+          relations: ['admin'],
+          select: {
+            id: true,
+            amount: true,
+            createdAt: true,
+            admin: {
+              adminId: true,
+              firstname: true,
+              lastname: true
+            },
+          },
+          take: perPage,
+          skip: (page - 1) * perPage,
+        });
+      
+        const totalPages = Math.ceil(totalCount / perPage);
+      
+        if (moneyPaid.length === 0) {
+          throw new HttpException(`No history yet`, HttpStatus.NOT_FOUND);
         }
-        })
-        if(moneyPaid.length == 0)
-        {
-          throw new HttpException(
-            `no history yet`,
-            HttpStatus.NOT_FOUND,
-          );
-        }
-        return moneyPaid;
+      
+        return { moneyPaid, totalPages, currentPage: page, totalItems: totalCount };
       }
+      
 }

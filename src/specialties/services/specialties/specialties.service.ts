@@ -14,18 +14,26 @@ export class SpecialtiesService {
         @InjectRepository(SubSpecialty) 
         private subSpecialtyRepository : Repository<SubSpecialty>
         ){}
-
-       async findspecialties(){
-              const specialties = await this.specialtyRepository.find({
-                order: {
-                  specialtyId: 'ASC',
-              }},
-              );
-              if (specialties.length === 0) {
-                throw new HttpException(`No specialties found`, HttpStatus.NOT_FOUND);
-              }
-              return specialties;
+        async findSpecialties(page: number, perPage: number) {
+          const specialties = await this.specialtyRepository.find({
+            order: {
+              specialtyId: 'ASC',
+            },
+            take: perPage,
+            skip: (page - 1) * perPage,
+          });
+        
+          const totalCount = await this.specialtyRepository.count();
+        
+          const totalPages = Math.ceil(totalCount / perPage);
+        
+          if (specialties.length === 0) {
+            throw new HttpException(`No specialties found`, HttpStatus.NOT_FOUND);
+          }
+        
+          return { specialties, totalPages, currentPage: page, totalItems: totalCount };
         }
+        
         async createspecialty(specialtyDetails : SpecialtyParams): Promise<void>{
 
           const specialty = await this.specialtyRepository.findOne({where : {specialtyName : specialtyDetails.specialtyName}});

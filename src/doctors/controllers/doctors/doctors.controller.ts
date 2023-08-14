@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put, Req, Res, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CreateDoctorDto } from 'src/doctors/dtos/CreateDoctor.dto';
 import { UpdateDoctorDto } from 'src/doctors/dtos/UpdateDoctor.dto';
 import { filterDocrotsDto } from 'src/doctors/dtos/filterDocrots.dto';
@@ -40,13 +40,19 @@ export class DoctorsController {
 
     //////////////////////all types of admin
     @Get(':type(1|2|3)')
-    @UseGuards(JWTAuthGuardAdmin)//type 1 active doctors 2 not active 3 all
-    async getDoctors(@Param('type', ParseIntPipe) type: number) {
+    @UseGuards(JWTAuthGuardAdmin)
+    async getDoctor3s(
+      @Param('type', ParseIntPipe) type: number,
+      @Query('page') page: number = 1,
+      @Query('perPage') perPage: number = 10
+    ) {
       if (type < 1 || type > 3) {
         throw new BadRequestException('Invalid type parameter');
       }
-      return  this.doctorSrevice.findDoctors(type);
+      const result = await this.doctorSrevice.findDoctors(type, page, perPage);
+      return result;
     }
+
 
 
     //filter doctor
@@ -161,21 +167,28 @@ export class DoctorsController {
     //my payment
     @UseGuards(JWTAuthGuardDoctor)
     @Get('pay-in-advance')
-    async payInAdvance(@Req() request) {
-      const doctorId = request.doctorId; // Accessing the doctorId from the request object
-      const mypayment = await this.doctorSrevice.payInAdvance(doctorId);
-      return {mypayment : mypayment}
+    async payInAdvance(
+      @Req() request,
+      @Query('page') page: number = 1,
+      @Query('perPage') perPage: number = 10
+    ) {
+      const doctorId = request.doctorId;
+      const result = await this.doctorSrevice.payInAdvance(doctorId, page, perPage);
+      return result;
     }
-
-
-
+    
     @UseGuards(JWTAuthGuardDoctor)
     @Get('my-transctions')
-    async gettransctions(@Req() request) {
-      const doctorId = request.doctorId; // Accessing the doctorId from the request object
-      const mytransctions = await this.doctorSrevice.gettransctions(doctorId);
-      return {mytransctions : mytransctions}
+    async gettransctions(
+      @Req() request,
+      @Query('page') page: number = 1,
+      @Query('perPage') perPage: number = 10
+    ) {
+      const doctorId = request.doctorId;
+      const result = await this.doctorSrevice.gettransctions(doctorId, page, perPage);
+      return result;
     }
+    
 
        
 
@@ -337,18 +350,46 @@ export class DoctorsController {
          
     @Get('work-time/:clinicId')
     @UseGuards(JWTAuthGuardDoctor)
-    async getWotkTime(@Param('clinicId') clinicId: number, @Req() request) {
-      const doctorId = request.doctorId; // Accessing the doctorId from the request object
-      return this.doctorSrevice.getWorkTimeForDoctor(clinicId, doctorId);
-    }
-  
-    @Get('appoitment/:workTimeId')
-    @UseGuards(JWTAuthGuardDoctor)
-    async getAppoitment(@Param('workTimeId') workTimeId: number, @Req() request) {
-      const doctorId = request.doctorId; // Accessing the doctorId from the request object
-      return this.doctorSrevice.getAppoitment(workTimeId, doctorId);
+    async getWotkTime(
+      @Param('clinicId') clinicId: number,
+      @Query('page') page: number = 1,
+      @Query('perPage') perPage: number = 10,
+      @Req() request
+    ) {
+      const doctorId = request.doctorId;
+      const result = await this.doctorSrevice.getWorkTimeForDoctor(clinicId, doctorId, page, perPage);
+      return result;
     }
 
+    
+    @Get('today/appoitment/:clinicId')
+    @UseGuards(JWTAuthGuardDoctor)
+    async gettodayAppoitment(
+      @Param('clinicId') clinicId: number,
+      @Query('page') page: number = 1,
+      @Query('perPage') perPage: number = 10,
+      @Req() request
+    ) {
+      const doctorId = request.doctorId;
+      const result = await this.doctorSrevice.gettodayAppoitment(clinicId, doctorId, page, perPage);
+      return result;
+    }
+    
+
+    
+    @Get('appoitment/:workTimeId')
+    @UseGuards(JWTAuthGuardDoctor)
+    async getAppoitment(
+      @Param('workTimeId') workTimeId: number,
+      @Query('page') page: number = 1,
+      @Query('perPage') perPage: number = 10,
+      @Req() request
+    ) {
+      const doctorId = request.doctorId;
+      const result = await this.doctorSrevice.getAppoitment(workTimeId, doctorId, page, perPage);
+      return result;
+    }
+    
     @Put('appoitment/:id/:patientId')
     @UseGuards(JWTAuthGuardDoctor)
     async missedAppointment(

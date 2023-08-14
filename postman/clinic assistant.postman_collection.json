@@ -1237,7 +1237,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk3NzYxNTEsImV4cCI6MTY4OTg2MjU1MX0.SoG9XlK3ClmbAL2udfFpwI_Rf9tRQGQjZLB9dDMWXcI",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2OTIwMjA1MzYsImV4cCI6MTY5MjEwNjkzNn0.2MQYMsSehmPvLGCRyy-AOK1Y5iiNoUzLK0GOSR_Z1hQ",
 													"type": "string"
 												}
 											]
@@ -1246,7 +1246,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"startingTime\":\"11:00\",\r\n    \"finishingTime\":\"12:01\",\r\n    \"days\":[\"الخميس\"],\r\n    \"startDate\":\"2023-07-20\",\r\n    \"endDate\": \"2023-08-05\"\r\n}",
+											"raw": "{\r\n    \"startingTime\":\"10:45\",\r\n    \"finishingTime\":\"11:01\",\r\n    \"days\":[\"الأحد\",\"الخميس\"],\r\n    \"startDate\":\"2023-08-20\",\r\n    \"endDate\": \"2023-09-02\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -1283,7 +1283,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODk3NzYxNTEsImV4cCI6MTY4OTg2MjU1MX0.SoG9XlK3ClmbAL2udfFpwI_Rf9tRQGQjZLB9dDMWXcI",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2OTE5MjE5MzQsImV4cCI6MTY5MjAwODMzNH0.v5DBlkT8COUETdlpGClI3-T2beJnMOfn_nbSupGYQtw",
 													"type": "string"
 												}
 											]
@@ -1291,7 +1291,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "http://localhost:3000/doctors/work-time/:clinicId",
+											"raw": "http://localhost:3000/doctors/work-time/:clinicId?page=1&perPage=3",
 											"protocol": "http",
 											"host": [
 												"localhost"
@@ -1301,6 +1301,16 @@
 												"doctors",
 												"work-time",
 												":clinicId"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "perPage",
+													"value": "3"
+												}
 											],
 											"variable": [
 												{
@@ -1320,7 +1330,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2ODkzMTQzMzAsImV4cCI6MTY4OTQwMDczMH0.ltP9hZUN-5nzuvsTEz2iYaYPpwoeFUXW4MR6ono5ECk",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2OTE5MjE5MzQsImV4cCI6MTY5MjAwODMzNH0.v5DBlkT8COUETdlpGClI3-T2beJnMOfn_nbSupGYQtw",
 													"type": "string"
 												}
 											]
@@ -1328,7 +1338,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "http://localhost:3000/doctors/appoitment/:workTimeId",
+											"raw": "http://localhost:3000/doctors/appoitment/:workTimeId?page=1&perPage=3",
 											"protocol": "http",
 											"host": [
 												"localhost"
@@ -1339,10 +1349,68 @@
 												"appoitment",
 												":workTimeId"
 											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "perPage",
+													"value": "3"
+												}
+											],
 											"variable": [
 												{
 													"key": "workTimeId",
-													"value": "68"
+													"value": "6"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get todat appoitment",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N0b3JJZCI6IjEiLCJ0eXBlIjoyLCJpYXQiOjE2OTE5MjE5MzQsImV4cCI6MTY5MjAwODMzNH0.v5DBlkT8COUETdlpGClI3-T2beJnMOfn_nbSupGYQtw",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:3000/doctors/today/appoitment/:clinicId?page=1&perPage=3",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "3000",
+											"path": [
+												"doctors",
+												"today",
+												"appoitment",
+												":clinicId"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "perPage",
+													"value": "3"
+												}
+											],
+											"variable": [
+												{
+													"key": "clinicId",
+													"value": "1"
 												}
 											]
 										}
@@ -2185,7 +2253,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "http://localhost:3000/doctors/pay-in-advance",
+											"raw": "http://localhost:3000/doctors/pay-in-advance?page=1&perPage=12",
 											"protocol": "http",
 											"host": [
 												"localhost"
@@ -2194,6 +2262,16 @@
 											"path": [
 												"doctors",
 												"pay-in-advance"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "perPage",
+													"value": "12"
+												}
 											]
 										}
 									},
@@ -2215,7 +2293,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "http://localhost:3000/doctors/my-transctions",
+											"raw": "http://localhost:3000/doctors/my-transctions?page=1&perPage=12",
 											"protocol": "http",
 											"host": [
 												"localhost"
@@ -2224,6 +2302,16 @@
 											"path": [
 												"doctors",
 												"my-transctions"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "perPage",
+													"value": "12"
+												}
 											]
 										}
 									},
@@ -2347,7 +2435,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4OTc3NTQ0NiwiZXhwIjoxNjg5ODYxODQ2fQ.6bgS7Ni8GuTtzgAeyYtefgs3aR6JGRBFkXIEerLr0GE",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY5MTkxNTY4NCwiZXhwIjoxNjkyMDAyMDg0fQ.cBIqhMvggurOl3oiaoXg-0hHGf8AOIjwN5pD8MdsuaI",
 													"type": "string"
 												}
 											]
@@ -2356,7 +2444,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"email\" : \"yamen1@gmail.com\",\r\n    \"phonenumber\" : \"0932691632\",\r\n    \"firstname\":\"ahmad\",\r\n    \"lastname\":\"hadeded\",\r\n    \"type\" : 5\r\n}",
+											"raw": "{\r\n    \"email\" : \"yamen15222222222232222242@gmail.com\",\r\n    \"phonenumber\" : \"0932691632\",\r\n    \"firstname\":\"ahmad\",\r\n    \"lastname\":\"hadeded\",\r\n    \"type\" : 5\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -2424,7 +2512,7 @@
 											"bearer": [
 												{
 													"key": "token",
-													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY4NTM2NDkyNywiZXhwIjoxNjg1NDUxMzI3fQ.M9cRk2XCy8D5AA83miOJHND04nicJ0NWbWtOrzv2Y1o",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoiMSIsInR5cGUiOjAsImlhdCI6MTY5MTkxNTY4NCwiZXhwIjoxNjkyMDAyMDg0fQ.cBIqhMvggurOl3oiaoXg-0hHGf8AOIjwN5pD8MdsuaI",
 													"type": "string"
 												}
 											]
@@ -2432,7 +2520,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "http://localhost:3000/admins",
+											"raw": "http://localhost:3000/admins?page=5&perPage=5",
 											"protocol": "http",
 											"host": [
 												"localhost"
@@ -2440,6 +2528,16 @@
 											"port": "3000",
 											"path": [
 												"admins"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "5"
+												},
+												{
+													"key": "perPage",
+													"value": "5"
+												}
 											]
 										}
 									},
@@ -2616,7 +2714,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "http://localhost:3000/doctors/:type",
+											"raw": "http://localhost:3000/doctors/:type?perPage=2&page=1",
 											"protocol": "http",
 											"host": [
 												"localhost"
@@ -2625,6 +2723,16 @@
 											"path": [
 												"doctors",
 												":type"
+											],
+											"query": [
+												{
+													"key": "perPage",
+													"value": "2"
+												},
+												{
+													"key": "page",
+													"value": "1"
+												}
 											],
 											"variable": [
 												{
@@ -3184,7 +3292,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "http://localhost:3000/specialties",
+											"raw": "http://localhost:3000/specialties?page=1&perPage=3",
 											"protocol": "http",
 											"host": [
 												"localhost"
@@ -3192,6 +3300,16 @@
 											"port": "3000",
 											"path": [
 												"specialties"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "perPage",
+													"value": "3"
+												}
 											]
 										}
 									},
@@ -3722,7 +3840,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "http://localhost:3000/clinics",
+											"raw": "http://localhost:3000/clinics?page=1&perPage=3",
 											"protocol": "http",
 											"host": [
 												"localhost"
@@ -3730,6 +3848,16 @@
 											"port": "3000",
 											"path": [
 												"clinics"
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "perPage",
+													"value": "3"
+												}
 											]
 										}
 									},
@@ -4061,7 +4189,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "http://localhost:3000/insurances",
+											"raw": "http://localhost:3000/insurances?perPage=2&page=1",
 											"protocol": "http",
 											"host": [
 												"localhost"
@@ -4069,6 +4197,16 @@
 											"port": "3000",
 											"path": [
 												"insurances"
+											],
+											"query": [
+												{
+													"key": "perPage",
+													"value": "2"
+												},
+												{
+													"key": "page",
+													"value": "1"
+												}
 											]
 										}
 									},
@@ -4508,7 +4646,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "http://localhost:3000/admins/money-from-sub-admin",
+													"raw": "http://localhost:3000/admins/money-from-sub-admin?page=2&perPage=4",
 													"protocol": "http",
 													"host": [
 														"localhost"
@@ -4517,6 +4655,16 @@
 													"path": [
 														"admins",
 														"money-from-sub-admin"
+													],
+													"query": [
+														{
+															"key": "page",
+															"value": "2"
+														},
+														{
+															"key": "perPage",
+															"value": "4"
+														}
 													]
 												}
 											},
@@ -4543,7 +4691,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "http://localhost:3000/admins/money-collected-from-doctors-history",
+													"raw": "http://localhost:3000/admins/money-collected-from-doctors-history?perPage=3&page=1",
 													"protocol": "http",
 													"host": [
 														"localhost"
@@ -4552,6 +4700,16 @@
 													"path": [
 														"admins",
 														"money-collected-from-doctors-history"
+													],
+													"query": [
+														{
+															"key": "perPage",
+															"value": "3"
+														},
+														{
+															"key": "page",
+															"value": "1"
+														}
 													]
 												}
 											},
@@ -4573,7 +4731,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "http://localhost:3000/admins/money-to-admin",
+													"raw": "http://localhost:3000/admins/money-to-admin?perPage=1&page=2",
 													"protocol": "http",
 													"host": [
 														"localhost"
@@ -4582,6 +4740,16 @@
 													"path": [
 														"admins",
 														"money-to-admin"
+													],
+													"query": [
+														{
+															"key": "perPage",
+															"value": "1"
+														},
+														{
+															"key": "page",
+															"value": "2"
+														}
 													]
 												}
 											},
