@@ -28,7 +28,7 @@ export class ClinicsService {
          @InjectRepository(DoctorClinic) private doctorClinicRepository: 
          Repository<DoctorClinic>){}
     
-         async findClinics(page: number, perPage: number) {
+         async findClinics(page, perPage: number) {
           const select: Array<keyof Clinic> = ['clinicId', 'clinicName', 'createdAt', 'numDoctors'];
           
           const [clinics, totalCount] = await this.clinicRepository.findAndCount({
@@ -39,8 +39,9 @@ export class ClinicsService {
           });
         
           const totalPages = Math.ceil(totalCount / perPage);
+          const pageNumber = parseInt(page, 10); // Convert the string to an integer
         
-          return { clinics, totalPages, currentPage: page, totalItems: totalCount };
+          return { clinics, totalPages, currentPage: pageNumber, totalItems: totalCount };
         }
         
 

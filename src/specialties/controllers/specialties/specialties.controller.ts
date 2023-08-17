@@ -63,8 +63,8 @@ export class SpecialtiesController {
       @Query('page') page: number ,
       @Query('perPage') perPage: number 
     ) {
-      const result = await this.specialtySrevice.findSpecialties(page, perPage);
-      return result;
+      return await this.specialtySrevice.findSpecialties(page, perPage);
+      // return result;
     }
     
 

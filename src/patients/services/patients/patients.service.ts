@@ -63,7 +63,7 @@ export class PatientsService {
     async getmyAccount(patientId : number){
       const patient = await this.patientRepository.findOne({
         where : {patientId : patientId},
-        select : ['patientId','birthDate','firstname','lastname','profilePicture','phoneNumber','numberOfMissAppointment']
+        select : ['patientId','birthDate','firstname','lastname','profilePicture','phoneNumber','numberOfMissAppointment',"gender"]
       }) 
       return {patient : patient}
     }

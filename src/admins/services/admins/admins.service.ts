@@ -82,7 +82,7 @@ export class AdminsService {
     //     const admins =  await this.adminRepository.find({select, where:{  type: Not(Equal(0))}});
     //     return {admins};
     // }
-    async findAdmins(page: number, perPage: number) {
+    async findAdmins(page, perPage: number) {
       const select: Array<keyof Admin> = ['adminId', 'email', 'phonenumber', 'firstname', 'lastname', 'active', 'accountBalance', 'type'];
       
       const [admins, totalCount] = await this.adminRepository.findAndCount({
@@ -93,8 +93,8 @@ export class AdminsService {
       });
     
       const totalPages = Math.ceil(totalCount / perPage);
-    
-      return { admins, totalPages, currentPage: page, totalItems: totalCount };
+      const pageNumber = parseInt(page, 10); // Convert the string to an integer
+      return { admins, totalPages, currentPage: pageNumber, totalItems: totalCount };
     }
     
     async createAdmin(adminDetails: CreateAdminParams) {
@@ -757,7 +757,7 @@ export class AdminsService {
         return doctors;
       }
 
-      async moneyCollectedFromDoctorsHistory(adminId: number, page: number, perPage: number) {
+      async moneyCollectedFromDoctorsHistory(adminId: number, page, perPage: number) {
         const admin = await this.adminRepository.findOne({
           where: {
             adminId
@@ -803,11 +803,12 @@ export class AdminsService {
             HttpStatus.NOT_FOUND,
           );
         }
+        const pageNumber = parseInt(page, 10); // Convert the string to an integer
       
-        return { moneyCollectedByAdmin, totalPages, currentPage: page, totalItems: totalCount };
+        return { moneyCollectedByAdmin, totalPages, currentPage: pageNumber, totalItems: totalCount };
       }
       
-      async moneyToAdmin(adminId: number, page: number, perPage: number) {
+      async moneyToAdmin(adminId: number, page, perPage: number) {
         const admin = await this.adminRepository.findOne({
           where: {
             adminId
@@ -842,11 +843,11 @@ export class AdminsService {
             HttpStatus.NOT_FOUND,
           );
         }
-      
-        return { moneyPaid, totalPages, currentPage: page, totalItems: totalCount };
+        const pageNumber = parseInt(page, 10); // Convert the string to an integer
+        return { moneyPaid, totalPages, currentPage: pageNumber, totalItems: totalCount };
       }
       
-      async moneyFromSubAdmin(page: number, perPage: number) {
+      async moneyFromSubAdmin(page, perPage: number) {
         const [moneyPaid, totalCount] = await this.subAdminPaymentRepository.findAndCount({
           order: {
             id: 'DESC'
@@ -871,8 +872,8 @@ export class AdminsService {
         if (moneyPaid.length === 0) {
           throw new HttpException(`No history yet`, HttpStatus.NOT_FOUND);
         }
-      
-        return { moneyPaid, totalPages, currentPage: page, totalItems: totalCount };
+        const pageNumber = parseInt(page, 10); // Convert the string to an integer
+        return { moneyPaid, totalPages, currentPage: pageNumber, totalItems: totalCount };
       }
       
 }

@@ -242,7 +242,7 @@ export class DoctorsService {
         return this.doctorRepository.update({doctorId},{...doctorDetails});
       }
 
-      async findDoctors(type: number, page: number, perPage: number) {
+      async findDoctors(type: number, page, perPage: number) {
         const select: Array<keyof Doctor> = ['active', 'phonenumberForAdmin', 'email', 'firstname', 'lastname', 'doctorId', 'gender'];
         let where: any = {};
       
@@ -260,8 +260,8 @@ export class DoctorsService {
         });
       
         const totalPages = Math.ceil(totalCount / perPage);
-      
-        return { doctors, totalPages, currentPage: page, totalItems: totalCount };
+        const pageNumber = parseInt(page, 10); // Convert the string to an integer
+        return { doctors, totalPages, currentPage: pageNumber, totalItems: totalCount };
       }
       
 
@@ -542,7 +542,7 @@ export class DoctorsService {
         }
         return {doctor : doctor}
       }
-      async payInAdvance(doctorId: number, page: number, perPage: number) {
+      async payInAdvance(doctorId: number, page, perPage: number) {
         // Your existing code to check doctor existence
         const doctor = await this.doctorRepository.findOne({
           where: { doctorId },
@@ -576,11 +576,12 @@ export class DoctorsService {
         if (payInAdvance.length === 0) {
           throw new BadRequestException('You have not paid in advance any money yet');
         }
+        const pageNumber = parseInt(page, 10); // Convert the string to an integer
       
-        return { payInAdvance, totalPages, currentPage: page, totalItems: totalCount };
+        return { payInAdvance, totalPages, currentPage: pageNumber, totalItems: totalCount };
       }
       
-      async gettransctions(doctorId: number, page: number, perPage: number) {
+      async gettransctions(doctorId: number, page, perPage: number) {
         // Your existing code to check doctor existence
         const doctor = await this.doctorRepository.findOne({
           where: { doctorId },
@@ -602,8 +603,9 @@ export class DoctorsService {
           take: perPage,
           skip: (page - 1) * perPage
         });
+        const pageNumber = parseInt(page, 10); // Convert the string to an integer
       
-        return { mytransctions, currentPage: page, totalItems: mytransctions.length };
+        return { mytransctions, currentPage: pageNumber, totalItems: mytransctions.length };
       }
       
       async getClinicsForDoctor(doctorId : number){
@@ -1213,7 +1215,7 @@ export class DoctorsService {
         
         }
       }
-      async getWorkTimeForDoctor(clinicId: number, doctorId: number, page: number, perPage: number) {
+      async getWorkTimeForDoctor(clinicId: number, doctorId: number, page, perPage: number) {
         // Your existing code to check doctor and clinic existence
         if (!doctorId) {
           throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
@@ -1260,11 +1262,12 @@ export class DoctorsService {
             `You have not set any worktime in this clinic clinic ${clinic.clinicId}`
           );
         }
+        const pageNumber = parseInt(page, 10); // Convert the string to an integer
       
-        return { workTimes: workTime, totalPages, currentPage: page, totalItems: totalCount };
+        return { workTimes: workTime, totalPages, currentPage: pageNumber, totalItems: totalCount };
       }
 
-      async getAppoitment(workTimeId: number, doctorId: number, page: number, perPage: number) {
+      async getAppoitment(workTimeId: number, doctorId: number, page, perPage: number) {
         if (!doctorId) {
           throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
         }
@@ -1332,11 +1335,12 @@ export class DoctorsService {
             `You have not set any appointment in this work time ${workTimeId}`
           );
         }
+        const pageNumber = parseInt(page, 10); // Convert the string to an integer
       
-        return { appointment, currentPage: page, totalItems: appointment.length };
+        return { appointment, currentPage:pageNumber, totalItems: appointment.length };
       }
       
-      async gettodayAppoitment(clinicId: number, doctorId: number, page: number, perPage: number) {
+      async gettodayAppoitment(clinicId: number, doctorId: number, page, perPage: number) {
         if (!doctorId) {
           throw new HttpException(`thier is something wrong with the token`, HttpStatus.NOT_FOUND);
         }
@@ -1396,8 +1400,8 @@ export class DoctorsService {
             `You have not set any appointment in this work time ${workTime.workTimeId}`
           );
         }
-      
-        return { appointment, currentPage: page, totalItems: appointment.length };
+        const pageNumber = parseInt(page, 10); // Convert the string to an integer
+        return { appointment, currentPage: pageNumber, totalItems: appointment.length };
       }
       
 

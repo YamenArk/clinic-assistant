@@ -14,7 +14,7 @@ export class SpecialtiesService {
         @InjectRepository(SubSpecialty) 
         private subSpecialtyRepository : Repository<SubSpecialty>
         ){}
-        async findSpecialties(page: number, perPage: number) {
+        async findSpecialties(page, perPage: number) {
           const specialties = await this.specialtyRepository.find({
             order: {
               specialtyId: 'ASC',
@@ -30,8 +30,9 @@ export class SpecialtiesService {
           if (specialties.length === 0) {
             throw new HttpException(`No specialties found`, HttpStatus.NOT_FOUND);
           }
+          const pageNumber = parseInt(page, 10); // Convert the string to an integer
         
-          return { specialties, totalPages, currentPage: page, totalItems: totalCount };
+          return  {specialties ,totalPages, currentPage: pageNumber, totalItems: totalCount} ;
         }
         
         async createspecialty(specialtyDetails : SpecialtyParams): Promise<void>{
