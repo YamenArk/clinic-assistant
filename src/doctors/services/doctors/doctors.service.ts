@@ -1640,7 +1640,8 @@ export class DoctorsService {
           };
           return {
             access_token: this.jwtService.sign(payload),
-            type : 2
+            type : 2,
+            doctorId : doctor.doctorId
           };
         }
       
@@ -2492,7 +2493,10 @@ export class DoctorsService {
               doctor: { doctorId },
               clinic: { clinicId },
               date: Between(today.toISOString(), lastAppointment.toISOString())
-          }
+          },
+          order: {
+            date: 'ASC'
+          },
         });
         if(workTime.length == 0)
         {

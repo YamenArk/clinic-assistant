@@ -392,36 +392,91 @@ export class ClinicsService {
         return {clinics : clinics}
       }
 
+    
 
-        async getClosestClinics(longitudeLatitudeDto : LongitudeLatitudeParam,specialtyId : number){
-          const specialty = await this.specialtyRepository.findOne({
+      async getClosestClinics(longitudeLatitudeDto: LongitudeLatitudeParam, specialtyId: number) {
+        const MAX_DISTANCE_KM = 7; // Maximum distance in kilometers
+        const specialty = await this.specialtyRepository.findOne({
             where : { specialtyId}
           })
-          if (!specialty) {
-            throw new HttpException('specialty not found', HttpStatus.NOT_FOUND);
-          }
-          const clinics = await this.clinicRepository.find({ where :{
-            specialty : specialty,
-            numDoctors: MoreThanOrEqual(1)
-          }})
-          if(clinics.length == 0)
-          {
+        if (!specialty) {
+          throw new HttpException('specialty not found', HttpStatus.NOT_FOUND);
+        }
+        const clinics = await this.clinicRepository.find({ where :{
+          specialty : specialty,
+          numDoctors: MoreThanOrEqual(1)
+        }})
+        if(clinics.length == 0)
+        {
           throw new HttpException('thier are no clinics in the specialty', HttpStatus.NOT_FOUND);
-          }
-      // Calculate distances between user and each clinic
-      const distances = clinics.map((clinic) => {
-        const distance = geolib.getDistance(
-          { latitude: longitudeLatitudeDto.Latitude, longitude: longitudeLatitudeDto.Longitude },
-          { latitude: clinic.Latitude, longitude: clinic.Longitude },
-        );
-        return { clinic, distance };
-      });
-      if(distances.length == 0)
-      {
-        throw new HttpException('thier are no clinics in the area', HttpStatus.NOT_FOUND);
+        }
+        // Calculate distances between user and each clinic, and filter clinics within the desired range
+        const validClinics = clinics.filter((clinic) => {
+          const distance = geolib.getDistance(
+            { latitude: longitudeLatitudeDto.Latitude, longitude: longitudeLatitudeDto.Longitude },
+            { latitude: clinic.Latitude, longitude: clinic.Longitude },
+          );
+          return distance <= MAX_DISTANCE_KM * 1000; // Convert kilometers to meters
+        });
+
+        if (validClinics.length === 0) {
+          throw new HttpException('There are no clinics in the area within the specified range', HttpStatus.NOT_FOUND);
+        }
+
+        // Sort valid clinics by distance and return the closest 10
+        validClinics.sort((a, b) => {
+          const distanceA = geolib.getDistance(
+            { latitude: longitudeLatitudeDto.Latitude, longitude: longitudeLatitudeDto.Longitude },
+            { latitude: a.Latitude, longitude: a.Longitude },
+          );
+          const distanceB = geolib.getDistance(
+            { latitude: longitudeLatitudeDto.Latitude, longitude: longitudeLatitudeDto.Longitude },
+            { latitude: b.Latitude, longitude: b.Longitude },
+          );
+          return distanceA - distanceB;
+        });
+
+        return { clinics: validClinics.slice(0, 10) };
       }
-      // Sort clinics by distance and return the closest 10
-      distances.sort((a, b) => a.distance - b.distance);
-      return {clinics : distances.slice(0, 10).map((d) => d.clinic)}
+
+
+
+
+
+
+      
       }
-    }
+
+
+    //     async getClosestClinics(longitudeLatitudeDto : LongitudeLatitudeParam,specialtyId : number){
+    //       const specialty = await this.specialtyRepository.findOne({
+    //         where : { specialtyId}
+    //       })
+    //       if (!specialty) {
+    //         throw new HttpException('specialty not found', HttpStatus.NOT_FOUND);
+    //       }
+    //       const clinics = await this.clinicRepository.find({ where :{
+    //         specialty : specialty,
+    //         numDoctors: MoreThanOrEqual(1)
+    //       }})
+    //       if(clinics.length == 0)
+    //       {
+    //       throw new HttpException('thier are no clinics in the specialty', HttpStatus.NOT_FOUND);
+    //       }
+    //   // Calculate distances between user and each clinic
+    //   const distances = clinics.map((clinic) => {
+    //     const distance = geolib.getDistance(
+    //       { latitude: longitudeLatitudeDto.Latitude, longitude: longitudeLatitudeDto.Longitude },
+    //       { latitude: clinic.Latitude, longitude: clinic.Longitude },
+    //     );
+    //     return { clinic, distance };
+    //   });
+    //   if(distances.length == 0)
+    //   {
+    //     throw new HttpException('thier are no clinics in the area', HttpStatus.NOT_FOUND);
+    //   }
+    //   // Sort clinics by distance and return the closest 10
+    //   distances.sort((a, b) => a.distance - b.distance);
+    //   return {clinics : distances.slice(0, 10).map((d) => d.clinic)}
+    //   }
+    // }

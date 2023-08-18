@@ -43,9 +43,14 @@ export class DoctorsController {
     @UseGuards(JWTAuthGuardAdmin)
     async getDoctor3s(
       @Param('type', ParseIntPipe) type: number,
-      @Query('page') page: number = 1,
-      @Query('perPage') perPage: number = 10
+      @Query('page') page: number ,
+      @Query('perPage') perPage: number 
     ) {
+      // Check if page and perPage are not provided, then set them to appropriate values for fetching all elements
+      if (!page || !perPage) {
+        page = 1;
+        perPage = 10000; // A high number to fetch all elements
+      }
       if (type < 1 || type > 3) {
         throw new BadRequestException('Invalid type parameter');
       }
@@ -169,9 +174,14 @@ export class DoctorsController {
     @Get('pay-in-advance')
     async payInAdvance(
       @Req() request,
-      @Query('page') page: number = 1,
-      @Query('perPage') perPage: number = 10
+      @Query('page') page: number ,
+      @Query('perPage') perPage: number 
     ) {
+      // Check if page and perPage are not provided, then set them to appropriate values for fetching all elements
+      if (!page || !perPage) {
+        page = 1;
+        perPage = 10000; // A high number to fetch all elements
+      }
       const doctorId = request.doctorId;
       const result = await this.doctorSrevice.payInAdvance(doctorId, page, perPage);
       return result;
@@ -181,9 +191,14 @@ export class DoctorsController {
     @Get('my-transctions')
     async gettransctions(
       @Req() request,
-      @Query('page') page: number = 1,
-      @Query('perPage') perPage: number = 10
+      @Query('page') page: number ,
+      @Query('perPage') perPage: number
     ) {
+      // Check if page and perPage are not provided, then set them to appropriate values for fetching all elements
+      if (!page || !perPage) {
+        page = 1;
+        perPage = 10000; // A high number to fetch all elements
+      }
       const doctorId = request.doctorId;
       const result = await this.doctorSrevice.gettransctions(doctorId, page, perPage);
       return result;
@@ -352,10 +367,15 @@ export class DoctorsController {
     @UseGuards(JWTAuthGuardDoctor)
     async getWotkTime(
       @Param('clinicId') clinicId: number,
-      @Query('page') page: number = 1,
-      @Query('perPage') perPage: number = 10,
+      @Query('page') page: number ,
+      @Query('perPage') perPage: number ,
       @Req() request
     ) {
+      // Check if page and perPage are not provided, then set them to appropriate values for fetching all elements
+      if (!page || !perPage) {
+        page = 1;
+        perPage = 10000; // A high number to fetch all elements
+      }
       const doctorId = request.doctorId;
       const result = await this.doctorSrevice.getWorkTimeForDoctor(clinicId, doctorId, page, perPage);
       return result;
@@ -366,10 +386,15 @@ export class DoctorsController {
     @UseGuards(JWTAuthGuardDoctor)
     async gettodayAppoitment(
       @Param('clinicId') clinicId: number,
-      @Query('page') page: number = 1,
-      @Query('perPage') perPage: number = 10,
+      @Query('page') page: number ,
+      @Query('perPage') perPage: number ,
       @Req() request
     ) {
+      // Check if page and perPage are not provided, then set them to appropriate values for fetching all elements
+      if (!page || !perPage) {
+        page = 1;
+        perPage = 10000; // A high number to fetch all elements
+      }
       const doctorId = request.doctorId;
       const result = await this.doctorSrevice.gettodayAppoitment(clinicId, doctorId, page, perPage);
       return result;
@@ -381,10 +406,15 @@ export class DoctorsController {
     @UseGuards(JWTAuthGuardDoctor)
     async getAppoitment(
       @Param('workTimeId') workTimeId: number,
-      @Query('page') page: number = 1,
-      @Query('perPage') perPage: number = 10,
+      @Query('page') page: number ,
+      @Query('perPage') perPage: number,
       @Req() request
     ) {
+      // Check if page and perPage are not provided, then set them to appropriate values for fetching all elements
+      if (!page || !perPage) {
+        page = 1;
+        perPage = 10000; // A high number to fetch all elements
+      }
       const doctorId = request.doctorId;
       const result = await this.doctorSrevice.getAppoitment(workTimeId, doctorId, page, perPage);
       return result;

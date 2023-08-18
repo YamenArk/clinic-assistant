@@ -18,13 +18,19 @@ export class AdminsController {
         return {message : 'admin has been created'}
     }
 
+
     @Get()
     @UseGuards(JWTAuthGuardAdminIsAdmin)
     async getAdmins(
-      @Query('page') page: number ,
-      @Query('perPage') perPage: number 
+      @Query('page') page: number,
+      @Query('perPage') perPage: number,
     ) {
-      console.log(perPage)
+      
+      // Check if page and perPage are not provided, then set them to appropriate values for fetching all elements
+      if (!page || !perPage) {
+        page = 1;
+        perPage = 10000; // A high number to fetch all elements
+      }
       const result = await this.adminSrevice.findAdmins(page, perPage);
       return result;
     }
@@ -72,7 +78,7 @@ export class AdminsController {
 
     
     @Get('monthly-subscription')
-    @UseGuards(JWTAuthGuardAdminIsAdmin)
+    // @UseGuards(JWTAuthGuardAdminIsAdmin)
     async MonthlySubscription(
     ){
       const amountOfMoney = await this.adminSrevice.MonthlySubscription()
@@ -123,9 +129,14 @@ export class AdminsController {
     @Get('money-from-sub-admin')
     @UseGuards(JWTAuthGuardAdminIsAdmin)
     async moneyFromSubAdmin(
-      @Query('page') page: number = 1,
-      @Query('perPage') perPage: number = 10
+      @Query('page') page: number ,
+      @Query('perPage') perPage: number 
     ) {
+      // Check if page and perPage are not provided, then set them to appropriate values for fetching all elements
+      if (!page || !perPage) {
+        page = 1;
+        perPage = 10000; // A high number to fetch all elements
+      }
       const result = await this.adminSrevice.moneyFromSubAdmin(page, perPage);
       return result;
     }
@@ -226,9 +237,14 @@ export class AdminsController {
     @UseGuards(JWTAuthGuardMoneyAdmin)
     async moneyCollectedFromDoctorsHistory(
       @Req() request,
-      @Query('page') page: number = 1,
-      @Query('perPage') perPage: number = 10
+      @Query('page') page: number ,
+      @Query('perPage') perPage: number 
     ) {
+      // Check if page and perPage are not provided, then set them to appropriate values for fetching all elements
+      if (!page || !perPage) {
+        page = 1;
+        perPage = 10000; // A high number to fetch all elements
+      }
       const adminId = request.adminId;
       const result = await this.adminSrevice.moneyCollectedFromDoctorsHistory(adminId, page, perPage);
       return result;
@@ -239,9 +255,14 @@ export class AdminsController {
     @UseGuards(JWTAuthGuardMoneyAdmin)
     async moneyToAdmin(
       @Req() request,
-      @Query('page') page: number = 1,
-      @Query('perPage') perPage: number = 10
+      @Query('page') page: number ,
+      @Query('perPage') perPage: number 
     ) {
+      // Check if page and perPage are not provided, then set them to appropriate values for fetching all elements
+      if (!page || !perPage) {
+        page = 1;
+        perPage = 10000; // A high number to fetch all elements
+      }
       const adminId = request.adminId;
       const result = await this.adminSrevice.moneyToAdmin(adminId, page, perPage);
       return result;
