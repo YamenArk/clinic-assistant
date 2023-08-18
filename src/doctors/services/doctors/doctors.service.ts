@@ -1280,13 +1280,13 @@ export class DoctorsService {
           throw new HttpException(`workTime with id ${workTimeId} not found`, HttpStatus.NOT_FOUND);
         }
       
-        let appointment;
+        let appointment,totalCount;
         const workTimeDate = new Date(workTime.date);
         const now = new Date();
         const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
       
         if (workTimeDate.toDateString() === today.toDateString()) {
-          appointment = await this.appointmentRepository.find({
+          [appointment,totalCount] = await this.appointmentRepository.findAndCount({
             where: { workTime: { workTimeId } },
             relations: ['patient'],
             select: {
@@ -1308,7 +1308,7 @@ export class DoctorsService {
             skip: (page - 1) * perPage
           });
         } else {
-          appointment = await this.appointmentRepository.find({
+          [appointment,totalCount] = await this.appointmentRepository.findAndCount({
             where: { workTime: { workTimeId } },
             relations: ['patient'],
             select: {
@@ -1335,9 +1335,10 @@ export class DoctorsService {
             `You have not set any appointment in this work time ${workTimeId}`
           );
         }
+        const totalPages = Math.ceil(totalCount / perPage);
         const pageNumber = parseInt(page, 10); // Convert the string to an integer
       
-        return { appointment, currentPage:pageNumber, totalItems: appointment.length };
+        return { appointment,totalPages, currentPage:pageNumber, totalItems: appointment.length };
       }
       
       async gettodayAppoitment(clinicId: number, doctorId: number, page, perPage: number) {
@@ -1367,13 +1368,12 @@ export class DoctorsService {
             },
             date: Equal(today.toISOString())
           }});
-        console.log(workTime.workTimeId)
         if (!workTime ) {
           throw new HttpException(`doctor does not have any appoitment today`, HttpStatus.NOT_FOUND);
         }
       
-        let appointment;
-        appointment = await this.appointmentRepository.find({
+        let appointment,totalCount;
+      [appointment,totalCount] = await this.appointmentRepository.findAndCount({
           where: { workTime: { workTimeId : workTime.workTimeId } },
           relations: ['patient'],
           select: {
@@ -1400,8 +1400,9 @@ export class DoctorsService {
             `You have not set any appointment in this work time ${workTime.workTimeId}`
           );
         }
+        const totalPages = Math.ceil(totalCount / perPage);
         const pageNumber = parseInt(page, 10); // Convert the string to an integer
-        return { appointment, currentPage: pageNumber, totalItems: appointment.length };
+        return { appointment,totalPages, currentPage: pageNumber, totalItems: appointment.length };
       }
       
 

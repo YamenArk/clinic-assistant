@@ -272,12 +272,12 @@ export class AdminsController {
       ///////////////////////////////////////non
 
       
-      // @Put('MonthlySubscriptions')
-      @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+      @Put('MonthlySubscriptions')
+      // @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
       async MonthlySubscriptions(
       ){
         await this.adminSrevice.MonthlySubscriptions();
-        // return ;
+        return ;
       }
 
 }
