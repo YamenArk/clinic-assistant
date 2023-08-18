@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, ParseIntPipe, Post,Delete, Put,Req, UseGu
 import { CreateAdminDto } from 'src/admins/dtos/CreateAdmin.dto';
 import { UpdateAdminDto } from 'src/admins/dtos/UpdateAdmin.dto';
 import { AdminsService } from 'src/admins/services/admins/admins.service';
+import{Cron,CronExpression} from '@nestjs/schedule'
 import { filterNameDto } from 'src/doctors/dtos/filterName.dto';
 import { JWTAuthGuardAdmin, JWTAuthGuardAdminIsAdmin ,JWTAuthGuardDoctorAdmin , JWTAuthGuardMoneyAdmin} from 'src/middleware/auth/jwt-auth.guard';
 
@@ -271,12 +272,12 @@ export class AdminsController {
       ///////////////////////////////////////non
 
       
-      @Put('MonthlySubscriptions')
-      // @Cron(CronExpression.EVERY_DAY_AT_0AM)
+      // @Put('MonthlySubscriptions')
+      @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
       async MonthlySubscriptions(
       ){
         await this.adminSrevice.MonthlySubscriptions();
-        return ;
+        // return ;
       }
 
 }

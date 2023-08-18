@@ -17,6 +17,11 @@ export class ClinicsController {
       @Query('page') page: number ,
       @Query('perPage') perPage: number 
     ) {
+      // Check if page and perPage are not provided, then set them to appropriate values for fetching all elements
+      if (!page || !perPage) {
+        page = 1;
+        perPage = 10000; // A high number to fetch all elements
+      }
       const result = await this.clinicSrevice.findClinics(page, perPage);
       return result;
     }

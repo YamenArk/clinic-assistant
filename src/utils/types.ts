@@ -185,6 +185,7 @@ export type updateAdminParams = {
   firstname?: string;
   lastname?: string;
   active?: boolean;
+  type: TypeEnum;
 
 }
 

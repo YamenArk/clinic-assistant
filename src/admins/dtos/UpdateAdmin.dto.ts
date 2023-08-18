@@ -1,4 +1,10 @@
 import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator'
+enum TypeEnum {
+    One = 1,
+    Four = 4,
+    Five = 5,
+  }
+
 
 export class UpdateAdminDto {
     @IsNotEmpty()
@@ -27,5 +33,14 @@ export class UpdateAdminDto {
     @IsOptional()
     @IsBoolean()
     active?: boolean;
+
+    
+    @IsNotEmpty()
+    @IsEnum(TypeEnum, {
+      each: true,
+      message: 'admin type must be 1 or 4 or 5'
+    })
+    type: TypeEnum;
+    
 
 }

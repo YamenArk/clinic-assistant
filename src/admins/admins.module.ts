@@ -28,9 +28,11 @@ import { Gateway } from 'src/gateway/gateway';
 import { Doctornotification } from 'src/typeorm/entities/doctor-notification';
 import { SharedModule } from 'src/shared/shared.module';
 import { DoctorMessage } from 'src/typeorm/entities/doctor-message';
+import{ScheduleModule} from '@nestjs/schedule'
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     SharedModule,
     TypeOrmModule.forFeature([
       Admin,
